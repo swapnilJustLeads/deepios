@@ -6,7 +6,7 @@ import { Appearance } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setTheme } from './src/theme/theme';
 import './src/i18n/i18n'; // Load i18n configurations
-
+//init
 export default function App() {
   return (
     <Provider store={store}>
