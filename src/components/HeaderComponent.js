@@ -1,21 +1,34 @@
 import React from 'react';
-import { Header } from '@rneui/themed';
-import Dashboardlogo from '../assets/dashboardlogo.svg';
-import Rightlogo from '../assets/rightlogo.svg';
-import LeftLogo from '../assets/LeftLogo.svg';
+import {Header} from '@rneui/themed';
+import Dashboardlogo from '../assets/images/dashboardlogo.svg';
+import Rightlogo from '../assets/images/rightlogo.svg';
+import LeftLogo from '../assets/images/LeftLogo.svg';
+import {TouchableOpacity} from 'react-native';
 
-const HeaderComponent = ( ) => {
+const HeaderComponent = () => {
   return (
     <Header
       containerStyle={{
         backgroundColor: 'transparent', // Keep background transparent if needed
         paddingHorizontal: 30,
-        
+
         borderBottomWidth: 0, // Remove border if not needed
       }}
-      leftComponent={<LeftLogo width={50} height={50} />}
-      centerComponent={<Dashboardlogo width={154} height={50} />}
-      rightComponent={<Rightlogo width={50} height={50} />}
+      leftComponent={
+        <TouchableOpacity>
+          <LeftLogo width={50} height={50} />
+        </TouchableOpacity>
+      }
+      centerComponent={
+        <TouchableOpacity>
+          <Dashboardlogo width={154} height={50} />
+        </TouchableOpacity>
+      }
+      rightComponent={
+        <TouchableOpacity>
+          <Rightlogo width={50} height={50} />
+        </TouchableOpacity>
+      }
     />
   );
 };

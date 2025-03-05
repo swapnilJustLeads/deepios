@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Card } from '@rneui/themed';
-import Bardumble from '../assets/bardumble.svg';
+import Bardumble from '../assets/images/bardumble.svg';
 
 
 
