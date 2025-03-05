@@ -1,37 +1,31 @@
 import React from 'react';
 import { View, Text, useColorScheme } from 'react-native';
-import { Button } from '@rneui/themed';
+import { Button, Input } from '@rneui/themed';
 import { useDispatch, useSelector } from 'react-redux';
 import { increment, decrement } from '../redux/slices/counterSlice';
 import { toggleTheme } from '../theme/theme';
 import { useTranslation } from 'react-i18next';
-
+import { Image } from 'react-native';
+import Logo from '../assets/logo.svg';
 export default function HomeScreen({ navigation }) {
   const count = useSelector((state) => state.counter.value);
   const isDarkMode = useSelector((state) => state.theme.darkMode);
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
 
-  const backgroundColor = isDarkMode ? '#000000' : '#B0B0B0';
+  const backgroundColor = isDarkMode ? '#000000' : '#000000';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor }}>
-      <Text style={{ fontSize: 20, color: textColor, marginBottom: 20 }}>{t('welcome')}</Text>
-      <Text style={{ fontSize: 20, color: textColor, marginBottom: 20 }}>{t('counter')}: {count}</Text>
-
-      <Button title={t('increment')} onPress={() => dispatch(increment())} />
-      <Button title={t('decrement')} onPress={() => dispatch(decrement())} containerStyle={{ marginTop: 10 }} />
-      
-      <Button title={t('toggleTheme')} onPress={() => dispatch(toggleTheme())} containerStyle={{ marginTop: 20 }} />
-      
-      <Button
-        title={t('changeLang')}
-        onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en')}
-        containerStyle={{ marginTop: 10 }}
-      />
-      
-      <Button title={t('details')} onPress={() => navigation.navigate('Details')} containerStyle={{ marginTop: 20 }} />
+        <Logo width={270} height={65} />
+        <View style={{height:21}} />
+        <Input placeholder='eMail' containerStyle={{width:'50%'}} />
+        <Input placeholder='Password' containerStyle={{width:'50%'}} />
+        <Button onPress={()=> navigation.navigate('Details')} title="LOGIN" buttonStyle={{backgroundColor:'#00E5FF'}} titleStyle={{
+          color:'#000',
+        }} containerStyle={{width:'50%', borderRadius:12}} />
+    
     </View>
   );
 }
