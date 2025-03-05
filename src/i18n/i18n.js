@@ -8,6 +8,8 @@ const resources = {
       increment: 'Increment',
       decrement: 'Decrement',
       details: 'Go to Details',
+      dashboard:'Go To Dashboard',
+      recovery:'Go to recovery',
       back: 'Go Back',
       toggleTheme: 'Toggle Theme',
       changeLang: 'Change Language',

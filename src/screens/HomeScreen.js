@@ -31,7 +31,10 @@ export default function HomeScreen({ navigation }) {
         containerStyle={{ marginTop: 10 }}
       />
       
-      <Button title={t('details')} onPress={() => navigation.navigate('Details')} containerStyle={{ marginTop: 20 }} />
+      <Button title={t('details')} onPress={() => navigation.navigate('LoginScreen')} containerStyle={{ marginTop: 20 }} />
+      <Button title={t('dashboard')} onPress={() => navigation.navigate('DashboardScreen')} containerStyle={{ marginTop: 20 }} />
+      <Button title={t('recovery')} onPress={() => navigation.navigate('Recovery')} containerStyle={{ marginTop: 20 }} />
+      <Button title={'supplyments'} onPress={() => navigation.navigate('Supplyments')} containerStyle={{ marginTop: 20 }} />
     </View>
   );
 }
