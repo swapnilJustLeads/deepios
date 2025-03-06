@@ -1,14 +1,78 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
+import React, {useState} from 'react';
+import HeaderComponent from '../components/HeaderComponent';
+import WorkoutCard from '../components/WorkoutCard';
+import Cardio from '../assets/images/cardio.svg';
+import moment from 'moment';
+import HorizontalDatePicker from '../components/HorizontalDatePicker';
+import DefaultButton from '../components/DefaultButton';
+import WorkoutListComponent from '../components/WorkoutListComponent';
+import WorkoutForm from '../components/WorkoutForm';
+import RecoveryCard from '../components/RecoveryCard';
 
 const CardioScreen = () => {
+  const [showForm, setshowForm] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format('YYYY-MM-DD'),
+  );
+  const getDates = () => {
+    let dates = [];
+    for (let i = -3; i <= 3; i++) {
+      dates.push(moment().add(i, 'days').format('YYYY-MM-DD'));
+    }
+    return dates;
+  };
   return (
-    <View>
-      <Text>CardioScreen</Text>
+    <View style={styles.container}>
+      <HeaderComponent />
+      {showForm ?  <WorkoutForm /> : 
+      <>
+       <RecoveryCard
+        image={<Cardio width={50} height={50} />}
+        name="Cardio"
+      />
+      {/* <HorizontalDatePicker />
+      <DefaultButton
+      onPress={()=> setshowForm(true)}
+        title="New Workout"
+        alignSelf="center"
+        bottom={0}
+        position="absolute"
+      />
+      <WorkoutListComponent /> */}
+      </>
+      }
+     
+     
     </View>
-  )
-}
+  );
+};
 
-export default CardioScreen
+export default CardioScreen;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#AFAFAF',
+  },
+  flatListContainer: {
+    alignItems: 'center',
+  },
+  dateItem: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginHorizontal: 5,
+  },
+  selectedDate: {
+    backgroundColor: 'black',
+  },
+  dateText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  selectedDateText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});

@@ -5,7 +5,7 @@ import Bardumble from '../assets/images/bardumble.svg';
 
 
 
-const WorkoutCard = (props) => {
+const CardioCard = (props) => {
   const [selectedTab, setSelectedTab] = useState('Today');
 
   return (
@@ -43,8 +43,8 @@ const WorkoutCard = (props) => {
 
       
 <View style={styles.dataContainer}>
-  <Text style={styles.dataText}>3605</Text>
-  <Text style={styles.unitText}>kg</Text>
+  <Text style={styles.dataText}>0</Text>
+  <Text style={styles.unitText}>min</Text>
 </View>
       </View>
       
@@ -125,4 +125,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default WorkoutCard;
+export default CardioCard;

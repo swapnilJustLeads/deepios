@@ -34,7 +34,8 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-
+ios/Podfile.lock
+yarn.lock
 # node.js
 #
 node_modules/
