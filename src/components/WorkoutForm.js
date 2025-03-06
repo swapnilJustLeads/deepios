@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 
-const WorkoutForm = () => {
+const WorkoutForm = (props) => {
   // State for selected values
   const [category, setCategory] = useState('Back');
   const [exercise, setExercise] = useState('Barbell Deadlift');
@@ -127,6 +127,7 @@ const WorkoutForm = () => {
           titleStyle={{color: 'black'}}
         />
         <Button
+        onPress={props.addButton}
           title="Add"
           buttonStyle={styles.addButton}
           titleStyle={styles.addButtonText}

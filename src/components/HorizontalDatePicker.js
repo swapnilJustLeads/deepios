@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from '
 import moment from 'moment';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const ITEM_WIDTH = 60; // Base width for date items
+const ITEM_WIDTH = 30; // Base width for date items
 const SELECTED_ITEM_WIDTH = 121; // Width of selected date item
 const ITEM_MARGIN = 10; // Total horizontal margin (5 on each side)
 

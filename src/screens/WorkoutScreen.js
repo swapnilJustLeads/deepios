@@ -24,19 +24,19 @@ const WorkoutScreen = () => {
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      {showForm ?  <WorkoutForm /> : 
+      {showForm ?  <WorkoutForm  addButton={()=> setshowForm(false) } /> : 
       <>
        <WorkoutCard
-        image={<Bardumble width={41} height={41}  />}
+        image={<Bardumble width={42} height={42}  />}
         name="Workout"
       />
       <HorizontalDatePicker />
       <DefaultButton
-      onPress={()=> setshowForm(true)}
-        title="New Workout"
-        alignSelf="center"
-        bottom={24}
-        position="absolute"
+       onPress={()=> setshowForm(true)}
+       title="NEW WORKOUT"
+       alignSelf="center"
+       bottom={24}
+       position="absolute"
       />
       <WorkoutListComponent />
       </>
