@@ -59,13 +59,31 @@ export const uploadProfilePicture = async (username, fileUri) => {
   }
 };
 
-// ✅ Update User's Last Sign-In Time (NEW FUNCTION)
+// ✅ Fix: Ensure the document exists before updating
 export const updateSignInTime = async (userId) => {
   try {
     const userDocRef = doc(FirestoreDB, COLLECTIONS.USERS, userId);
+    const userSnapshot = await getDoc(userDocRef);
+
+    if (!userSnapshot.exists) {
+      console.log(`🟡 User document for ${userId} not found. Creating a new document...`);
+      
+      // ✅ Create user document before updating sign-in time
+      await setDoc(userDocRef, {
+        lastSignIn: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      });
+
+      console.log(`✅ User document created for ${userId}`);
+    } else {
+      console.log(`🟢 User document found. Updating sign-in time...`);
+    }
+
+    // ✅ Now update sign-in time
     await updateDoc(userDocRef, {
-      lastSignIn: serverTimestamp(), // ✅ Automatically updates timestamp
+      lastSignIn: serverTimestamp(),
     });
+
     console.log(`✅ Updated sign-in time for user: ${userId}`);
   } catch (error) {
     console.error('❌ Error updating sign-in time:', error);
