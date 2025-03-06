@@ -2,9 +2,9 @@
 /* eslint-disable no-shadow */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchUsers, addUser, updateUser, deleteUser, signUpUser, deleteUserCompletely } from '../firebase/firebase_client';
-import auth from '@react-native-firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ToastAndroid } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
 
 const AdminUsersContext = createContext();
@@ -40,7 +40,8 @@ export const AdminUsersProvider = ({ children }) => {
         throw new Error(t('toastMessages.allFieldsRequired'));
       }
       const newUser = await addUser(user);
-      const originalUser = auth().currentUser;
+      const authInstance = getAuth();
+      const originalUser = authInstance.currentUser;
       const originalEmail = originalUser?.email;
       const originalPassword = await AsyncStorage.getItem('userPassword');
 
@@ -48,18 +49,18 @@ export const AdminUsersProvider = ({ children }) => {
         const authUser = await signUpUser(user.email, user.password);
         await updateUser(user.username, { authId: authUser.uid, username: user.username });
         setUsers((prevUsers) => [...prevUsers, { ...newUser, authId: authUser.uid }]);
-        ToastAndroid.show('User added successfully!', ToastAndroid.SHORT);
+        Toast.show({ type: 'success', text1: 'User added successfully!' });
       } catch (signupError) {
         await deleteUser(user.username);
         throw signupError;
       } finally {
         if (originalUser) {
-          await auth().signInWithEmailAndPassword(originalEmail, originalPassword);
+          await signInWithEmailAndPassword(authInstance, originalEmail, originalPassword);
         }
       }
     } catch (error) {
       console.log(error);
-      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      Toast.show({ type: 'error', text1: error.message });
       throw error;
     }
   };

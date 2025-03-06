@@ -1,7 +1,18 @@
-import { 
-  getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp,
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  serverTimestamp
 } from '@react-native-firebase/firestore';
-import { getAuth } from '@react-native-firebase/auth';
+import { getAuth ,deleteUser as firebaseDeleteUser} from '@react-native-firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from '@react-native-firebase/storage';
 import { COLLECTIONS } from './collections';
 
@@ -90,3 +101,51 @@ export const updateSignInTime = async (userId) => {
     throw error;
   }
 };
+// ✅ Update User in Firestore (Matches Web Logic)
+export const updateUser = async (id, updatedUser) => {
+  try {
+    const userDocRef = doc(FirestoreDB, 'users', id);
+    const userSnapshot = await getDoc(userDocRef);
+
+    if (!userSnapshot.exists()) {
+      throw new Error('User does not exist.');
+    }
+
+    await updateDoc(userDocRef, updatedUser);
+    console.log(`✅ User updated successfully: ${id}`);
+    return { id, ...updatedUser };
+  } catch (error) {
+    console.error('❌ Error updating user:', error);
+    throw error;
+  }
+};
+
+// ✅ Delete User from Firestore and Firebase Authentication
+export const deleteUser = async (id) => {
+  try {
+    const userDocRef = doc(FirestoreDB, 'users', id);
+    const userSnapshot = await getDoc(userDocRef);
+
+    if (!userSnapshot.exists()) {
+      throw new Error('User does not exist.');
+    }
+
+    // Delete user from Firestore
+    await deleteDoc(userDocRef);
+    console.log(`✅ User deleted from Firestore: ${id}`);
+
+    // Delete user from Firebase Auth (Optional)
+    const authInstance = getAuth();
+    const currentUser = authInstance.currentUser;
+
+    if (currentUser && currentUser.uid === id) {
+      await firebaseDeleteUser(currentUser);
+      console.log(`✅ User deleted from Firebase Auth: ${id}`);
+    }
+
+  } catch (error) {
+    console.error('❌ Error deleting user:', error);
+    throw error;
+  }
+};
+
