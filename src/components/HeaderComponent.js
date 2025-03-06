@@ -10,7 +10,7 @@ const HeaderComponent = () => {
     <Header
       containerStyle={{
         backgroundColor: 'transparent', // Keep background transparent if needed
-        paddingHorizontal: 30,
+        // paddingHorizontal: 30,
 
         borderBottomWidth: 0, // Remove border if not needed
       }}
@@ -21,12 +21,12 @@ const HeaderComponent = () => {
       // }
       centerComponent={
         <TouchableOpacity>
-          <Dashboardlogo width={154} height={50} />
+          <Dashboardlogo width={146} height={42} />
         </TouchableOpacity>
       }
       rightComponent={
-        <TouchableOpacity>
-          <Rightlogo width={50} height={50} />
+        <TouchableOpacity style={{ marginRight:9, marginTop:5}} >
+          <Rightlogo width={33} height={33} />
         </TouchableOpacity>
       }
     />

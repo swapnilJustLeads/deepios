@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {Card} from '@rneui/themed';
-import Bardumble from '../assets/images/bardumble.svg';
 
 const WorkoutCard = props => {
   const [selectedTab, setSelectedTab] = useState('Today');
@@ -15,6 +14,8 @@ const WorkoutCard = props => {
             styles.tabs,
             {
               width: 210,
+              height:21,
+              marginTop:3
             },
           ]}>
           {['Today', 'Week', 'Month'].map(tab => (
@@ -33,8 +34,16 @@ const WorkoutCard = props => {
           ))}
         </View>
       </View>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        {props.image}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+         
+        }}>
+          <View style={{marginTop:-2}} >
+              {props.image}
+          </View>
+      
 
         <View style={styles.dataContainer}>
           <Text style={styles.dataText}>3605</Text>
@@ -47,8 +56,8 @@ const WorkoutCard = props => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 30,
-    padding: 20,
+    marginTop:20,
+    borderRadius: 24,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
@@ -56,25 +65,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     borderColor: 'black',
+    paddingBottom:4
+    
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    // backgroundColor:'green',
+    marginBottom: -5,
+    marginTop: -5,
   },
   workoutText: {
     fontSize: 28,
     fontWeight: 'bold',
     fontFamily: 'Stomic',
     textTransform: 'uppercase',
+    marginTop: -15,
   },
-  iconPlaceholder: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#000',
-    borderRadius: 5,
-  },
+
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -82,20 +91,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     // padding: 5,
     marginBottom: 15,
+    
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    // paddingVertical: 8,
     alignItems: 'center',
     borderEndEndRadius: 9,
+    justifyContent:'center'
   },
   selectedTab: {
     backgroundColor: '#00E5FF',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#000',
+    alignSelf: 'center',
+
   },
   selectedTabText: {
     color: '#000',
@@ -106,14 +119,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dataText: {
-    fontSize: 40,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '700',
     color: '#000',
+    fontFamily: 'Inter',
   },
   unitText: {
-    fontSize: 20,
+    fontSize: 15,
     color: '#000',
-    marginLeft: 5,
+    // marginLeft: 5,
+    fontFamily:'Inter',
+    fontWeight:'300',
+    alignSelf:'center'
   },
 });
 
