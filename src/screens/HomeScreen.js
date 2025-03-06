@@ -1,40 +1,60 @@
 import React from 'react';
-import { View, Text, useColorScheme } from 'react-native';
-import { Button } from '@rneui/themed';
-import { useDispatch, useSelector } from 'react-redux';
-import { increment, decrement } from '../redux/slices/counterSlice';
-import { toggleTheme } from '../theme/theme';
-import { useTranslation } from 'react-i18next';
+import {View, Text, StyleSheet} from 'react-native';
+import {Button} from '@rneui/themed';
+import {useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import Dashboardlogo from '../assets/images/dashboardlogo.svg';
+import Rightlogo from '../assets/images/rightlogo.svg';
+import LeftLogo from '../assets/images/LeftLogo.svg';
+import WorkoutCard from '../components/WorkoutCard';
+import Bardumble from '../assets/images/bardumble.svg';
+import Cardio from '../assets/images/cardio.svg';
+import Recovery from '../assets/images/recovery.svg';
+import HeaderComponent from '../components/HeaderComponent';
 
-export default function HomeScreen({ navigation }) {
-  const count = useSelector((state) => state.counter.value);
-  const isDarkMode = useSelector((state) => state.theme.darkMode);
-  const dispatch = useDispatch();
-  const { t, i18n } = useTranslation();
+export default function HomeScreen({navigation}) {
+  const isDarkMode = useSelector(state => state.theme.darkMode);
+  const {t} = useTranslation();
 
-  const backgroundColor = isDarkMode ? '#000000' : '#B0B0B0';
+  const backgroundColor = isDarkMode ? '#AEAEAE' : '#B0B0B0';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor }}>
-      <Text style={{ fontSize: 20, color: textColor, marginBottom: 20 }}>{t('welcome')}</Text>
-      <Text style={{ fontSize: 20, color: textColor, marginBottom: 20 }}>{t('counter')}: {count}</Text>
+    <View style={{flex: 1, backgroundColor}}>
+      <HeaderComponent />
+     
+      <View style={{height:30}} />
 
-      <Button title={t('increment')} onPress={() => dispatch(increment())} />
-      <Button title={t('decrement')} onPress={() => dispatch(decrement())} containerStyle={{ marginTop: 10 }} />
-      
-      <Button title={t('toggleTheme')} onPress={() => dispatch(toggleTheme())} containerStyle={{ marginTop: 20 }} />
-      
-      <Button
-        title={t('changeLang')}
-        onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en')}
-        containerStyle={{ marginTop: 10 }}
+      <WorkoutCard
+        image={<Bardumble width={50} height={50} />}
+        name="Workout"
       />
-      
-      <Button title={t('details')} onPress={() => navigation.navigate('LoginScreen')} containerStyle={{ marginTop: 20 }} />
-      <Button title={t('dashboard')} onPress={() => navigation.navigate('DashboardScreen')} containerStyle={{ marginTop: 20 }} />
-      <Button title={t('recovery')} onPress={() => navigation.navigate('Recovery')} containerStyle={{ marginTop: 20 }} />
-      <Button title={'supplyments'} onPress={() => navigation.navigate('Supplyments')} containerStyle={{ marginTop: 20 }} />
+      <WorkoutCard image={<Cardio width={50} height={50} />} name="Cardio" />
+      <WorkoutCard
+        image={<Recovery width={50} height={50} />}
+        name="Recovery"
+      />
+
+      {/* <View style={styles.listContainer} >
+        <View>
+        <Text>Workout</Text>
+        <View>
+          
+        </View>
+
+        </View>
+
+      </View> */}
     </View>
   );
 }
+const styles = StyleSheet.create({
+  listContainer: {
+    backgroundColor: '#fff',
+    width: '90%',
+    borderRadius: 21,
+    height: 90,
+    alignSelf: 'center',
+    borderWidth: 1.5,
+  },
+});
