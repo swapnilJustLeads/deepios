@@ -27,6 +27,9 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#000',
+    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily:'Inter'
   },
   container: {
     width: '50%',

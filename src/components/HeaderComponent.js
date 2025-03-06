@@ -15,15 +15,19 @@ const HeaderComponent = () => {
         backgroundColor: 'transparent', 
         paddingHorizontal: 30,
         borderBottomWidth: 0,
+        backgroundColor: 'transparent', // Keep background transparent if needed
+        // paddingHorizontal: 30,
+
+        borderBottomWidth: 0, // Remove border if not needed
       }}
-      leftComponent={
-        <TouchableOpacity>
-          <LeftLogo width={50} height={50} />
-        </TouchableOpacity>
-      }
+      // leftComponent={
+      //   <TouchableOpacity>
+      //     <LeftLogo width={50} height={50} />
+      //   </TouchableOpacity>
+      // }
       centerComponent={
         <TouchableOpacity>
-          <Dashboardlogo width={154} height={50} />
+          <Dashboardlogo width={146} height={42} />
         </TouchableOpacity>
       }
       rightComponent={

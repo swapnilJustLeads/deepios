@@ -54,11 +54,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: 'black',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 3,
+    
   },
   header: {
     flexDirection: 'row',
@@ -84,8 +80,10 @@ const styles = StyleSheet.create({
   },
   workoutName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     marginTop: 10,
+    fontFamily:'Inter',
+    fontWeight:'700'
   },
   setRow: {
     flexDirection: 'row',
@@ -95,6 +93,10 @@ const styles = StyleSheet.create({
   setText: {
     fontSize: 14,
     fontWeight: '500',
+        fontFamily:'Inter',
+        fontWeight:'400',
+  
+
   },
   separator: {
     borderBottomWidth: 1,

@@ -27,7 +27,7 @@ const WorkoutScreen = () => {
       {showForm ?  <WorkoutForm /> : 
       <>
        <WorkoutCard
-        image={<Bardumble width={50} height={50} />}
+        image={<Bardumble width={41} height={41}  />}
         name="Workout"
       />
       <HorizontalDatePicker />
@@ -35,7 +35,7 @@ const WorkoutScreen = () => {
       onPress={()=> setshowForm(true)}
         title="New Workout"
         alignSelf="center"
-        bottom={0}
+        bottom={24}
         position="absolute"
       />
       <WorkoutListComponent />
