@@ -35,7 +35,7 @@ const WorkoutScreen = () => {
       onPress={()=> setshowForm(true)}
         title="New Workout"
         alignSelf="center"
-        bottom={0}
+        bottom={24}
         position="absolute"
       />
       <WorkoutListComponent />
