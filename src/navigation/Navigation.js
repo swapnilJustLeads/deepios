@@ -19,6 +19,7 @@ import SupplementScreen from '../screens/SupplementScreen';
 import RecoveryScreen from '../screens/RecoveryScreen';
 import CardioScreen from '../screens/CardioScreen';
 import {Text, View} from 'react-native';
+import ProfileScreen from '../screens/ProfileScreen';
 
 // Stack & Tab Navigators
 const Stack = createNativeStackNavigator();
@@ -137,6 +138,7 @@ export default function Navigation() {
         {/* Main App Navigation (with bottom tabs) */}
         <Stack.Screen name="Details" component={BottomTabNavigator} />
         <Stack.Screen name="Main" component={DetailsScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

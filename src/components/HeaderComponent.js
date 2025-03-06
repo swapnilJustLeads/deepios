@@ -1,18 +1,20 @@
 import React from 'react';
-import {Header} from '@rneui/themed';
+import { Header } from '@rneui/themed';
+import { TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // ✅ Import navigation hook
 import Dashboardlogo from '../assets/images/dashboardlogo.svg';
 import Rightlogo from '../assets/images/rightlogo.svg';
 import LeftLogo from '../assets/images/LeftLogo.svg';
-import {TouchableOpacity} from 'react-native';
 
 const HeaderComponent = () => {
+  const navigation = useNavigation(); // ✅ Get navigation instance
+
   return (
     <Header
       containerStyle={{
-        backgroundColor: 'transparent', // Keep background transparent if needed
+        backgroundColor: 'transparent', 
         paddingHorizontal: 30,
-
-        borderBottomWidth: 0, // Remove border if not needed
+        borderBottomWidth: 0,
       }}
       leftComponent={
         <TouchableOpacity>
@@ -25,7 +27,7 @@ const HeaderComponent = () => {
         </TouchableOpacity>
       }
       rightComponent={
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')}> {/* ✅ Navigate to ProfileScreen */}
           <Rightlogo width={50} height={50} />
         </TouchableOpacity>
       }
