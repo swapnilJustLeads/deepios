@@ -32,6 +32,32 @@ export const fetchUsers = async () => {
   }
 };
 
+export const getUserDetails = async (userId) => {
+ try {
+    console.log(`📢 Fetching Firestore data for UID: ${userId}`);
+
+    // 🔥 Query Firestore: Find user where `authId` matches UID
+    const usersCollectionRef = collection(getFirestore(), "users");
+    const q = query(usersCollectionRef, where("authId", "==", userId));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.warn("⚠️ No user data found for UID:", userId);
+      return null;
+    }
+
+    // ✅ Extract user document data
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+    console.log("✅ Firestore User Data:", userData);
+
+    return { id: userDoc.id, ...userData };
+  } catch (error) {
+    console.error("❌ Firestore Error:", error);
+    throw error;
+  }
+};
+
 // ✅ Add new user (Updated)
 export const addUser = async (user) => {
   try {
@@ -42,7 +68,7 @@ export const addUser = async (user) => {
     const userDocRef = doc(FirestoreDB, COLLECTIONS.USERS, user.username);
     const userSnapshot = await getDoc(userDocRef);
 
-    if (userSnapshot.exists()) {
+    if (userSnapshot.exists) {
       throw new Error('Username already exists.');
     }
 
@@ -107,7 +133,7 @@ export const updateUser = async (id, updatedUser) => {
     const userDocRef = doc(FirestoreDB, 'users', id);
     const userSnapshot = await getDoc(userDocRef);
 
-    if (!userSnapshot.exists()) {
+    if (!userSnapshot.exists) {
       throw new Error('User does not exist.');
     }
 
@@ -126,7 +152,7 @@ export const deleteUser = async (id) => {
     const userDocRef = doc(FirestoreDB, 'users', id);
     const userSnapshot = await getDoc(userDocRef);
 
-    if (!userSnapshot.exists()) {
+    if (!userSnapshot.exists) {
       throw new Error('User does not exist.');
     }
 

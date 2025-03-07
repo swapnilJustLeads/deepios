@@ -6,9 +6,11 @@ import { useUserDetailsContext } from '../context/UserDetailsContext';
 import { useAuth } from '../firebase/hooks/auth';
 import Toast from 'react-native-toast-message';
 import HeaderComponent from '../components/HeaderComponent';
-import { ProfileForm } from '../components/ProfileForm';
+import { EmailChangeComponent, PasswordForm, ProfileForm, ProfilePicChange } from '../components/ProfileForm';
+import LanguageThemeLogout from '../components/LangaugeThemeButton';
 
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 const buttonWidth = (screenWidth - 48) / 2;
 
 const ProfileScreen = () => {
@@ -16,15 +18,28 @@ const ProfileScreen = () => {
   const { userDetails, updateUserDetails } = useUserDetailsContext();
   const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [currTab, setCurrTab] = useState(''); // This will determine which form to show
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [currTab, setCurrTab] = useState('');
+
+  useEffect(() => {
+    console.log('🔍 Current userDetails from context:', userDetails);
+
+    if (userDetails) {
+      setFirstName(userDetails.firstName || '');
+      setLastName(userDetails.lastName || '');
+    }
+  }, [userDetails]);
 
   const handleUpdateUser = async () => {
     try {
       await updateUserDetails({ firstName, lastName });
+      console.log('✅ User details updated successfully:', { firstName, lastName });
+
       Toast.show({ type: 'success', text1: t('toastMessages.userDetailsUpdatedSuccess') });
-      setCurrTab(''); // Hide the form after updating
+      setCurrTab('');
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('❌ Error updating user:', error);
       Toast.show({ type: 'error', text1: t('toastMessages.failedToUpdateUserDetails') });
     }
   };
@@ -33,38 +48,33 @@ const ProfileScreen = () => {
     { title: 'CHANGE NAME', key: 'changeName' },
     { title: 'CHANGE PASSWORD', key: 'changePassword' },
     { title: 'CHANGE PROFILE PICTURE', key: 'changeProfilePicture' },
-    { title: 'BODY WEIGHT', key: 'bodyWeight' },
+    { title: 'EMAIL CHANGE', key: 'emailchange' },
   ];
 
   const renderOptionButton = ({ item }) => (
     <Button
-      title={item.title}
-      titleStyle={[
-        styles.optionText,
-        currTab === item.key && { color: '#000' },
-      ]}
+      title={
+        <Text style={[
+          styles.optionText,
+          currTab === item.key && styles.activeOptionText
+        ]}>
+          {item.title}
+        </Text>
+      }
       buttonStyle={[
         styles.optionButton,
-        currTab === item.key && { backgroundColor: '#00E5FF' },
-        { width: buttonWidth,
-          height: 24,
-          borderRadius: 8,
-          paddingTop: 6,
-          paddingBottom: 6, },
+        currTab === item.key && styles.activeOptionButton
       ]}
-     
       onPress={() => {
-        setCurrTab(item.key === currTab ? '' : item.key); // Toggle the form display
+        setCurrTab(item.key === currTab ? '' : item.key);
       }}
     />
   );
 
   return (
     <View style={styles.container}>
-      {/* ✅ Header */}
       <HeaderComponent />
 
-      {/* ✅ Grid Layout for Buttons */}
       <FlatList
         data={options}
         numColumns={2}
@@ -73,44 +83,28 @@ const ProfileScreen = () => {
         renderItem={renderOptionButton}
       />
 
-      {/* ✅ Centered Form View (Only Visible When Button Clicked) */}
       {currTab !== '' && (
         <View style={styles.centeredFormContainer}>
-          <Text h4 style={styles.formTitle}>
-            {currTab === 'changeName' ? 'CHANGE NAME' : 
-             currTab === 'changePassword' ? 'CHANGE PASSWORD' : 
-             currTab === 'changeProfilePicture' ? 'CHANGE PROFILE PICTURE' :
-             currTab === 'bodyWeight' ? 'BODY WEIGHT' : 'UPDATE INFO'}
-          </Text>
-
-          {/* Conditionally Render Forms */}
           {currTab === 'changeName' && (
             <ProfileForm user={userDetails} updateUser={handleUpdateUser} isSaving={loading} />
           )}
 
           {currTab === 'changePassword' && (
-            <>
-              <Input placeholder="Current Password" secureTextEntry />
-              <Input placeholder="New Password" secureTextEntry />
-              <Input placeholder="Confirm New Password" secureTextEntry />
-            </>
+            <PasswordForm />
           )}
 
           {currTab === 'changeProfilePicture' && (
-            <Text>Profile picture selection coming soon</Text>
+            <ProfilePicChange />
           )}
 
-          {currTab === 'bodyWeight' && (
-            <>
-              <Input placeholder="Enter your weight" keyboardType="numeric" />
-              <Text>Select your weight unit</Text>
-            </>
+          {currTab === 'emailchange' && (
+            <EmailChangeComponent />
           )}
-
-          {/* Save Button */}
-          <Button title="SAVE" onPress={handleUpdateUser} buttonStyle={styles.saveButton} />
         </View>
       )}
+
+      {/* Language & Theme Component positioned at 80% of screen height */}
+      <LanguageThemeLogout style={styles.languageThemeContainer} />
 
       <Toast />
     </View>
@@ -118,44 +112,53 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#D3D3D3', alignItems: 'center', paddingTop: 20 },
-  row: { justifyContent: 'space-between', marginBottom: 10 },
-
-  // ✅ Grid Buttons
+  container: { 
+    flex: 1, 
+    backgroundColor: '#D3D3D3', 
+    alignItems: 'center', 
+    paddingTop: 20 
+  },
+  row: { 
+    justifyContent: 'space-between', 
+    marginBottom: 10 
+  },
   optionButton: {
     flex: 1,
     margin: 5,
     backgroundColor: '#fff',
     borderRadius: 10,
+    width: buttonWidth,
+    height: 30,
+    paddingTop: 6,
+    paddingBottom: 6,
+    marginVertical:2
   },
-  optionText: { fontSize: 12, fontWeight: 'bold', color: '#000' },
-
-  // ✅ Centered Form (Replaces Modal)
+  activeOptionButton: {
+    backgroundColor: '#00E5FF'
+  },
+  optionText: { 
+    color: 'black',
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  activeOptionText: {
+    fontFamily: 'Inter',
+    fontSize: 10,
+    fontWeight: '900',
+  },
   centeredFormContainer: {
     position: 'absolute',
-    top: '40%', // Center on screen
-    left: '10%',
-    right: '10%',
-    width: '80%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: 'center',
+    top: '40%'
   },
-
-  formTitle: { fontWeight: 'bold', marginBottom: 10 },
-
-  // ✅ Save Button
-  saveButton: {
-    backgroundColor: '#000',
-    width: '100%',
-    marginTop: 10,
-  },
+  languageThemeContainer: {
+    position: 'absolute',
+    bottom: screenHeight * 0.15, // 80% from top, 20% from bottom
+    alignSelf: 'center',
+    // width:buttonWidth,
+    backgroundColor:'transparent'
+  }
 });
 
 export default ProfileScreen;

@@ -102,6 +102,11 @@ const styles = StyleSheet.create({
   },
   selectedTab: {
     backgroundColor: '#00E5FF',
+    borderBottomLeftRadius:30,
+    borderTopLeftRadius:30,
+    borderBottomRightRadius:30,
+    borderTopRightRadius:30
+    
   },
   tabText: {
     fontSize: 9,

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'; // ✅ Import navigati
 import Dashboardlogo from '../assets/images/dashboardlogo.svg';
 import Rightlogo from '../assets/images/rightlogo.svg';
 import LeftLogo from '../assets/images/LeftLogo.svg';
+import Navigation from '../navigation/Navigation';
 
 const HeaderComponent = () => {
   const navigation = useNavigation(); // ✅ Get navigation instance
@@ -12,9 +13,6 @@ const HeaderComponent = () => {
   return (
     <Header
       containerStyle={{
-        backgroundColor: 'transparent', 
-        paddingHorizontal: 30,
-        borderBottomWidth: 0,
         backgroundColor: 'transparent', // Keep background transparent if needed
         // paddingHorizontal: 30,
 
@@ -31,8 +29,8 @@ const HeaderComponent = () => {
         </TouchableOpacity>
       }
       rightComponent={
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')}> {/* ✅ Navigate to ProfileScreen */}
-          <Rightlogo width={50} height={50} />
+        <TouchableOpacity style={{ marginRight:9, marginTop:5}} onPress={()=>navigation.navigate('Profile')}>
+          <Rightlogo width={33} height={33} />
         </TouchableOpacity>
       }
     />

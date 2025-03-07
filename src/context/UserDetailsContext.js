@@ -21,7 +21,16 @@ export const UserDetailsProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { globalLoading, setGlobalLoading } = useGlobalContext();
-
+  useEffect(() => {
+    if (user && user.uid) {
+      console.log("👤 User from useAuth():", user);
+  
+      // ✅ Fetch user details using UID
+      fetchUserDetails(user.uid);
+    }
+  }, [user]);
+  
+  
   useEffect(() => {
     if (user) {
       fetchUserDetails(user.uid); // Fetch user details using the authenticated user's ID
