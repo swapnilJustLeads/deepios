@@ -8,7 +8,8 @@ import {
   ScrollView,
 } from 'react-native';
 
-const WorkoutForm = (props) => {
+
+const WorkoutForm = props => {
   // State for selected values
   const [category, setCategory] = useState('Back');
   const [exercise, setExercise] = useState('Barbell Deadlift');
@@ -57,6 +58,7 @@ const WorkoutForm = (props) => {
       <SectionTitles titles={['Category', 'Exercise']} />
       <View style={styles.section}>
         <Dropdown
+        
           value={category}
           onPress={() => console.log('Category dropdown pressed')}
           width="48%"
@@ -127,21 +129,14 @@ const WorkoutForm = (props) => {
           titleStyle={{color: 'black'}}
         />
         <Button
-        onPress={props.addButton}
+          onPress={props.addButton}
           title="Add"
           buttonStyle={styles.addButton}
           titleStyle={styles.addButtonText}
         />
-        {/* <TouchableOpacity style={styles.templateButton} onPress={() => console.log('Add template')}>
-          <Text style={styles.templateButtonText}>ADD TEMPLATE</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.templateButton} onPress={() => console.log('Save template')}>
-          <Text style={styles.templateButtonText}>SAVE TEMPLATE</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.addButton} onPress={() => console.log('Add workout')}>
-          <Text style={styles.addButtonText}>ADD</Text>
-        </TouchableOpacity> */}
+       
       </View>
+     
     </View>
   );
 };
@@ -156,13 +151,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
+
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   sectionTitleWrapper: {
-    width: '42%', // Each takes up half the space minus a bit of margin
+    width: '51%', // Each takes up half the space minus a bit of margin
   },
   sectionTitle: {
     color: 'white',

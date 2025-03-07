@@ -10,10 +10,15 @@ import LoginScreen from '../screens/auth/LoginScreen';
 
 // SVG Imports (Ensure correct paths)
 import DashboardIcon from '../assets/images/DashboardIcon.svg';
+import LogoBlack from '../assets/images/logo-black.svg';
 import Supplement from '../assets/images/suppliment.svg';
+import SupplementBlue from '../assets/images/supplement-blue.svg';
 import Bardumble from '../assets/images/bardumble.svg';
+import BardumbleBlue from '../assets/images/workout-blue.svg';
 import Cardio from '../assets/images/cardio.svg';
+import CardioBlue from '../assets/images/cardio-blue.svg';
 import Recovery from '../assets/images/recovery.svg';
+import RecoveryBlue from '../assets/images/recovery-blue.svg';
 import WorkoutScreen from '../screens/WorkoutScreen';
 import SupplementScreen from '../screens/SupplementScreen';
 import RecoveryScreen from '../screens/RecoveryScreen';
@@ -23,91 +28,104 @@ import {Text, View} from 'react-native';
 // Stack & Tab Navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const TabIcon = ({icon: IconComponent, label, focused}) => {
+
+const TabIcon = ({icon, iconFocused, label, focused}) => {
+  const IconComponent = focused ? iconFocused : icon;
+  const iconSize = label === 'Home' ? (focused ? 51 : 36) : 28; // Bigger size for Home icon
+
   return (
-    <View style={{alignItems: 'center'}}>
-      <IconComponent width={focused ? 28 : 24} height={focused ? 28 : 24} />
-      <Text
-        style={{
-          fontSize: 12,
-          color: focused ? 'black' : 'gray',
-          marginTop: 4,
-          fontFamily: 'Stomic',
-        }}>
-        {label}
-      </Text>
+    <View style={{alignItems: 'center', width: 70}}>
+      {' '}
+      {/* Ensure enough space */}
+      <IconComponent width={iconSize} height={iconSize} />
+      {label !== 'Home' && (
+        <Text
+          style={{
+            fontFamily: 'Stomic',
+            fontSize: 16,
+            lineHeight:24,
+            fontWeight: '400',
+            color: focused ? '#00E5FF' : '#000000',
+            textTransform: 'uppercase',
+            textAlign: 'center', // Prevents wrapping
+        
+          }}
+          numberOfLines={1} // Force single line
+        >
+          {label}
+        </Text>
+      )}
     </View>
   );
 };
+
 // ✅ Bottom Tab Navigator (Tabs are only shown after login)
 const BottomTabNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
+      screenOptions={{
         headerShown: false, // Hide top header
         tabBarShowLabel: false, // Hide labels
         tabBarStyle: {
           backgroundColor: 'white',
-          height: 70,
-          // borderTopWidth: 0,
+          height: 80,
           elevation: 10,
-          paddingTop:9
+          paddingTop: 15,
         },
-        tabBarIcon: ({focused}) => {
-          let IconComponent;
-          let size = focused ? 48 : 24;
-          // CardioScreen
-          if (route.name === 'Home') {
-            IconComponent = <DashboardIcon width={size} height={size} />;
-          } else if (route.name === 'Profile') {
-            IconComponent = <Cardio width={size} height={size} />;
-          } else if (route.name === 'Recovery') {
-            IconComponent = <Recovery width={size} height={size} />;
-          } else if (route.name === 'Workout') {
-            IconComponent = <Bardumble width={size} height={size} />;
-          } else if (route.name === 'Cardio') {
-            IconComponent = <Cardio width={size} height={size} />;
-          } else if (route.name === 'Supplement') {
-            IconComponent = <Recovery width={size} height={size} />;
-          }
-
-          return IconComponent;
-        },
-      })}>
+      }}>
       <Tab.Screen
         name="Workout"
         component={WorkoutScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon icon={Bardumble} label="Workout" focused={focused} />
+            <TabIcon
+              icon={Bardumble}
+              iconFocused={BardumbleBlue}
+              label="Workout"
+              focused={focused}
+            />
           ),
         }}
       />
       <Tab.Screen
         name="Recovery"
+        component={RecoveryScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon icon={Recovery} label="Recovery" focused={focused} />
+            <TabIcon
+              icon={Recovery}
+              iconFocused={RecoveryBlue}
+              label="Recovery"
+              focused={focused}
+            />
           ),
         }}
-        component={RecoveryScreen}
       />
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon icon={DashboardIcon} label="Recovery" focused={focused} />
+            <TabIcon
+              icon={LogoBlack}
+              iconFocused={DashboardIcon}
+              label="Home"
+              focused={focused}
+            />
           ),
         }}
       />
-
       <Tab.Screen
         name="Cardio"
         component={CardioScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon icon={Cardio} label="Cardio" focused={focused} />
+            <TabIcon
+              icon={Cardio}
+              iconFocused={CardioBlue}
+              label="Cardio"
+              focused={focused}
+            />
           ),
         }}
       />
@@ -116,7 +134,12 @@ const BottomTabNavigator = () => {
         component={SupplementScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon icon={Supplement} label="Recovery" focused={focused} />
+            <TabIcon
+              icon={Supplement}
+              iconFocused={SupplementBlue}
+              label="Supplement"
+              focused={focused}
+            />
           ),
         }}
       />

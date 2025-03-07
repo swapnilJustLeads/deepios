@@ -9,6 +9,8 @@ import DefaultButton from '../components/DefaultButton';
 import WorkoutListComponent from '../components/WorkoutListComponent';
 import WorkoutForm from '../components/WorkoutForm';
 import RecoveryCard from '../components/RecoveryCard';
+import BottomNavigation from '../components/BottomNavigation';
+import RecoveryComponent from '../components/RecoveryComponent';
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false)
@@ -27,10 +29,12 @@ const RecoveryScreen = () => {
       <HeaderComponent />
       {showForm ?  <WorkoutForm /> : 
       <>
-       <RecoveryCard
+      <RecoveryComponent />
+       {/* <RecoveryCard
         image={<Recovery width={50} height={50} />}
         name="Recovery"
-      />
+      /> */}
+    
       {/* <HorizontalDatePicker /> */}
       {/* <DefaultButton
       onPress={()=> setshowForm(true)}

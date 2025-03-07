@@ -8,9 +8,11 @@ import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import DefaultButton from '../components/DefaultButton';
 import WorkoutListComponent from '../components/WorkoutListComponent';
 import WorkoutForm from '../components/WorkoutForm';
+import WorkoutLayout from '../components/WorkoutLayout';
+import {Button} from '@rneui/themed';
 
 const WorkoutScreen = () => {
-  const [showForm, setshowForm] = useState(false)
+  const [showForm, setshowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -24,25 +26,35 @@ const WorkoutScreen = () => {
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      {showForm ?  <WorkoutForm  addButton={()=> setshowForm(false) } /> : 
-      <>
-       <WorkoutCard
-        image={<Bardumble width={42} height={42}  />}
-        name="Workout"
-      />
-      <HorizontalDatePicker />
-      <DefaultButton
-       onPress={()=> setshowForm(true)}
-       title="NEW WORKOUT"
-       alignSelf="center"
-       bottom={24}
-       position="absolute"
-      />
-      <WorkoutListComponent />
-      </>
-      }
-     
-     
+      {showForm ? (
+        <WorkoutForm addButton={() => setshowForm(false)} />
+      ) : (
+        <>
+          <WorkoutCard
+            image={<Bardumble width={42} height={42} />}
+            name="Workout"
+          />
+          <HorizontalDatePicker />
+          <DefaultButton
+            onPress={() => setshowForm(true)}
+            title="NEW WORKOUT"
+            alignSelf="center"
+            bottom={24}
+            position="absolute"
+          />
+          <WorkoutLayout />
+          <View style={styles.bottomButton}>
+            {/* <CustomButton /> */}
+            {/* <Button
+              onPress={() => setshowForm(true)}
+              buttonStyle={styles.buttonStyle}
+              title="New Intake"
+              style={[styles.buttonContainer]}
+              titleStyle={styles.buttonTextStyle}
+            /> */}
+          </View>
+        </>
+      )}
     </View>
   );
 };

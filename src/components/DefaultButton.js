@@ -13,7 +13,7 @@ const DefaultButton = ({title, alignSelf, onPress, position, bottom}) => {
         styles.container,
         alignSelf ? {alignSelf} : null,
         position ? {position} : null,
-        bottom !== undefined ? {bottom} : null, // Allows bottom: 0 as well
+        bottom !== undefined ? {bottom} : null,
       ]}
     />
   );
