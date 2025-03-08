@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 6,
     backgroundColor: '#ffffff',
-    bo
   },
   activeLanguage: {
     backgroundColor: '#00e5ff',

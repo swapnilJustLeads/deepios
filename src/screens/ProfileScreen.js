@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useUserDetailsContext } from '../context/UserDetailsContext';
 import { useAuth } from '../firebase/hooks/auth';
 import Toast from 'react-native-toast-message';
+import ImagePicker from 'react-native-image-crop-picker';
 import HeaderComponent from '../components/HeaderComponent';
+import { uploadProfilePicture } from '../firebase/firebase_client';
 import { EmailChangeComponent, PasswordForm, ProfileForm, ProfilePicChange } from '../components/ProfileForm';
 import LanguageThemeLogout from '../components/LangaugeThemeButton';
 
@@ -20,6 +22,7 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const[profileImage,setProfileImage] = useState('')
   const [currTab, setCurrTab] = useState('');
 
   useEffect(() => {
@@ -28,6 +31,7 @@ const ProfileScreen = () => {
     if (userDetails) {
       setFirstName(userDetails.firstName || '');
       setLastName(userDetails.lastName || '');
+      setProfileImage(userDetails.profilePicture || '')
     }
   }, [userDetails]);
 
@@ -44,6 +48,34 @@ const ProfileScreen = () => {
     }
   };
 
+  const handleEditPress = async () => {
+    try {
+      const image = await ImagePicker.openPicker({
+        width: 300,
+        height: 300,
+        cropping: true,
+        compressImageQuality: 0.8,
+      });
+  
+      // Debug log the image object to see its structure
+      console.log('Image picker result:', image);
+      console.log('Image path:', image.path);
+  
+      setLoading(true);
+      
+      // Make sure we're passing the correct parameters in the correct order
+      const uploadedUrl = await uploadProfilePicture(userDetails.username, image.path);
+      
+      await updateUserDetails({ profilePicture: uploadedUrl });
+  
+      setLoading(false);
+      console.log('✅ Profile picture updated successfully!');
+    } catch (error) {
+      console.error('❌ Error updating profile picture:', error);
+      setLoading(false);
+    }
+  };
+  
   const options = [
     { title: 'CHANGE NAME', key: 'changeName' },
     { title: 'CHANGE PASSWORD', key: 'changePassword' },
@@ -70,7 +102,6 @@ const ProfileScreen = () => {
       }}
     />
   );
-
   return (
     <View style={styles.container}>
       <HeaderComponent />
@@ -94,11 +125,11 @@ const ProfileScreen = () => {
           )}
 
           {currTab === 'changeProfilePicture' && (
-            <ProfilePicChange />
+            <ProfilePicChange profileImage={profileImage} onEditPress={handleEditPress}/>
           )}
 
           {currTab === 'emailchange' && (
-            <EmailChangeComponent />
+            <EmailChangeComponent onSave={handleUpdateUser}/>
           )}
         </View>
       )}

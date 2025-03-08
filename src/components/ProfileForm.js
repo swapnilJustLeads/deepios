@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, StyleSheet, TextInput, ActivityIndicator ,Image,TouchableOpacity} from 'react-native';
 import { Button, Text ,Input} from '@rneui/themed';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +7,22 @@ import { useTranslation } from 'react-i18next';
 export const ProfileForm = ({ user, updateUser, isSaving }) => {
   const { t } = useTranslation();
   const [userData, setUserData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
+    firstName: '',
+    lastName: '',
+    profileImage: '',
   });
+
+  useEffect(() => {
+    if (user) {
+      setUserData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        profileImage: user.profileImage || 'https://your-default-image-url.com/profile.png',
+      });
+    }
+  }, [user]);
   const [loading, setLoading] = useState(false);
+  
 
   const handleSave = async () => {
     setLoading(true);
@@ -163,11 +175,8 @@ export const PasswordForm = ({ changePassword, reauthenticate }) => {
     </View>
   );
 };
-export const ProfilePicChange = ({ profileImage = 'https://dashboard.codeparrot.ai/api/image/Z8qq97wkNXOiaWFI/profile.png' }) => {
-  const handleEditPress = () => {
-    // Handle edit profile picture functionality
-    console.log('Edit profile picture');
-  };
+export const ProfilePicChange = ({ profileImage ,onEditPress}) => {
+  console.log("here is dp bro",profileImage)
 
   return (
     <View style={styles.container1}>
@@ -179,7 +188,7 @@ export const ProfilePicChange = ({ profileImage = 'https://dashboard.codeparrot.
         />
         <TouchableOpacity 
           style={styles.editButton}
-          onPress={handleEditPress}
+          onPress={onEditPress} 
           activeOpacity={0.8}
         >
           <Image

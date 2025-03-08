@@ -2981,6 +2981,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNCPicker (2.11.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNDateTimePicker (8.3.0):
     - DoubleConversion
     - glog
@@ -3028,6 +3049,36 @@ PODS:
     - React-debug
     - React-Fabric
     - React-FabricComponents
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - RNImageCropPicker (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
+    - TOCropViewController (~> 2.7.4)
+  - RNImageCropPicker/QBImagePickerController (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - TOCropViewController (~> 2.7.4)
+  - RNPermissions (5.2.6):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
     - React-featureflags
     - React-graphics
     - React-ImageManager
@@ -3268,6 +3319,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - SocketRocket (0.7.1)
+  - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -3346,12 +3398,15 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
+  - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
   - "RNFBStorage (from `../node_modules/@react-native-firebase/storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -3381,6 +3436,7 @@ SPEC REPOS:
     - nanopb
     - RecaptchaInterop
     - SocketRocket
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   boost:
@@ -3520,6 +3576,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
+  RNCPicker:
+    :path: "../node_modules/@react-native-picker/picker"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNFBApp:
@@ -3532,6 +3590,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/storage"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNImageCropPicker:
+    :path: "../node_modules/react-native-image-crop-picker"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -3632,19 +3694,23 @@ SPEC CHECKSUMS:
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   RNCAsyncStorage: 320c8b9217695928a64d8ae993653425c8605368
   RNCMaskedView: ca5c7d2db3015c15e6e06522bdd921cc50a7cf44
+  RNCPicker: 4f336c7d99a43802c0e2b51c8cbe0c32b1e3d3e3
   RNDateTimePicker: 0037a03f1099b7745f0a37d994b029204405dff3
   RNFBApp: 526e8bbb0d358b95c3068bc4c26ceb43a34f467d
   RNFBAuth: 6a452581dfe300754011203b4a10cb1d2d177b60
   RNFBFirestore: 3ff7c559fef570b2546c03129d7b7ab5b8fba8ff
   RNFBStorage: cc577d18d6757b0bd8691ea30da964128cc54ba3
   RNGestureHandler: 0a16f3f13829c01268ae55610a40b57b713c8161
+  RNImageCropPicker: 64b6bec9ec185ee59b71a93d7058816bd0e1916e
+  RNPermissions: 90dd8ce5f2a4856f2272a9f998f2f971d6495f9c
   RNReanimated: c9f295fb1679867288d238bfaf3ea39225c95e1b
   RNScreens: 77f93ec55b749c49549b447527ebf78e990125f3
   RNSVG: 05776cf3f0d52d3f8e7ebee34b2189da7b8638ff
   RNVectorIcons: f3e9354fca73876447d183d4b18955e52cd3695c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: be02ca501b03c79d7027a6bbbd0a8db985034f11
 
-PODFILE CHECKSUM: 08e507520ed480b798e12c2e2e5cce981c7d5215
+PODFILE CHECKSUM: 0784560b44cfe762a6f43ec77e25e6f87b9dc52a
 
 COCOAPODS: 1.16.2
