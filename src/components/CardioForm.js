@@ -1,19 +1,20 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
+import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import {Button, Text} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
 
-const WorkoutForm = props => {
+const CardioForm = (props) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
-  const [sets, setSets] = useState(null);
-  const [hours, setHours] = useState('07');
-  const [minutes, setMinutes] = useState('19');
-  const [reps, setReps] = useState(['3', '5', '10', '11', '7']);
-  const [weights, setWeights] = useState(['5', '5', '4.5', '4', '4.5']);
+  const [hours, setHours] = useState('09');
+  const [minutes, setMinutes] = useState('35');
+  const [intensity, setIntensity] = useState('km/h');
+  const [rounds, setRounds] = useState('%');
+  // Added state location field
+  const [location, setLocation] = useState('');
 
   // Sample data for dropdowns
   const categoryData = [
@@ -34,10 +35,15 @@ const WorkoutForm = props => {
     {label: 'Pull-ups', value: 'pull_ups'},
   ];
 
-  const setsData = Array.from({length: 10}, (_, i) => {
-    const val = (i + 1).toString();
-    return {label: val, value: val};
-  });
+  // Added state/location data
+  const locationData = [
+    {label: 'Select State', value: ''},
+    {label: 'New York', value: 'NY'},
+    {label: 'California', value: 'CA'},
+    {label: 'Texas', value: 'TX'},
+    {label: 'Florida', value: 'FL'},
+    {label: 'Illinois', value: 'IL'},
+  ];
 
   const hoursData = Array.from({length: 24}, (_, i) => {
     const val = i.toString().padStart(2, '0');
@@ -46,17 +52,6 @@ const WorkoutForm = props => {
 
   const minutesData = Array.from({length: 60}, (_, i) => {
     const val = i.toString().padStart(2, '0');
-    return {label: val, value: val};
-  });
-
-  // Data for reps and weights dropdowns
-  const repsData = Array.from({length: 20}, (_, i) => {
-    const val = (i + 1).toString();
-    return {label: val, value: val};
-  });
-
-  const weightsData = Array.from({length: 40}, (_, i) => {
-    const val = (i * 0.5 + 0.5).toFixed(1);
     return {label: val, value: val};
   });
 
@@ -69,40 +64,26 @@ const WorkoutForm = props => {
     );
   };
 
-  // Update reps and weights based on sets
-  const updateFormArrays = newSets => {
-    const setsNumber = parseInt(newSets, 10) || 0;
-    // Adjust reps array
-    const newReps = [...reps];
-    while (newReps.length < setsNumber) {
-      newReps.push('5');
-    }
-    while (newReps.length > setsNumber) {
-      newReps.pop();
-    }
-    setReps(newReps);
-
-    // Adjust weights array
-    const newWeights = [...weights];
-    while (newWeights.length < setsNumber) {
-      newWeights.push('5');
-    }
-    while (newWeights.length > setsNumber) {
-      newWeights.pop();
-    }
-    setWeights(newWeights);
+  const handleAddTemplate = () => {
+    console.log('Add Template pressed');
   };
 
-  const updateRep = (index, value) => {
-    const newReps = [...reps];
-    newReps[index] = value;
-    setReps(newReps);
+  const handleSaveTemplate = () => {
+    console.log('Save Template pressed');
   };
 
-  const updateWeight = (index, value) => {
-    const newWeights = [...weights];
-    newWeights[index] = value;
-    setWeights(newWeights);
+  const handleAdd = () => {
+    console.log('Add pressed');
+    // Collect and send all form data here
+    const formData = {
+      category,
+      exercise,
+      location, // Added location to form data
+      time: `${hours}:${minutes}`,
+      intensity,
+      rounds,
+    };
+    console.log('Form data:', formData);
   };
 
   return (
@@ -144,28 +125,8 @@ const WorkoutForm = props => {
         </View>
       </View>
 
-      {/* Second Row: Sets and Time */}
+      {/* Second Row: Time, Time(min), Intensity, Rounds */}
       <View style={styles.middleRow}>
-        <View style={styles.setsColumn}>
-          <Text style={styles.label}>Sets</Text>
-          <Dropdown
-            style={styles.setsDropdown}
-            placeholderStyle={styles.selectedText}
-            selectedTextStyle={styles.selectedText}
-            data={setsData}
-            labelField="label"
-            valueField="value"
-            placeholder="Sets"
-            value={sets}
-            onChange={item => {
-              setSets(item.value);
-              updateFormArrays(item.value);
-            }}
-            renderItem={renderDropdownItem}
-            renderRightIcon={() => <Down height={10} width={10} />}
-          />
-        </View>
-
         <View style={styles.timeColumn}>
           <Text style={styles.label}>Time</Text>
           <View style={styles.timeContainer}>
@@ -195,60 +156,47 @@ const WorkoutForm = props => {
             />
           </View>
         </View>
-      </View>
 
-      {/* Reps Row */}
-      <View style={styles.repWeightSection}>
-        <Text style={styles.label}>Reps</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.scrollableContainer}>
-            {reps.map((rep, index) => (
-              <Dropdown
-                key={`rep-${index}`}
-                style={styles.repWeightDropdown}
-                placeholderStyle={styles.selectedText}
-                selectedTextStyle={styles.selectedText}
-                data={repsData}
-                labelField="label"
-                valueField="value"
-                value={rep}
-                onChange={item => updateRep(index, item.value)}
-                renderItem={renderDropdownItem}
-                renderRightIcon={() => <Down height={10} width={10} />}
+        <View style={styles.rightColumns}>
+          <View style={styles.smallColumn}>
+            <Text style={styles.label}>Time</Text>
+            <View style={styles.minContainer}>
+              <TextInput
+                style={styles.minInput}
+                value="min."
+                editable={false}
               />
-            ))}
+            </View>
           </View>
-        </ScrollView>
-      </View>
 
-      {/* Weights Row */}
-      <View style={styles.repWeightSection}>
-        <Text style={styles.label}>Weights</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.scrollableContainer}>
-            {weights.map((weight, index) => (
-              <Dropdown
-                key={`weight-${index}`}
-                style={styles.repWeightDropdown}
-                placeholderStyle={styles.selectedText}
-                selectedTextStyle={styles.selectedText}
-                data={weightsData}
-                labelField="label"
-                valueField="value"
-                value={weight}
-                onChange={item => updateWeight(index, item.value)}
-                renderItem={renderDropdownItem}
-                renderRightIcon={() => <Down height={10} width={10} />}
+          <View style={styles.smallColumn}>
+            <Text style={styles.label}>Speed</Text>
+            <View style={styles.intensityContainer}>
+              <TextInput
+                style={styles.intensityInput}
+                value={intensity}
+                onChangeText={setIntensity}
               />
-            ))}
+            </View>
           </View>
-        </ScrollView>
+
+          <View style={styles.smallColumn}>
+            <Text style={styles.label}>Incline</Text>
+            <View style={styles.roundsContainer}>
+              <TextInput
+                style={styles.roundsInput}
+                value={rounds}
+                onChangeText={setRounds}
+              />
+            </View>
+          </View>
+        </View>
       </View>
 
       {/* Buttons Row */}
       <View style={styles.buttonRow}>
         <Button
-          onPress={() => console.log('Add Template pressed')}
+          onPress={handleAddTemplate}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -259,7 +207,7 @@ const WorkoutForm = props => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={() => console.log('Save Template pressed')}
+          onPress={handleSaveTemplate}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -270,23 +218,30 @@ const WorkoutForm = props => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={props.addButton}
-          buttonStyle={styles.buttonStyle}
+          onPress={handleAdd}
+          buttonStyle={[styles.buttonStyle]}
           title="ADD"
           titleStyle={styles.buttonTextStyle}
         />
       </View>
       <Summary />
-      <View style={styles.bottomButton}>
+      <View style={styles.bottomButtonRow}>
+        {/* <CustomButton /> */}
         <Button
-          onPress={() => {
-            if (props.onSave) {
-              props.onSave();
-            } else {
-              console.log('Save pressed');
-            }
-          }}
-          buttonStyle={styles.buttonStyle}
+      
+          onPress={() => setshowForm(true)}
+          buttonStyle={[
+            styles.buttonStyle,
+            {
+              backgroundColor: '#fff',
+            },
+          ]}
+          title="Delete"
+          titleStyle={styles.buttonTextStyle}
+        />
+        <Button
+          onPress={props.save}
+          buttonStyle={[styles.buttonStyle]}
           title="Save"
           titleStyle={styles.buttonTextStyle}
         />
@@ -305,27 +260,32 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 15,
   },
   middleRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 6,
+    justifyContent: 'space-between',
   },
   column: {
     width: '48%',
   },
-  setsColumn: {
-    // width: '30%',
-  },
   timeColumn: {
-    width: '65%',
+    width: '30%',
+  },
+  rightColumns: {
+    flexDirection: 'row',
+    width: '50%',
+    justifyContent: 'space-between',
+  },
+  smallColumn: {
+    // backgroundColor:'red'
+    // width: '31%',
   },
   label: {
     fontSize: 14,
     fontWeight: '800',
     color: 'white',
-    marginBottom: 6,
+    marginBottom: 8,
     fontFamily: 'Inter',
   },
   dropdown: {
@@ -337,16 +297,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingRight: 10,
     justifyContent: 'center',
-  },
-  setsDropdown: {
-    height: 30,
-    backgroundColor: 'white',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-    width: 55,
   },
   placeholderText: {
     color: '#000',
@@ -368,12 +318,11 @@ const styles = StyleSheet.create({
   },
   timeContainer: {
     flexDirection: 'row',
-    gap: 6,
-    // justifyContent: 'space-between',
+    justifyContent: 'space-between',
   },
   timeDropdown: {
     height: 30,
-    width: 51,
+    width: '47%',
     backgroundColor: 'white',
     borderRadius: 6,
     borderWidth: 1,
@@ -381,27 +330,75 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'center',
   },
-  repWeightSection: {
-    marginBottom: 6,
-  },
-  scrollableContainer: {
-    flexDirection: 'row',
-  },
-  repWeightDropdown: {
+  minContainer: {
     height: 30,
-    width: 55,
+    // width:36
+  },
+  minInput: {
+    height: 30,
     backgroundColor: 'white',
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginRight: 8,
-    paddingHorizontal: 8,
-    justifyContent: 'center',
+    textAlign: 'center',
+    fontSize: 14,
+    width: 55,
+  },
+  intensityContainer: {
+    height: 50,
+  },
+  intensityInput: {
+    height: 30,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#000',
+    width: 55,
+  },
+  roundsContainer: {
+    height: 50,
+  },
+  roundsInput: {
+    height: 30,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#000',
+    width: 55,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 5,
+  },
+  templateButton: {
+    width: 163,
+    height: 30,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  templateButtonText: {
+    color: 'black',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  addButton: {
+    width: 163,
+    height: 30,
+    backgroundColor: '#5acef7',
+    borderRadius: 6,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   buttonStyle: {
     width: 103,
@@ -418,11 +415,15 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     textAlign: 'center',
   },
-  bottomButton: {
+  bottomButtonRow: {
     position: 'absolute',
     bottom: 21,
-    alignSelf: 'center',
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+   
+    alignSelf:'center'
   },
 });
 
-export default WorkoutForm;
+export default CardioForm;

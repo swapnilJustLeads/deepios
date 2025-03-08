@@ -14,8 +14,8 @@ export default function LoginScreen() {
   const navigation = useNavigation();
   const { login, loading } = useAuth(); // ✅ Use useAuth for authentication
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('shubham@justgetleads.com');
+  const [password, setPassword] = useState('shubham@123');
 
   const backgroundColor = isDarkMode ? '#000000' : '#000000';
 

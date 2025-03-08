@@ -8,9 +8,11 @@ import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import DefaultButton from '../components/DefaultButton';
 import WorkoutListComponent from '../components/WorkoutListComponent';
 import WorkoutForm from '../components/WorkoutForm';
+import WorkoutLayout from '../components/WorkoutLayout';
+import {Button} from '@rneui/themed';
 
 const WorkoutScreen = () => {
-  const [showForm, setshowForm] = useState(false)
+  const [showForm, setshowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -24,25 +26,33 @@ const WorkoutScreen = () => {
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      {showForm ?  <WorkoutForm /> : 
-      <>
-       <WorkoutCard
-        image={<Bardumble width={41} height={41}  />}
-        name="Workout"
-      />
-      <HorizontalDatePicker />
-      <DefaultButton
-      onPress={()=> setshowForm(true)}
-        title="New Workout"
-        alignSelf="center"
-        bottom={24}
-        position="absolute"
-      />
-      <WorkoutListComponent />
-      </>
-      }
-     
-     
+      {showForm ? (
+        <WorkoutForm
+          onSave={() => setshowForm(false)}
+          addButton={() => setshowForm(false)}
+        />
+      ) : (
+        <>
+          <WorkoutCard
+            image={<Bardumble width={42} height={42} />}
+            name="Workout"
+          />
+          <HorizontalDatePicker />
+          <View style={{position: 'absolute', bottom: 9, alignSelf: 'center'}}>
+            <Button
+              containerStyle={[styles.buttonConatiner]}
+              onPress={()=> setshowForm(true)}
+              // onPress={saveJournal}
+              buttonStyle={[styles.buttonStyle]}
+              title="New Workout"
+              titleStyle={styles.buttonTextStyle}
+            />
+          </View>
+
+          <WorkoutLayout title="Workout" />
+          <View style={styles.bottomButton}></View>
+        </>
+      )}
     </View>
   );
 };
@@ -73,5 +83,25 @@ const styles = StyleSheet.create({
   selectedDateText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  buttonStyle: {
+    width: 103,
+    backgroundColor: '#00E5FF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonTextStyle: {
+    fontFamily: 'Inter',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#000000',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  buttonConatiner: {
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    marginTop: 9,
   },
 });

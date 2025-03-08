@@ -13,7 +13,7 @@ const DefaultButton = ({title, alignSelf, onPress, position, bottom}) => {
         styles.container,
         alignSelf ? {alignSelf} : null,
         position ? {position} : null,
-        bottom !== undefined ? {bottom} : null, // Allows bottom: 0 as well
+        bottom !== undefined ? {bottom} : null,
       ]}
     />
   );
@@ -27,12 +27,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#000',
-    fontWeight: 'bold',
-    fontSize: 18,
-    fontFamily:'Inter'
+    fontWeight: '900',
+    fontSize: 13,
+    fontFamily:'Inter',
+    margin:1
   },
   container: {
-    width: '50%',
+    width: '39%',
     borderRadius: 12,
   },
 });

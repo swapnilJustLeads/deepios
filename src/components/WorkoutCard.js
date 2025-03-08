@@ -9,19 +9,16 @@ const WorkoutCard = props => {
     <Card containerStyle={styles.card}>
       <View style={styles.header}>
         <Text style={styles.workoutText}>{props?.name}</Text>
-        <View
-          style={[
-            styles.tabs,
-            {
-              width: 210,
-              height:21,
-              marginTop:3
-            },
-          ]}>
-          {['Today', 'Week', 'Month'].map(tab => (
+        <View style={styles.tabs}>
+          {['Today', 'Week', 'Month'].map((tab, index) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, selectedTab === tab && styles.selectedTab]}
+              style={[
+                styles.tab,
+                selectedTab === tab && styles.selectedTab,
+                index === 0 && selectedTab === tab && styles.leftRounded, // "Today"
+                index === 2 && selectedTab === tab && styles.rightRounded, // "Month"
+              ]}
               onPress={() => setSelectedTab(tab)}>
               <Text
                 style={[
@@ -34,16 +31,10 @@ const WorkoutCard = props => {
           ))}
         </View>
       </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-         
-        }}>
-          <View style={{marginTop:-2}} >
-              {props.image}
-          </View>
-      
+<View style={{height:9}} />
+      {/* Data Section */}
+      <View style={styles.dataWrapper}>
+        <View style={styles.imageContainer}>{props.image}</View>
 
         <View style={styles.dataContainer}>
           <Text style={styles.dataText}>3605</Text>
@@ -56,7 +47,7 @@ const WorkoutCard = props => {
 
 const styles = StyleSheet.create({
   card: {
-    marginTop:20,
+    marginTop: 20,
     borderRadius: 24,
     backgroundColor: '#fff',
     shadowColor: '#000',
@@ -65,40 +56,38 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     borderColor: 'black',
-    paddingBottom:4
-    
+    paddingBottom: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // backgroundColor:'green',
     marginBottom: -5,
     marginTop: -5,
   },
   workoutText: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
     fontFamily: 'Stomic',
     textTransform: 'uppercase',
-    marginTop: -15,
+    marginTop: 0,
+    marginLeft: 6,
   },
 
+  // Tab Styles
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#ddd',
-    borderRadius: 12,
-    // padding: 5,
-    marginBottom: 15,
-    
+    backgroundColor: '#AFAFAF',
+    borderRadius: 6,
+    width: 160,
+    height: 24,
+    marginTop: 0,
   },
   tab: {
     flex: 1,
-    // paddingVertical: 8,
     alignItems: 'center',
-    borderEndEndRadius: 9,
-    justifyContent:'center'
+    justifyContent: 'center',
   },
   selectedTab: {
     backgroundColor: '#00E5FF',
@@ -108,34 +97,55 @@ const styles = StyleSheet.create({
     borderTopRightRadius:30
     
   },
+  leftRounded: {
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6,
+  },
+  rightRounded: {
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 6,
+  },
   tabText: {
     fontSize: 9,
     fontWeight: 'bold',
     color: '#000',
     alignSelf: 'center',
-
   },
   selectedTabText: {
     color: '#000',
   },
+
+  // Data Section
+  dataWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  imageContainer: {
+    marginTop: 12,
+    marginLeft: 5,
+  },
   dataContainer: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    // alignItems: 'baseline',
     justifyContent: 'center',
   },
   dataText: {
-    fontSize: 36,
+    fontSize: 39  ,
     fontWeight: '700',
     color: '#000',
     fontFamily: 'Inter',
+    marginTop:10
   },
   unitText: {
-    fontSize: 15,
+    fontSize: 18,
     color: '#000',
-    // marginLeft: 5,
-    fontFamily:'Inter',
-    fontWeight:'300',
-    alignSelf:'center'
+    fontFamily: 'Inter',
+    fontWeight: '300',
+    alignSelf: 'center',
+    marginRight: 5,
+    marginTop:9
+  
+    
   },
 });
 

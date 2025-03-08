@@ -178,7 +178,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
-				306A53842D79B73A00C588B0 /* Inter.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				515E070B2D797CBD00B605EE /* GoogleService-Info.plist in Resources */,
 				9B2380EFB3BC31F343CDA2D1 /* PrivacyInfo.xcprivacy in Resources */,

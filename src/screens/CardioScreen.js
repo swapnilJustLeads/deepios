@@ -9,9 +9,12 @@ import DefaultButton from '../components/DefaultButton';
 import WorkoutListComponent from '../components/WorkoutListComponent';
 import WorkoutForm from '../components/WorkoutForm';
 import RecoveryCard from '../components/RecoveryCard';
+import {Button} from '@rneui/themed';
+import RecoveryForm from '../components/RecoveryForm';
+import CardioForm from '../components/CardioForm';
 
 const CardioScreen = () => {
-  const [showForm, setshowForm] = useState(false)
+  const [showForm, setshowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -22,28 +25,31 @@ const CardioScreen = () => {
     }
     return dates;
   };
+  const closeSave = () => {
+    setshowForm(false);
+  } 
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      {showForm ?  <WorkoutForm /> : 
-      <>
-       <RecoveryCard
-        image={<Cardio width={50} height={50} />}
-        name="Cardio"
-      />
-      {/* <HorizontalDatePicker />
-      <DefaultButton
-      onPress={()=> setshowForm(true)}
-        title="New Workout"
-        alignSelf="center"
-        bottom={0}
-        position="absolute"
-      />
-      <WorkoutListComponent /> */}
-      </>
-      }
-     
-     
+      {showForm ? (
+        <CardioForm save={closeSave} />
+      ) : (
+        <>
+          <RecoveryCard
+            image={<Cardio width={50} height={50} />}
+            name="Cardio"
+          />
+          <HorizontalDatePicker />
+          <View style={styles.bottomButton}>
+            <Button
+              onPress={() => setshowForm(true)}
+              buttonStyle={styles.buttonStyle}
+              title="New TRAINING"
+              titleStyle={styles.buttonTextStyle}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 };
@@ -74,5 +80,25 @@ const styles = StyleSheet.create({
   selectedDateText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  buttonStyle: {
+    width: 100,
+    backgroundColor: '#00E5FF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonTextStyle: {
+    fontFamily: 'Inter',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#000000',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  bottomButton: {
+    position: 'absolute',
+    bottom: 21,
+    alignSelf: 'center',
   },
 });
