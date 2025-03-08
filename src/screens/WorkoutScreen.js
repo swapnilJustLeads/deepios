@@ -27,7 +27,10 @@ const WorkoutScreen = () => {
     <View style={styles.container}>
       <HeaderComponent />
       {showForm ? (
-        <WorkoutForm addButton={() => setshowForm(false)} />
+        <WorkoutForm
+          onSave={() => setshowForm(false)}
+          addButton={() => setshowForm(false)}
+        />
       ) : (
         <>
           <WorkoutCard
@@ -35,24 +38,19 @@ const WorkoutScreen = () => {
             name="Workout"
           />
           <HorizontalDatePicker />
-          <DefaultButton
-            onPress={() => setshowForm(true)}
-            title="NEW WORKOUT"
-            alignSelf="center"
-            bottom={24}
-            position="absolute"
-          />
-          <WorkoutLayout />
-          <View style={styles.bottomButton}>
-            {/* <CustomButton /> */}
-            {/* <Button
-              onPress={() => setshowForm(true)}
-              buttonStyle={styles.buttonStyle}
-              title="New Intake"
-              style={[styles.buttonContainer]}
+          <View style={{position: 'absolute', bottom: 9, alignSelf: 'center'}}>
+            <Button
+              containerStyle={[styles.buttonConatiner]}
+              onPress={()=> setshowForm(true)}
+              // onPress={saveJournal}
+              buttonStyle={[styles.buttonStyle]}
+              title="New Workout"
               titleStyle={styles.buttonTextStyle}
-            /> */}
+            />
           </View>
+
+          <WorkoutLayout title="Workout" />
+          <View style={styles.bottomButton}></View>
         </>
       )}
     </View>
@@ -85,5 +83,25 @@ const styles = StyleSheet.create({
   selectedDateText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  buttonStyle: {
+    width: 103,
+    backgroundColor: '#00E5FF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonTextStyle: {
+    fontFamily: 'Inter',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#000000',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  buttonConatiner: {
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    marginTop: 9,
   },
 });

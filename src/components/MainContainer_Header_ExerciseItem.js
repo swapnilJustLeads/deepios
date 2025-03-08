@@ -4,11 +4,11 @@ import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
 import Delete from '../assets/images/delete.svg';
 
-const MainContainer_Header_ExerciseItem = ({ exercises = [] }) => {
+const MainContainer_Header_ExerciseItem = ({ exercises = [], title }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>WORKOUT</Text>
+        <Text style={styles.title}>{title}</Text>
         <Text style={styles.time}>07:57 AM</Text>
         <View style={styles.headerButtons}>
         <Edit style={styles.headerIcon} />

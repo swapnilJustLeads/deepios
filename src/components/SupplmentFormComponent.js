@@ -4,7 +4,8 @@ import {Button, Text, Input, Divider, Icon} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import Down from '../assets/images/down.svg';
 
-const SupplmentFormComponent = () => {
+
+const SupplmentFormComponent = (props) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [supplement, setSupplement] = useState(null);
@@ -227,7 +228,7 @@ const SupplmentFormComponent = () => {
         />
         <Button
           // containerStyle={{marginLeft: 21}}
-          onPress={() => setshowForm(true)}
+          onPress={props.save}
           buttonStyle={[
             styles.buttonStyle,
            

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from 'react-native';
 import moment from 'moment';
-
+// handleDateSelection(item)
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ITEM_WIDTH = 30; // Base width for date items
 const SELECTED_ITEM_WIDTH = 121; // Width of selected date item
@@ -42,6 +42,7 @@ const HorizontalDatePicker = () => {
   }
 
   function handleDateSelection(date) {
+    console.log(date)
     setSelectedDate(date);
     
     // Find the index of the selected date
@@ -57,6 +58,7 @@ const HorizontalDatePicker = () => {
   }
 
   useEffect(() => {
+  
     // Center the initially selected date on mount
     const initialIndex = dates.indexOf(selectedDate);
     
@@ -73,7 +75,10 @@ const HorizontalDatePicker = () => {
     
     return (
       <TouchableOpacity
-        onPress={() => handleDateSelection(item)}
+        onPress={() =>
+          // console.log(item)
+           handleDateSelection(item)
+          }
         style={[
           styles.dateContainer,
           isSelected && styles.selectedDate,

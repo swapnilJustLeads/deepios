@@ -61,10 +61,10 @@ const exerciseData = [
   }
 ];
 
-const WorkoutLayout = () => {
+const WorkoutLayout = (props) => {
   return (
     <View style={styles.container}>
-      <MainContainer_Header_ExerciseItem exercises={exerciseData} />
+      <MainContainer_Header_ExerciseItem title={props.title} exercises={exerciseData} />
     </View>
   );
 };

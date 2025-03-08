@@ -6,15 +6,19 @@ import SupplmentFormComponent from '../components/SupplmentFormComponent';
 import SupplementLayout from '../components/SupplementLayout';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
 
-const SupplementScreen = () => {
+const SupplementScreen = (prop) => {
   const [showForm, setshowForm] = useState(false);
+
+  const closeForm = () => {
+    setshowForm(false);
+  }
   return (
     <View style={styles.container}>
       <HeaderComponent />
       <HorizontalDatePicker />
       {showForm ? (
         <>
-          <SupplmentFormComponent />
+          <SupplmentFormComponent save={closeForm} />
           <View style={styles.bottomButtonRow}>
             {/* <CustomButton /> */}
             <Button
@@ -31,7 +35,7 @@ const SupplementScreen = () => {
             />
             <Button
               containerStyle={{marginRight: 21}}
-              onPress={() => setshowForm(true)}
+              onPress={() => setshowForm(false)}
               buttonStyle={[styles.buttonStyle]}
               title="Save"
               titleStyle={styles.buttonTextStyle}
