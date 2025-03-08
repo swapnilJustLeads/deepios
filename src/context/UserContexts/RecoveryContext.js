@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { ToastAndroid } from "react-native";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import Toast from "react-native-toast-message";
 import { useUserDetailsContext } from "../UserDetailsContext";
 import { fetchUserData, updateTraningName } from "../../firebase/firebase_client";
 import { useDetails } from "../DeatailsContext";
@@ -14,47 +14,66 @@ export const UserRecoveryProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [recoveryData, setRecoveryData] = useState([]);
   const { parentIds } = useDetails();
+  const [error, setError] = useState(null);
   const { userDetails } = useUserDetailsContext();
   const [refresh, setRefresh] = useState(false);
   const { globalLoading, setGlobalLoading } = useGlobalContext();
 
+  // ✅ This function is outside `useEffect()` (Same as `fetchUserDetails` in `UserDetailsContext`)
+  const fetchRecoveryData = async (username, parentId) => {
+    if (!username || !parentId) return; // ✅ Prevent unnecessary calls
+    setLoading(true);
+    setError(null);
+    setGlobalLoading((prev) => ({ ...prev, recoveryDataLoading: true }));
 
-
-  useEffect(() => {
-    const fetchRecoveryData = async () => {
-      setLoading(true);
-      try {
-        const recoveryList = await fetchUserData(userDetails.username, parentIds.Recovery);
-        setRecoveryData(recoveryList);
-      } catch (error) {
-        console.log(error);
-        ToastAndroid.show(t('toastMessages.errorFetchingRecovery'), ToastAndroid.SHORT);
-      } finally {
-        setGlobalLoading({ ...globalLoading, recoveryDataLoading: false });
-        setLoading(false);
-      }
-    };
-    if (parentIds?.Recovery && userDetails?.username) {
-      fetchRecoveryData();
+    try {
+      const recoveryList = await fetchUserData(username, parentId);
+      setRecoveryData(recoveryList);
+    } catch (error) {
+      console.error("❌ Error fetching recovery data:", error);
+      Toast.show({ type: "error", text1: t("toastMessages.errorFetchingSupplement") });
+    } finally {
+      setGlobalLoading((prev) => ({ ...prev, recoveryDataLoading: false }));
+      setLoading(false);
     }
-  }, [userDetails, parentIds, refresh, t, setGlobalLoading, globalLoading]);
+  };
+
+  // ✅ Now calling `fetchRecoveryData()` inside `useEffect()`, just like `UserDetailsContext`
+  useEffect(() => {
+    if (userDetails?.username && parentIds?.Recovery) {
+      fetchRecoveryData(userDetails.username, parentIds.Recovery);
+    }
+  }, [userDetails, parentIds, refresh]); // ✅ Correct dependencies
 
   const handleRecoveryUpdateName = async (id, name) => {
     if (!id || !name) {
-      ToastAndroid.show(t('toastMessages.invalidNameOrId'), ToastAndroid.SHORT);
+      Toast.show({ type: "error", text1: t("toastMessages.invalidNameOrId") });
       return;
     }
     try {
       await updateTraningName(id, name);
-      setRecoveryData(prevData => prevData.map(recovery => recovery.id === id ? { ...recovery, name } : recovery));
-      ToastAndroid.show(t('toastMessages.nameUpdatedSuccess'), ToastAndroid.SHORT);
+      setRecoveryData((prevData) =>
+        prevData.map((recovery) =>
+          recovery.id === id ? { ...recovery, name } : recovery
+        )
+      );
+      Toast.show({ type: "success", text1: t("toastMessages.nameUpdatedSuccess") });
     } catch (error) {
-      ToastAndroid.show(t('toastMessages.failedToUpdateName'), ToastAndroid.SHORT);
+      Toast.show({ type: "error", text1: t("toastMessages.failedToUpdateName") });
     }
   };
 
   return (
-    <UserRecoveryContext.Provider value={{ loading, refresh, setRefresh, recoveryData, setRecoveryData, handleRecoveryUpdateName }}>
+    <UserRecoveryContext.Provider
+      value={{
+        loading,
+        refresh,
+        setRefresh,
+        recoveryData,
+        setRecoveryData,
+        handleRecoveryUpdateName,
+      }}
+    >
       {children}
     </UserRecoveryContext.Provider>
   );

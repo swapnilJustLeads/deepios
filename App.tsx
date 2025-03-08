@@ -37,12 +37,12 @@ export default function App() {
                   <UserCardioProvider>
                     <UserRecoveryProvider>
                       <UserSupplementProvider>
-                        {/* <ReminderSupplementProvider> */}
-                          {/* <WeightTrackerProvider> */}
+                        <ReminderSupplementProvider>
+                          <WeightTrackerProvider>
                             <Navigation />
                             <Toast />
-                          {/* </WeightTrackerProvider> */}
-                        {/* </ReminderSupplementProvider> */}
+                          </WeightTrackerProvider>
+                        </ReminderSupplementProvider>
                       </UserSupplementProvider>
                     </UserRecoveryProvider>
                   </UserCardioProvider>

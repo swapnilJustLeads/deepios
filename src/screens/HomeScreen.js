@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {Button} from '@rneui/themed';
 import {useSelector} from 'react-redux';
@@ -13,14 +13,27 @@ import Recovery from '../assets/images/recovery.svg';
 import HeaderComponent from '../components/HeaderComponent';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import Journalinput from '../components/Journalinput';
+import {
+  useUserCardioContext,
+  useUserRecoveryContext,
+  useUserWorkoutContext,
+} from "../context/UserContexts";
 
 export default function HomeScreen({navigation}) {
   const [showJournal, setshowJournal] = useState(false);
   const isDarkMode = useSelector(state => state.theme.darkMode);
+  const { workoutData } = useUserWorkoutContext();
+  const { cardioData } = useUserCardioContext();
+  const { recoveryData } = useUserRecoveryContext();
   const {t} = useTranslation();
-
   const backgroundColor = isDarkMode ? '#AEAEAE' : '#B0B0B0';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
+
+
+  useEffect(() => {
+    console.log("✅ HomeScreen Workout Data Updated:", workoutData);
+  }, [workoutData]);
+
 
   const onPress = () => {
     setshowJournal(true);

@@ -20,21 +20,21 @@ export default function LoginScreen() {
   const backgroundColor = isDarkMode ? '#000000' : '#000000';
 
   const handleLogin = async () => {
-    // if (!email || !password) {
-    //   Toast.show({ type: 'error', text1: 'Please enter email and password' });
-    //   return;
-    // }
+    if (!email || !password) {
+      Toast.show({ type: 'error', text1: 'Please enter email and password' });
+      return;
+    }
 
-    // try {
-    //   console.log('🟢 Attempting to login...');
-    //   const user = await login(email, password); // ✅ Call login from useAuth()
-    //   if (user) {
-    //     console.log('✅ Login successful:', user);
+    try {
+      console.log('🟢 Attempting to login...');
+      const user = await login(email, password); // ✅ Call login from useAuth()
+      if (user) {
+        console.log('✅ Login successful:', user);
         navigation.navigate('Details'); // ✅ Navigate to Details screen after login
-    //   }
-    // } catch (error) {
-    //   console.error('🔴 Login Error:', error);
-    // }
+      }
+    } catch (error) {
+      console.error('🔴 Login Error:', error);
+    }
   };
 
   return (

@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message'; // ✅ Use React Native Toast
-
-import { useUserDetailsContext } from '../UserDetailsContext';
-import { fetchUserData, updateTraningName } from '../../firebase/firebaseClient';
-import { useDetails } from '../DeatailsContext';
-import { useGlobalContext } from '../GlobalContext';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Toast from "react-native-toast-message"; // ✅ Use React Native Toast
+import { useUserDetailsContext } from "../UserDetailsContext";
+import { fetchUserData, updateTraningName } from "../../firebase/firebase_client";
+import { useDetails } from "../DeatailsContext";
+import { useGlobalContext } from "../GlobalContext";
 
 const UserSupplementContext = createContext();
 export const useUserSupplementContext = () => useContext(UserSupplementContext);
@@ -19,34 +18,38 @@ export const UserSupplementProvider = ({ children }) => {
   const [refresh, setRefresh] = useState(false);
   const { globalLoading, setGlobalLoading } = useGlobalContext();
 
-  // Fetch supplement data when component mounts
-  useEffect(() => {
-    const fetchSupplementData = async () => {
-      setLoading(true);
-      try {
-        const supplementList = await fetchUserData(userDetails.username, parentIds.Supplement);
-        setSupplementData(supplementList);
-      } catch (error) {
-        console.log(error);
-        Toast.show({ type: "error", text1: t('toastMessages.errorFetchingSupplement') });
-      } finally {
-        setGlobalLoading({ ...globalLoading, supplementDataLoading: false });
-        setLoading(false);
-      }
-    };
+  // ✅ Function moved outside `useEffect()` (Same as `fetchUserDetails` in `UserDetailsContext`)
+  const fetchSupplementData = async (username, parentId) => {
+    if (!username || !parentId) return; // ✅ Prevent unnecessary calls
+    setLoading(true);
+    setGlobalLoading((prev) => ({ ...prev, supplementDataLoading: true }));
 
-    if (parentIds?.Supplement && userDetails?.username) {
-      fetchSupplementData();
+    try {
+      const supplementList = await fetchUserData(username, parentId);
+      setSupplementData(supplementList);
+    } catch (error) {
+      console.error("❌ Error fetching supplement data:", error);
+      Toast.show({ type: "error", text1: t("toastMessages.errorFetchingSupplement") });
+    } finally {
+      setGlobalLoading((prev) => ({ ...prev, supplementDataLoading: false }));
+      setLoading(false);
     }
-  }, [userDetails, parentIds, refresh, t, setGlobalLoading, globalLoading]);
+  };
+
+  // ✅ Now calling `fetchSupplementData()` inside `useEffect()`, just like `UserDetailsContext`
+  useEffect(() => {
+    if (userDetails?.username && parentIds?.Supplement) {
+      fetchSupplementData(userDetails.username, parentIds.Supplement);
+    }
+  }, [userDetails, parentIds, refresh]); // ✅ Correct dependencies
 
   const handleSupplementUpdateName = async (id, name) => {
     if (!id || !name) {
-      Toast.show({ type: "error", text1: t('toastMessages.invalidNameOrId') });
+      Toast.show({ type: "error", text1: t("toastMessages.invalidNameOrId") });
       return;
     }
 
-    Toast.show({ type: "info", text1: t('toastMessages.updatingName') });
+    Toast.show({ type: "info", text1: t("toastMessages.updatingName") });
 
     try {
       await updateTraningName(id, name);
@@ -55,9 +58,9 @@ export const UserSupplementProvider = ({ children }) => {
           supplement.id === id ? { ...supplement, name } : supplement
         )
       );
-      Toast.show({ type: "success", text1: t('toastMessages.nameUpdatedSuccess') });
+      Toast.show({ type: "success", text1: t("toastMessages.nameUpdatedSuccess") });
     } catch (error) {
-      Toast.show({ type: "error", text1: t('toastMessages.failedToUpdateName') });
+      Toast.show({ type: "error", text1: t("toastMessages.failedToUpdateName") });
     }
   };
 

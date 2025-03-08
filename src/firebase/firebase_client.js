@@ -12,6 +12,7 @@ import {
   addDoc,
   serverTimestamp
 } from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth ,deleteUser as firebaseDeleteUser , EmailAuthProvider , reauthenticateWithCredential , updateEmail} from '@react-native-firebase/auth';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from '@react-native-firebase/storage';
 import { COLLECTIONS } from './collections';
@@ -33,27 +34,21 @@ export const fetchUsers = async () => {
 };
 
 export const getUserDetails = async (userId) => {
- try {
+  try {
     console.log(`📢 Fetching Firestore data for UID: ${userId}`);
-
-    // 🔥 Query Firestore: Find user where `authId` matches UID
-    const usersCollectionRef = collection(getFirestore(), "users");
-    const q = query(usersCollectionRef, where("authId", "==", userId));
+    const usersCollectionRef = collection(FirestoreDB, 'users');
+    const q = query(usersCollectionRef, where('authId', '==', userId));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      console.warn("⚠️ No user data found for UID:", userId);
+      console.warn('⚠️ No user data found for UID:', userId);
       return null;
     }
 
-    // ✅ Extract user document data
     const userDoc = querySnapshot.docs[0];
-    const userData = userDoc.data();
-    console.log("✅ Firestore User Data:", userData);
-
-    return { id: userDoc.id, ...userData };
+    return { id: userDoc.id, ...userDoc.data() };
   } catch (error) {
-    console.error("❌ Firestore Error:", error);
+    console.error('❌ Firestore Error:', error);
     throw error;
   }
 };
@@ -252,4 +247,362 @@ export const updateUserEmail = async (newEmail, currentPassword) => {
     }
   }
 };
+
+// export const getJournals = async (username) => {
+//   try {
+//     const querySnapshot = await getFirestore()
+//       .collection(COLLECTIONS.JOURNAL)
+//       .where("userId", "==", username)
+//       .get();
+    
+//     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+//   } catch (error) {
+//     console.error("Error fetching user journals:", error);
+//     throw error;
+//   }
+// };
+
+// export const addJournal = async (journal) => {
+//   try {
+//     const docRef = await getFirestore()
+//       .collection(COLLECTIONS.JOURNAL)
+//       .add(journal);
+    
+//     return { id: docRef.id, ...journal };
+//   } catch (error) {
+//     console.error("Error adding journal:", error);
+//     throw error;
+//   }
+// };
+
+// export const deleteJournal = async (id) => {
+//   try {
+//     await getFirestore()
+//       .collection(COLLECTIONS.JOURNAL)
+//       .doc(id)
+//       .delete();
+//   } catch (error) {
+//     console.error("Error deleting journal:", error);
+//     throw error;
+//   }
+// };
+
+export const getParents = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(FirestoreDB, COLLECTIONS.PARENT));
+
+    if (querySnapshot.empty) {
+      console.warn("⚠️ No parent data found.");
+      return [];
+    }
+
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("❌ Error fetching parents:", error);
+    throw error;
+  }
+};
+
+
+// ✅ Fix: Ensure correct Firestore collection reference
+export const getCategories = async () => {
+  try {
+    const lang = await AsyncStorage.getItem('lang') || 'en';
+    const categoriesRef = collection(FirestoreDB, COLLECTIONS.CATEGORY);
+    const querySnapshot = await getDocs(categoriesRef);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      let name = lang === 'de' ? data.translatedNameDe || data.translated_name?.de : data.name;
+      return { id: doc.id, ...data, name };
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
+  }
+};
+
+// ✅ Fix: Use `query(collection(FirestoreDB, "collectionName"), where(...))`
+export const fetchUserData = async (username, parentId) => {
+  try {
+    console.log(`📢 Fetching data for username: ${username}, parent: ${parentId}`);
+
+    const dataCollectionRef = collection(FirestoreDB, COLLECTIONS.DATA);
+    const q = query(
+      dataCollectionRef,
+      where("username", "==", username),
+      where("parent", "==", parentId) // ✅ Fix: No more `firestore().where()`
+    );
+
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.warn("⚠️ No data found for user:", username);
+      return [];
+    }
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("❌ Error fetching user data:", error);
+    throw error;
+  }
+};
+
+export const getSubCategories = async () => {
+  try {
+    const lang = await AsyncStorage.getItem('lang') || 'en';
+    const subCategoriesRef = collection(FirestoreDB, COLLECTIONS.SUB_CATERGORY);
+    const querySnapshot = await getDocs(subCategoriesRef);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      let name = lang === 'de' ? data.translatedNameDe || data.name : data.name;
+      return { id: doc.id, ...data, name };
+    });
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    throw error;
+  }
+};
+
+// export const addCategory = async (category) => {
+//   try {
+//     const lang = await AsyncStorage.getItem("lang") || "en";
+    
+//     if (!category.name) {
+//       throw new Error("Category name is required.");
+//     }
+    
+//     const docRef = await getFirestore()
+//       .collection(COLLECTIONS.CATEGORY)
+//       .add(category);
+    
+//     return {
+//       id: docRef.id,
+//       ...category,
+//       name: lang === "de" ? category.translatedNameDe : category.name,
+//     };
+//   } catch (error) {
+//     console.error("Error adding category:", error);
+//     throw error;
+//   }
+// };
+
+// export const addSubCategory = async (subCategory) => {
+//   try {
+//     const lang = await AsyncStorage.getItem("lang") || "en";
+    
+//     if (!subCategory.name || !subCategory.category) {
+//       throw new Error("Subcategory name and category ID are required.");
+//     }
+    
+//     const docRef = await getFirestore()
+//       .collection(COLLECTIONS.SUB_CATERGORY)
+//       .add(subCategory);
+    
+//     return {
+//       id: docRef.id,
+//       ...subCategory,
+//       name: lang === "de" ? subCategory.translatedNameDe : subCategory.name,
+//     };
+//   } catch (error) {
+//     console.error("Error adding subcategory:", error);
+//     throw error;
+//   }
+// };
+
+// export const getTemplates = async () => {
+//   try {
+//     const lang = await AsyncStorage.getItem("lang") || "en";
+//     const querySnapshot = await firestore()
+//       .collection(COLLECTIONS.TEMPLATE)
+//       .get();
+    
+//     return querySnapshot.docs.map((doc) => {
+//       const data = doc.data();
+//       const name = data.translated_templateName
+//         ? data.translated_templateName[lang]
+//         : data.templateName;
+//       return {
+//         id: doc.id,
+//         ...data,
+//         templateName: name,
+//         name: name,
+//       };
+//     });
+//   } catch (error) {
+//     console.error("Error fetching templates:", error);
+//     throw error;
+//   }
+// };
+
+// export const getUserTemplates = async (username) => {
+//   try {
+//     const querySnapshot = await firestore()
+//       .collection(COLLECTIONS.TEMPLATE)
+//       .where("users", "array-contains", username)
+//       .get();
+    
+//     return querySnapshot.docs.map((doc) => {
+//       return { id: doc.id, ...doc.data() };
+//     });
+//   } catch (error) {
+//     console.error("Error fetching templates:", error);
+//     throw error;
+//   }
+// };
+
+// export const addTemplate = async (template) => {
+//   try {
+//     if (!template.name) {
+//       throw new Error("Template name is required.");
+//     }
+    
+//     const docRef = await firestore()
+//       .collection(COLLECTIONS.TEMPLATE)
+//       .add(template);
+    
+//     return { id: docRef.id, ...template };
+//   } catch (error) {
+//     console.error("Error adding template:", error);
+//     throw error;
+//   }
+// };
+
+// export const deleteTemplate = async (templateId) => {
+//   try {
+//     await firestore()
+//       .collection(COLLECTIONS.TEMPLATE)
+//       .doc(templateId)
+//       .delete();
+//   } catch (error) {
+//     console.error("Error deleting template:", error);
+//     throw error;
+//   }
+// };
+
+// export const updateTemplate = async (templateId, updatedTemplate) => {
+//   try {
+//     await firestore()
+//       .collection(COLLECTIONS.TEMPLATE)
+//       .doc(templateId)
+//       .update(updatedTemplate);
+//   } catch (error) {
+//     console.error("Error updating template:", error);
+//     throw error;
+//   }
+// };
+
+// export const updateTraningName = async (id, name) => {
+//   try {
+//     await firestore()
+//       .collection(COLLECTIONS.DATA)
+//       .doc(id)
+//       .update({ name: name });
+//   } catch (error) {
+//     console.error("Error updating name: ", error);
+//     throw error;
+//   }
+// };
+
+// // =============================== Supplement Reminder ===============================
+
+export const getSupplementReminders = async (username) => {
+  try {
+    const q = query(
+      collection(FirestoreDB, COLLECTIONS.SUPPLEMENT_REMINDER),
+      where("username", "==", username) // ✅ Fix: No more `firestore().where()`
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("❌ Error getting supplement reminder:", error);
+    throw error;
+  }
+};
+
+// export const addSupplementReminder = async (reminder) => {
+//   try {
+//     const docRef = await firestore()
+//       .collection(COLLECTIONS.SUPPLEMENT_REMINDER)
+//       .add(reminder);
+      
+//     return { id: docRef.id, ...reminder };
+//   } catch (error) {
+//     console.error("error adding supplement reminder", error);
+//     throw error;
+//   }
+// };
+
+// export const updateSupplementReminder = async (id, reminder) => {
+//   try {
+//     await firestore()
+//       .collection(COLLECTIONS.SUPPLEMENT_REMINDER)
+//       .doc(id)
+//       .update(reminder);
+//   } catch (error) {
+//     console.error("error updating supplement reminder", error);
+//     throw error;
+//   }
+// };
+
+// export const deleteSupplementReminder = async (id) => {
+//   try {
+//     await firestore()
+//       .collection(COLLECTIONS.SUPPLEMENT_REMINDER)
+//       .doc(id)
+//       .delete();
+//   } catch (error) {
+//     console.error("error deleting supplement reminder", error);
+//     throw error;
+//   }
+// };
+
+export const getWeightTracker = async (username) => {
+  try {
+    const q = query(
+      collection(FirestoreDB, COLLECTIONS.WEIGHT_TRACKER),
+      where("username", "==", username) // ✅ Fix: No more `firestore().where()`
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("❌ Error getting weight tracker:", error);
+    throw error;
+  }
+};
+
+// export const addWeightTracker = async (weight) => {
+//   try {
+//     const docRef = await firestore()
+//       .collection(COLLECTIONS.WEIGHT_TRACKER)
+//       .add(weight);
+      
+//     const docSnapshot = await getFirestore()
+//       .collection(COLLECTIONS.WEIGHT_TRACKER)
+//       .doc(docRef.id)
+//       .get();
+      
+//     return { id: docRef.id, ...docSnapshot.data() };
+//   } catch (error) {
+//     console.error("error adding weight tracker", error);
+//     throw error;
+//   }
+// };
+
+// export const deleteWeightTracker = async (id) => {
+//   try {
+//     await getFirestore()
+//       .collection(COLLECTIONS.WEIGHT_TRACKER)
+//       .doc(id)
+//       .delete();
+//   } catch (error) {
+//     console.error("error deleting weight tracker", error);
+//     throw error;
+//   }
+// };
 
