@@ -29,7 +29,7 @@ const HeaderComponent = () => {
         </TouchableOpacity>
       }
       rightComponent={
-        <TouchableOpacity style={{ marginRight:9, marginTop:5}} onPress={()=>navigation.navigate('Profile')}>
+        <TouchableOpacity style={{ marginRight:9, marginTop:5}} onPress={()=>navigation.navigate('Home', { screen: 'ProfileScreen' })}>
           <Rightlogo width={33} height={33} />
         </TouchableOpacity>
       }

@@ -322,7 +322,7 @@ export const getCategories = async () => {
   }
 };
 
-// ✅ Fix: Use `query(collection(FirestoreDB, "collectionName"), where(...))`
+
 export const fetchUserData = async (username, parentId) => {
   try {
     console.log(`📢 Fetching data for username: ${username}, parent: ${parentId}`);
@@ -345,7 +345,7 @@ export const fetchUserData = async (username, parentId) => {
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("❌ Error fetching user data:", error);
+    console.error(" Error fetching user data:", error);
     throw error;
   }
 };
