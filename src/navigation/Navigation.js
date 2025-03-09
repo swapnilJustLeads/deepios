@@ -101,7 +101,7 @@ const MyTabBar = ({state, descriptors, navigation}) => {
             }
           } else if (isFocused && route.name === 'Home') {
             // If already on Home tab and it's pressed again, navigate to HomeMain
-            //navigation.navigate('Home', { screen: 'HomeMain' });
+            navigation.navigate('Home', { screen: 'HomeMain' });
           }
         };
 

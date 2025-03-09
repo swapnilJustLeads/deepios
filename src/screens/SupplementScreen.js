@@ -1,40 +1,47 @@
-import {StyleSheet, View} from 'react-native';
-import React, {useState} from 'react';
+import { StyleSheet, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import HeaderComponent from '../components/HeaderComponent';
-import {Button} from '@rneui/themed';
+import { Button } from '@rneui/themed';
+import moment from 'moment';
 import SupplmentFormComponent from '../components/SupplmentFormComponent';
 import SupplementLayout from '../components/SupplementLayout';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
 
+// ✅ Import Supplement Context
+import { useUserSupplementContext } from '../context/UserContexts/SupplementContext';
+
 const SupplementScreen = (prop) => {
   const [showForm, setshowForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
+
+  const { supplementData } = useUserSupplementContext(); // ✅ Fetch context data
+
+  useEffect(() => {
+    console.log("🔥 Supplement Data from Context (Screen):", supplementData);
+  }, [supplementData]); // Log when data changes
 
   const closeForm = () => {
     setshowForm(false);
-  }
+  };
+
   return (
     <View style={styles.container}>
       <HeaderComponent />
       <HorizontalDatePicker />
+
       {showForm ? (
         <>
           <SupplmentFormComponent save={closeForm} />
           <View style={styles.bottomButtonRow}>
-            {/* <CustomButton /> */}
             <Button
-              containerStyle={{marginLeft: 21}}
+              containerStyle={{ marginLeft: 21 }}
               onPress={() => setshowForm(true)}
-              buttonStyle={[
-                styles.buttonStyle,
-                {
-                  backgroundColor: '#fff',
-                },
-              ]}
+              buttonStyle={[styles.buttonStyle, { backgroundColor: '#fff' }]}
               title="Delete"
               titleStyle={styles.buttonTextStyle}
             />
             <Button
-              containerStyle={{marginRight: 21}}
+              containerStyle={{ marginRight: 21 }}
               onPress={() => setshowForm(false)}
               buttonStyle={[styles.buttonStyle]}
               title="Save"
@@ -44,9 +51,8 @@ const SupplementScreen = (prop) => {
         </>
       ) : (
         <>
-          <SupplementLayout />
+          <SupplementLayout selectedDate={selectedDate} />
           <View style={styles.bottomButton}>
-            {/* <CustomButton /> */}
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}

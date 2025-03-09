@@ -17,10 +17,16 @@ import {
   useUserCardioContext,
   useUserRecoveryContext,
   useUserWorkoutContext,
-} from "../context/UserContexts";
+} from '../context/UserContexts';
+import {
+  calculateTotalWorkoutWeight,
+  calculateTotalRecoveryTime,
+  getStartAndEndDate,
+  calculateTotalCardioTime,
+} from '../utils/calculate';
 
 export default function HomeScreen({navigation}) {
-  const [showJournal, setshowJournal] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
   const isDarkMode = useSelector(state => state.theme.darkMode);
   const { workoutData } = useUserWorkoutContext();
   const { cardioData } = useUserCardioContext();
@@ -29,19 +35,63 @@ export default function HomeScreen({navigation}) {
   const backgroundColor = isDarkMode ? '#AEAEAE' : '#B0B0B0';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
 
-
   useEffect(() => {
-    console.log("✅ HomeScreen Workout Data Updated:", workoutData);
+    // ✅ Ensure HomeScreen does not auto-switch to Journal mode on mount
+    setShowJournal(false);
+  }, []);
+  useEffect(() => {
+    console.log('✅ HomeScreen Workout Data Updated:', workoutData);
   }, [workoutData]);
 
 
   const onPress = () => {
-    setshowJournal(true);
+    setShowJournal(true);
   };
   const closeJournal = () => {
-    setshowJournal(false)
+    setShowJournal(false)
   }
+  const filterDataByRange = (data, range) => {
+    const { startDate, endDate } = getStartAndEndDate(range);
+    return data.filter((item) => {
+      if (item.createdAt) {
+        const itemDate = new Date(item.createdAt.seconds * 1000);
+        return itemDate >= startDate && itemDate <= endDate;
+      }
+      return false;
+    });
+  };
+  const workoutWeightToday = calculateTotalWorkoutWeight(
+    filterDataByRange(workoutData, 'Today')
+  );
+  const workoutWeightWeek = calculateTotalWorkoutWeight(
+    filterDataByRange(workoutData, 'Week')
+  );
+  const workoutWeightMonth = calculateTotalWorkoutWeight(
+    filterDataByRange(workoutData, 'Month')
+  );
 
+  const cardioTimeToday = calculateTotalCardioTime(
+    filterDataByRange(cardioData, 'Today'),
+    'time'
+  );
+  const cardioTimeWeek = calculateTotalCardioTime(
+    filterDataByRange(cardioData, 'Week'),
+    'time'
+  );
+  const cardioTimeMonth = calculateTotalCardioTime(
+    filterDataByRange(cardioData, 'Month'),
+    'time'
+  );
+
+  const recoveryTimeToday = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Today')
+  );
+  const recoveryTimeWeek = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Week')
+  );
+  const recoveryTimeMonth = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Month')
+  );
   return (
     <View style={{flex: 1, backgroundColor}}>
       <HeaderComponent />
@@ -53,16 +103,28 @@ export default function HomeScreen({navigation}) {
       ) : (
         <>
           <WorkoutCard
-            image={<Bardumble width={50} height={50} />}
-            name="Workout"
+        image={<Bardumble width={50} height={50} />}
+        name="Workout"
+        todayValue={workoutWeightToday}
+        weekValue={workoutWeightWeek}
+        monthValue={workoutWeightMonth}
+        unit={'kg'}
           />
           <WorkoutCard
-            image={<Cardio width={50} height={50} />}
-            name="Cardio"
+           image={<Cardio width={50} height={50} />}
+           name="Cardio"
+           todayValue={cardioTimeToday}
+           weekValue={cardioTimeWeek}
+           monthValue={cardioTimeMonth}
+           unit={'min'}
           />
           <WorkoutCard
-            image={<Recovery width={50} height={50} />}
-            name="Recovery"
+         image={<Recovery width={50} height={50} />}
+         name="Recovery"
+         todayValue={recoveryTimeToday}
+         weekValue={recoveryTimeWeek}
+         monthValue={recoveryTimeMonth}
+         unit={'min'}
           />
           <View
             style={{

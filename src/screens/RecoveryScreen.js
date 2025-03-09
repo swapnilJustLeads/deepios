@@ -8,9 +8,21 @@ import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import {Button} from '@rneui/themed';
 import RecoveryForm from '../components/RecoveryForm';
 import WorkoutLayout from '../components/WorkoutLayout';
+import {
+  useUserCardioContext,
+  useUserRecoveryContext,
+  useUserWorkoutContext,
+} from '../context/UserContexts';
+import {
+  calculateTotalWorkoutWeight,
+  calculateTotalRecoveryTime,
+  getStartAndEndDate,
+  calculateTotalCardioTime,
+} from '../utils/calculate';
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
+  const { recoveryData } = useUserRecoveryContext();
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -21,6 +33,28 @@ const RecoveryScreen = () => {
     }
     return dates;
   };
+  const filterDataByRange = (data, range) => {
+    const { startDate, endDate } = getStartAndEndDate(range);
+    return data.filter((item) => {
+      if (item.createdAt) {
+        const itemDate = new Date(item.createdAt.seconds * 1000);
+        return itemDate >= startDate && itemDate <= endDate;
+      }
+      return false;
+    });
+  };
+
+
+  const recoveryTimeToday = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Today')
+  );
+  const recoveryTimeWeek = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Week')
+  );
+  const recoveryTimeMonth = calculateTotalRecoveryTime(
+    filterDataByRange(recoveryData, 'Month')
+  );
+
   return (
     <View style={styles.container}>
       <HeaderComponent />
@@ -42,9 +76,13 @@ const RecoveryScreen = () => {
           <WorkoutCard
             image={<Recovery width={50} height={50} />}
             name="Recovery"
+            todayValue={recoveryTimeToday}
+            weekValue={recoveryTimeWeek}
+            monthValue={recoveryTimeMonth}
+            unit={'min'}
           />
           <HorizontalDatePicker />
-          <WorkoutLayout title="recovery" />
+          <WorkoutLayout title="Recovery" type="recovery" selectedDate={selectedDate} />
 
           <View style={styles.bottomButton}>
             <Button

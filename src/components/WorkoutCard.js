@@ -4,7 +4,25 @@ import {Card} from '@rneui/themed';
 
 const WorkoutCard = props => {
   const [selectedTab, setSelectedTab] = useState('Today');
-
+  // Get the appropriate value based on selected tab
+  const getValueForSelectedTab = () => {
+    if (props.todayValue !== undefined && 
+        props.weekValue !== undefined && 
+        props.monthValue !== undefined) {
+      
+      switch(selectedTab) {
+        case 'Today':
+          return props.todayValue;
+        case 'Week':
+          return props.weekValue;
+        case 'Month':
+          return props.monthValue;
+        default:
+          return props.unitNumber || 0;
+      }
+    }
+    return props.unitNumber || 0;
+  };
   return (
     <Card containerStyle={styles.card}>
       <View style={styles.header}>
@@ -37,8 +55,8 @@ const WorkoutCard = props => {
         <View style={styles.imageContainer}>{props.image}</View>
 
         <View style={styles.dataContainer}>
-          <Text style={styles.dataText}>3605</Text>
-          <Text style={styles.unitText}>kg</Text>
+        <Text style={styles.dataText}>{getValueForSelectedTab()}</Text>
+          <Text style={styles.unitText}>{props.unit}</Text>
         </View>
       </View>
     </Card>
