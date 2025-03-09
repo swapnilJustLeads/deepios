@@ -10,12 +10,14 @@ import HeaderComponent from '../components/HeaderComponent';
 import { uploadProfilePicture } from '../firebase/firebase_client';
 import { EmailChangeComponent, PasswordForm, ProfileForm, ProfilePicChange } from '../components/ProfileForm';
 import LanguageThemeLogout from '../components/LangaugeThemeButton';
+import { useTheme } from '../hooks/useTheme';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 const buttonWidth = (screenWidth - 48) / 2;
 
 const ProfileScreen = () => {
+    const {  isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { userDetails, updateUserDetails } = useUserDetailsContext();
   const { logout } = useAuth();
@@ -103,7 +105,9 @@ const ProfileScreen = () => {
     />
   );
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{
+      backgroundColor: isDarkMode ? '#121212' : '#D3D3D3',
+    }]}>
       <HeaderComponent />
 
       <FlatList
@@ -135,7 +139,10 @@ const ProfileScreen = () => {
       )}
 
       {/* Language & Theme Component positioned at 80% of screen height */}
+      <View style={styles.bottomView} >
       <LanguageThemeLogout style={styles.languageThemeContainer} />
+
+      </View>
 
       <Toast />
     </View>
@@ -185,10 +192,13 @@ const styles = StyleSheet.create({
   },
   languageThemeContainer: {
     position: 'absolute',
-    bottom: screenHeight * 0.15, // 80% from top, 20% from bottom
+    bottom: 30, 
     alignSelf: 'center',
-    // width:buttonWidth,
-    backgroundColor:'transparent'
+    width: '100%',
+    // backgroundColor:'red'
+  },
+  bottomView:{
+   
   }
 });
 

@@ -24,8 +24,6 @@ export const UserDetailsProvider = ({ children }) => {
   useEffect(() => {
     if (user && user.uid) {
       console.log("👤 User from useAuth():", user);
-  
-      // ✅ Fetch user details using UID
       fetchUserDetails(user.uid);
     }
   }, [user]);
@@ -80,8 +78,7 @@ export const UserDetailsProvider = ({ children }) => {
         updateUserDetails,
         isAdmin, // Provide isAdmin in context
       }}
-    >
-      {children}
+    >{children}
     </UserDetailsContext.Provider>
   );
 };

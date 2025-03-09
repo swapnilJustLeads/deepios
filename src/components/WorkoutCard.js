@@ -1,8 +1,12 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {Card} from '@rneui/themed';
+import { useTheme } from '../hooks/useTheme';
 
 const WorkoutCard = props => {
+  
+   const {  isDarkMode } = useTheme();
+  
   const [selectedTab, setSelectedTab] = useState('Today');
   // Get the appropriate value based on selected tab
   const getValueForSelectedTab = () => {
@@ -24,9 +28,15 @@ const WorkoutCard = props => {
     return props.unitNumber || 0;
   };
   return (
-    <Card containerStyle={styles.card}>
+    <Card containerStyle={[styles.card,{
+      backgroundColor:isDarkMode? '#000000':'#FFFFFF',
+      borderColor:isDarkMode? '#FFFFFF':'#000000',
+
+    }]}>
       <View style={styles.header}>
-        <Text style={styles.workoutText}>{props?.name}</Text>
+        <Text style={[styles.workoutText,{
+          color:isDarkMode? '#FFFFFF':'#000000',
+        }]}>{props?.name}</Text>
         <View style={styles.tabs}>
           {['Today', 'Week', 'Month'].map((tab, index) => (
             <TouchableOpacity
@@ -55,8 +65,12 @@ const WorkoutCard = props => {
         <View style={styles.imageContainer}>{props.image}</View>
 
         <View style={styles.dataContainer}>
-        <Text style={styles.dataText}>{getValueForSelectedTab()}</Text>
-          <Text style={styles.unitText}>{props.unit}</Text>
+          <Text style={[styles.dataText,{
+            color:isDarkMode? '#FFFFFF':'#000000',
+          }]}>3605</Text>
+          <Text style={[styles.unitText,{
+            color:isDarkMode? '#FFFFFF':'#000000',
+          }]}>kg</Text>
         </View>
       </View>
     </Card>

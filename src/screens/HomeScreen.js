@@ -1,16 +1,14 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {Button} from '@rneui/themed';
-import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import Dashboardlogo from '../assets/images/dashboardlogo.svg';
-import Rightlogo from '../assets/images/rightlogo.svg';
-import LeftLogo from '../assets/images/LeftLogo.svg';
 import WorkoutCard from '../components/WorkoutCard';
 import Bardumble from '../assets/images/bardumble.svg';
 import Cardio from '../assets/images/cardio.svg';
 import Recovery from '../assets/images/recovery.svg';
 import HeaderComponent from '../components/HeaderComponent';
+import Workoutwhite from '../assets/images/workout-white.svg';
+import Recoverywhite from '../assets/images/recovery-white.svg';
+import Cardiowhite from '../assets/images/Cardio-white.svg';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import Journalinput from '../components/Journalinput';
 import {
@@ -18,82 +16,52 @@ import {
   useUserRecoveryContext,
   useUserWorkoutContext,
 } from '../context/UserContexts';
-import {
-  calculateTotalWorkoutWeight,
-  calculateTotalRecoveryTime,
-  getStartAndEndDate,
-  calculateTotalCardioTime,
-} from '../utils/calculate';
+import {useTheme} from '../hooks/useTheme';
+import { calculateTotalCardioTime } from '../utils/calculate';
 
 export default function HomeScreen({navigation}) {
   const [showJournal, setShowJournal] = useState(false);
-  const isDarkMode = useSelector(state => state.theme.darkMode);
-  const { workoutData } = useUserWorkoutContext();
-  const { cardioData } = useUserCardioContext();
-  const { recoveryData } = useUserRecoveryContext();
-  const {t} = useTranslation();
-  const backgroundColor = isDarkMode ? '#AEAEAE' : '#B0B0B0';
-  const textColor = isDarkMode ? '#FFFFFF' : '#000000';
+  const {isDarkMode} = useTheme();
+  const {workoutData} = useUserWorkoutContext();
 
-  useEffect(() => {
-    // ✅ Ensure HomeScreen does not auto-switch to Journal mode on mount
-    setShowJournal(false);
-  }, []);
+  const {t} = useTranslation();
+
   useEffect(() => {
     console.log('✅ HomeScreen Workout Data Updated:', workoutData);
   }, [workoutData]);
-
 
   const onPress = () => {
     setShowJournal(true);
   };
   const closeJournal = () => {
-    setShowJournal(false)
-  }
-  const filterDataByRange = (data, range) => {
-    const { startDate, endDate } = getStartAndEndDate(range);
-    return data.filter((item) => {
-      if (item.createdAt) {
-        const itemDate = new Date(item.createdAt.seconds * 1000);
-        return itemDate >= startDate && itemDate <= endDate;
-      }
-      return false;
-    });
+    setshowJournal(false);
   };
-  const workoutWeightToday = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Today')
-  );
-  const workoutWeightWeek = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Week')
-  );
-  const workoutWeightMonth = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Month')
-  );
 
-  const cardioTimeToday = calculateTotalCardioTime(
-    filterDataByRange(cardioData, 'Today'),
-    'time'
-  );
-  const cardioTimeWeek = calculateTotalCardioTime(
-    filterDataByRange(cardioData, 'Week'),
-    'time'
-  );
-  const cardioTimeMonth = calculateTotalCardioTime(
-    filterDataByRange(cardioData, 'Month'),
-    'time'
-  );
+  // const cardioTimeToday = calculateTotalCardioTime(
+  //   filterDataByRange(cardioData, 'Today'),
+  //   'time'
+  // );
+  // const cardioTimeWeek = calculateTotalCardioTime(
+  //   filterDataByRange(cardioData, 'Week'),
+  //   'time'
+  // );
+  // const cardioTimeMonth = calculateTotalCardioTime(
+  //   filterDataByRange(cardioData, 'Month'),
+  //   'time'
+  // );
 
-  const recoveryTimeToday = calculateTotalRecoveryTime(
-    filterDataByRange(recoveryData, 'Today')
-  );
-  const recoveryTimeWeek = calculateTotalRecoveryTime(
-    filterDataByRange(recoveryData, 'Week')
-  );
-  const recoveryTimeMonth = calculateTotalRecoveryTime(
-    filterDataByRange(recoveryData, 'Month')
-  );
+  // const recoveryTimeToday = calculateTotalRecoveryTime(
+  //   filterDataByRange(recoveryData, 'Today')
+  // );
+  // const recoveryTimeWeek = calculateTotalRecoveryTime(
+  //   filterDataByRange(recoveryData, 'Week')
+  // );
+  // const recoveryTimeMonth = calculateTotalRecoveryTime(
+  //   filterDataByRange(recoveryData, 'Month')
+  // );
   return (
-    <View style={{flex: 1, backgroundColor}}>
+    <View
+      style={{flex: 1, backgroundColor: isDarkMode ? '#000000' : '#FFFFFF'}}>
       <HeaderComponent />
       {showJournal ? (
         <>
@@ -103,28 +71,34 @@ export default function HomeScreen({navigation}) {
       ) : (
         <>
           <WorkoutCard
-        image={<Bardumble width={50} height={50} />}
-        name="Workout"
-        todayValue={workoutWeightToday}
-        weekValue={workoutWeightWeek}
-        monthValue={workoutWeightMonth}
-        unit={'kg'}
+            image={
+              isDarkMode ? (
+                <Workoutwhite width={50} height={50} />
+              ) : (
+                <Bardumble width={50} height={50} />
+              )
+            }
+            name="Workout"
           />
           <WorkoutCard
-           image={<Cardio width={50} height={50} />}
-           name="Cardio"
-           todayValue={cardioTimeToday}
-           weekValue={cardioTimeWeek}
-           monthValue={cardioTimeMonth}
-           unit={'min'}
+            image={
+              isDarkMode ? (
+                <Cardiowhite width={50} height={50} />
+              ) : (
+                <Cardio width={50} height={50} />
+              )
+            }
+            name="Cardio"
           />
           <WorkoutCard
-         image={<Recovery width={50} height={50} />}
-         name="Recovery"
-         todayValue={recoveryTimeToday}
-         weekValue={recoveryTimeWeek}
-         monthValue={recoveryTimeMonth}
-         unit={'min'}
+            image={
+              isDarkMode ? (
+                <Recoverywhite width={50} height={50} />
+              ) : (
+                <Recovery width={50} height={50} />
+              )
+            }
+            name="Recovery"
           />
           <View
             style={{
@@ -139,33 +113,63 @@ export default function HomeScreen({navigation}) {
                 styles.button,
                 {
                   width: 133,
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#FFFFFF' : '#000000',
                 },
               ]}
               onPress={onPress}
               activeOpacity={0.8}>
-              <Text style={styles.text}>SUPPLEMENT</Text>
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
+                  },
+                ]}>
+                SUPPLEMENT
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.button,
                 {
                   width: 60,
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#FFFFFF' : '#000000',
                 },
               ]}
               onPress={onPress}
               activeOpacity={0.8}>
-              <Text style={styles.text}>PR</Text>
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
+                  },
+                ]}>
+                PR
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.button,
                 {
                   width: 133,
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+                  borderColor: isDarkMode ? '#FFFFFF' : '#000000',
                 },
               ]}
               onPress={onPress}
               activeOpacity={0.8}>
-              <Text style={styles.text}>Journal</Text>
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    color: isDarkMode ? '#FFFFFF' : '#000000',
+                  },
+                ]}>
+                Journal
+              </Text>
             </TouchableOpacity>
           </View>
         </>

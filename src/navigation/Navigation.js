@@ -18,19 +18,27 @@ import BardumbleBlue from '../assets/images/workout-blue.svg';
 import Cardio from '../assets/images/cardio.svg';
 import CardioBlue from '../assets/images/cardio-blue.svg';
 import Recovery from '../assets/images/recovery.svg';
+import Mainiconwhite from '../assets/images/Main-iconwhite.svg';
+import Supplementwhite from '../assets/images/Supplement-white.svg';
+import Cardiowhite from '../assets/images/Cardio-white.svg';
 import RecoveryBlue from '../assets/images/recovery-blue.svg';
+import Recoverywhite from '../assets/images/recovery-white.svg';
+import Workoutwhite from '../assets/images/workout-white.svg';
 import WorkoutScreen from '../screens/WorkoutScreen';
 import SupplementScreen from '../screens/SupplementScreen';
 import RecoveryScreen from '../screens/RecoveryScreen';
 import CardioScreen from '../screens/CardioScreen';
 import {Text, View} from 'react-native';
 import ProfileScreen from '../screens/ProfileScreen';
+import { useTheme } from '../hooks/useTheme';
 
 // Stack & Tab Navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TabIcon = ({icon, iconFocused, label, focused}) => {
+  const {  isDarkMode } = useTheme();
+  // const useTheme()
   const IconComponent = focused ? iconFocused : icon;
   const iconSize = label === 'Home' ? (focused ? 51 : 36) : 28; // Bigger size for Home icon
 
@@ -46,7 +54,7 @@ const TabIcon = ({icon, iconFocused, label, focused}) => {
             fontSize: 16,
             lineHeight: 24,
             fontWeight: '400',
-            color: focused ? '#00E5FF' : '#000000',
+            color: focused ? '#00E5FF' : isDarkMode ? 'white':'#000000',
             textTransform: 'uppercase',
             textAlign: 'center', // Prevents wrapping
           }}
@@ -61,6 +69,7 @@ const TabIcon = ({icon, iconFocused, label, focused}) => {
 
 // Create a Home stack navigator that includes HomeScreen and ProfileScreen
 const HomeStack = () => {
+  const {  isDarkMode } = useTheme();
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="HomeMain" component={HomeScreen} />
@@ -71,10 +80,11 @@ const HomeStack = () => {
 
 // Custom tab bar pressable component to handle the home tab click
 const MyTabBar = ({state, descriptors, navigation}) => {
+  const {  isDarkMode } = useTheme();
   return (
     <View style={{
       flexDirection: 'row',
-      backgroundColor: 'white',
+      backgroundColor: isDarkMode? 'black': 'white',
       height: 80,
       elevation: 10,
       paddingTop: 15,
@@ -120,6 +130,7 @@ const MyTabBar = ({state, descriptors, navigation}) => {
               }}
               onTouchEnd={onPress}
             >
+              
               {options.tabBarIcon && options.tabBarIcon({
                 focused: isFocused,
                 color: '',
@@ -135,6 +146,7 @@ const MyTabBar = ({state, descriptors, navigation}) => {
 
 // ✅ Bottom Tab Navigator (Tabs are only shown after login)
 const BottomTabNavigator = () => {
+  const {isDarkMode} = useTheme();
   return (
     <Tab.Navigator
       tabBar={props => <MyTabBar {...props} />}
@@ -148,7 +160,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Bardumble}
+              icon={isDarkMode? Workoutwhite :Bardumble}
               iconFocused={BardumbleBlue}
               label="Workout"
               focused={focused}
@@ -162,7 +174,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Recovery}
+              icon={ isDarkMode ?Recoverywhite : Recovery}
               iconFocused={RecoveryBlue}
               label="Recovery"
               focused={focused}
@@ -176,7 +188,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={LogoBlack}
+              icon={isDarkMode? Mainiconwhite: LogoBlack}
               iconFocused={DashboardIcon}
               label="Home"
               focused={focused}
@@ -190,7 +202,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Cardio}
+              icon={ isDarkMode? Cardiowhite: Cardio}
               iconFocused={CardioBlue}
               label="Cardio"
               focused={focused}
@@ -204,7 +216,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Supplement}
+              icon={isDarkMode? Supplementwhite: Supplement}
               iconFocused={SupplementBlue}
               label="Supplement"
               focused={focused}

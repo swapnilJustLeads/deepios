@@ -1,16 +1,11 @@
-import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, } from 'react-native';
 import React, {useState} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
-import WorkoutCard from '../components/WorkoutCard';
 import Cardio from '../assets/images/cardio.svg';
 import moment from 'moment';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
-import DefaultButton from '../components/DefaultButton';
-import WorkoutListComponent from '../components/WorkoutListComponent';
-import WorkoutForm from '../components/WorkoutForm';
 import RecoveryCard from '../components/RecoveryCard';
 import {Button} from '@rneui/themed';
-import RecoveryForm from '../components/RecoveryForm';
 import CardioForm from '../components/CardioForm';
 import {
   useUserCardioContext,
