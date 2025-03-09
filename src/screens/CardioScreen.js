@@ -1,4 +1,4 @@
-import {StyleSheet, View, } from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React, {useState} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import Cardio from '../assets/images/cardio.svg';
@@ -19,10 +19,11 @@ import {
   calculateTotalCardioTime,
 } from '../utils/calculate';
 import WorkoutLayout from '../components/WorkoutLayout';
+import WorkoutCard from '../components/WorkoutCard';
 
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
-  const { cardioData } = useUserCardioContext();
+  const {cardioData} = useUserCardioContext();
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -35,10 +36,10 @@ const CardioScreen = () => {
   };
   const closeSave = () => {
     setshowForm(false);
-  } 
+  };
   const filterDataByRange = (data, range) => {
-    const { startDate, endDate } = getStartAndEndDate(range);
-    return data.filter((item) => {
+    const {startDate, endDate} = getStartAndEndDate(range);
+    return data.filter(item => {
       if (item.createdAt) {
         const itemDate = new Date(item.createdAt.seconds * 1000);
         return itemDate >= startDate && itemDate <= endDate;
@@ -48,15 +49,15 @@ const CardioScreen = () => {
   };
   const cardioTimeToday = calculateTotalCardioTime(
     filterDataByRange(cardioData, 'Today'),
-    'time'
+    'time',
   );
   const cardioTimeWeek = calculateTotalCardioTime(
     filterDataByRange(cardioData, 'Week'),
-    'time'
+    'time',
   );
   const cardioTimeMonth = calculateTotalCardioTime(
     filterDataByRange(cardioData, 'Month'),
-    'time'
+    'time',
   );
   return (
     <View style={styles.container}>
@@ -68,15 +69,19 @@ const CardioScreen = () => {
           <WorkoutCard
             image={<Cardio width={50} height={50} />}
             name="Cardio"
-           todayValue={cardioTimeToday}
-           weekValue={cardioTimeWeek}
-           monthValue={cardioTimeMonth}
-           unit={'min'}
+            todayValue={cardioTimeToday}
+            weekValue={cardioTimeWeek}
+            monthValue={cardioTimeMonth}
+            unit={'min'}
           />
           <HorizontalDatePicker />
+          <WorkoutLayout
+            title="Cardio"
+            type="cardio"
+            selectedDate={selectedDate}
+          />
+
           <View style={styles.bottomButton}>
-            
-          <WorkoutLayout title="Cardio" type="cardio" selectedDate={selectedDate} />
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}
