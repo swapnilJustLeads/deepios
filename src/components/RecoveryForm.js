@@ -1,37 +1,74 @@
-import React, {useState} from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import {Button, Text} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
+import {
+  collection,
+  addDoc,
+} from '@react-native-firebase/firestore';
+import { COLLECTIONS } from '../firebase/collections';
+import { FirestoreDB } from '../firebase/firebase_client';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
+import { useUserDetailsContext } from '../context/UserDetailsContext';
+import { useDetails } from '../context/DeatailsContext';
 
-const RecoveryForm = () => {
+
+const RecoveryForm = ({onSave}) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
   const [hours, setHours] = useState('09');
   const [minutes, setMinutes] = useState('35');
+  const [duration, setDuration] = useState('');
   const [intensity, setIntensity] = useState('1-10');
   const [rounds, setRounds] = useState('1-10');
+  const [filteredExercises, setFilteredExercises] = useState([]);
+  const { categories, subCategories, parentIds } = useDetails();
+  const { userDetails } = useUserDetailsContext();
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [recoveryItems, setRecoveryItems] = useState([]);
 
+  useEffect(() => {
+    console.log('🔥 parentIds at recovery:', parentIds);
+    console.log('🔥 parentIds.Workout:', parentIds?.Recovery);
+  }, [parentIds]);
   // Sample data for dropdowns
-  const categoryData = [
-    {label: 'Select Category', value: ''},
-    {label: 'Back', value: 'back'},
-    {label: 'Chest', value: 'chest'},
-    {label: 'Legs', value: 'legs'},
-    {label: 'Arms', value: 'arms'},
-    {label: 'Shoulders', value: 'shoulders'},
-    {label: 'Core', value: 'core'},
-  ];
+  useEffect(() => {
+    if (categories?.length > 0 && parentIds?.Recovery) {
+      // Your existing filter code remains the same
+      const recoveryCategories = categories
+        .filter(cat => {
+          const parentMatch = (cat.parentId?.trim() === parentIds.Recovery?.trim()) ||
+            (cat.parent?.trim() === parentIds.Recovery?.trim());
+          return parentMatch;
+        })
+        .map(cat => ({ label: cat.name, value: cat.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
 
-  const exerciseData = [
-    {label: 'Select Exercise', value: ''},
-    {label: 'Barbell Deadlift', value: 'barbell_deadlift'},
-    {label: 'Bench Press', value: 'bench_press'},
-    {label: 'Squats', value: 'squats'},
-    {label: 'Pull-ups', value: 'pull_ups'},
-  ];
+      console.log('Filtered Categories Count:', recoveryCategories.length);
+      setFilteredCategories(recoveryCategories);
+    }
+  }, [categories, parentIds]);
+
+
+  useEffect(() => {
+    if (subCategories?.length > 0 && category) {
+      const exercisesForCategory = subCategories
+        .filter(sub => {
+          const match = sub.category?.trim() === category.trim();
+          return match;
+        })
+        .map(sub => ({ label: sub.name, value: sub.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
+      console.log('🔥 Filtered Exercises Count:', exercisesForCategory.length);
+      setFilteredExercises(exercisesForCategory);
+    } else {
+      setFilteredExercises([]);
+    }
+  }, [category, subCategories]);
 
   const hoursData = Array.from({length: 24}, (_, i) => {
     const val = i.toString().padStart(2, '0');
@@ -73,6 +110,93 @@ const RecoveryForm = () => {
     console.log('Form data:', formData);
   };
 
+    // Delete recovery item
+    const handleDeleteRecovery = (index) => {
+      setRecoveryItems(prevItems => prevItems.filter((_, idx) => idx !== index));
+    };
+// Add recovery item
+
+const handleAddRecovery = () => {
+  if (!category || !exercise) {
+    console.log('Please select both category and exercise');
+    return;
+  }
+
+  // Get names for display
+  const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+  
+  // Create recovery item
+  const newRecoveryItem = {
+    category,
+    subCategory: exercise,
+    name: exerciseName,
+    time: duration,
+    intensity,
+    rounds
+  };
+  
+  // Add to recovery items list
+  setRecoveryItems(prevItems => [...prevItems, newRecoveryItem]);
+  
+  // Reset form fields
+  setExercise(null);
+  setIntensity('1-10');
+  setRounds('1-10');
+  
+  console.log('Recovery item added:', newRecoveryItem);
+};
+    // Save all recovery items
+    const handleSaveRecovery = async () => {
+      try {
+        // Create date with selected time
+        const currentDate = new Date();
+        const recoveryTime = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          parseInt(hours, 10),
+          parseInt(minutes, 10),
+          0
+        );
+        
+        // Format data for Firebase
+        const payload = {
+          data: recoveryItems.map(item => ({
+            category: item.category,
+            subCategory: item.subCategory,
+            time: item.time,
+            intensity: item.intensity,
+            rounds: item.rounds
+          })),
+          createdAt: recoveryTime,
+          parent: parentIds.Recovery,
+          username: userDetails?.username,
+          template: null
+        };
+        
+        // Save to Firestore
+        const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+        const docRef = await addDoc(dataCollection, payload);
+        console.log("Recovery data saved with ID: ", docRef.id);
+        
+        // Reset form
+        setRecoveryItems([]);
+        setCategory(null);
+        setExercise(null);
+        setIntensity('1-10');
+        setRounds('1-10');
+        
+        // Callback
+        if (onSave) {
+          onSave(docRef.id);
+        }
+        
+        console.log('Recovery data saved successfully');
+      } catch (error) {
+        console.error("Error saving recovery data:", error);
+      }
+    };
+
   return (
     <View style={styles.container}>
       {/* First Row: Category and Exercise */}
@@ -83,10 +207,10 @@ const RecoveryForm = () => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={categoryData}
+            data={filteredCategories}
             labelField="label"
             valueField="value"
-            placeholder="Select Category"
+            placeholder="Choose"
             value={category}
             onChange={item => setCategory(item.value)}
             renderItem={renderDropdownItem}
@@ -100,10 +224,10 @@ const RecoveryForm = () => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={exerciseData}
+            data={filteredExercises}
             labelField="label"
             valueField="value"
-            placeholder="Select Exercise"
+            placeholder="Choose"
             value={exercise}
             onChange={item => setExercise(item.value)}
             renderItem={renderDropdownItem}
@@ -150,8 +274,11 @@ const RecoveryForm = () => {
             <View style={styles.minContainer}>
               <TextInput
                 style={styles.minInput}
-                value="min."
-                editable={false}
+                editable={true}
+                value={duration}
+                onChangeText={setDuration}
+                placeholder="min."
+                keyboardType="numeric"
               />
             </View>
           </View>
@@ -184,7 +311,7 @@ const RecoveryForm = () => {
       <View style={styles.buttonRow}>
         <Button
       
-          onPress={() => setshowForm(true)}
+          // onPress={handleAddRecovery}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -196,7 +323,7 @@ const RecoveryForm = () => {
         />
         <Button
           // containerStyle={{marginLeft: 21}}
-          onPress={() => setshowForm(true)}
+          // onPress={handleAdd}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -208,14 +335,27 @@ const RecoveryForm = () => {
         />
         <Button
           // containerStyle={{marginLeft: 21}}
-          onPress={() => setshowForm(true)}
+          onPress={handleAddRecovery}
           buttonStyle={[styles.buttonStyle]}
           title="ADD"
           titleStyle={styles.buttonTextStyle}
         />
       </View>
-      <Summary />
-    </View>
+      <Summary 
+  title="Recovery Summary" 
+   recovery={recoveryItems}
+  // onDeleteRecovery={handleDeleteRecovery} 
+/>
+<View style={styles.bottomButton}>
+            <Button
+              onPress={handleSaveRecovery}
+              buttonStyle={styles.buttonStyle}
+              title="Save"
+              titleStyle={styles.buttonTextStyle}
+            />
+          </View>
+ </View>
+    
   );
 };
 
@@ -224,6 +364,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#b0b0b0',
     borderRadius: 8,
+    flex:1
   },
   topRow: {
     flexDirection: 'row',
@@ -382,6 +523,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     textAlign: 'center',
   },
+  bottomButton: {
+    position: 'absolute',
+    alignSelf: 'center',
+    bottom:21
+  }
 });
 
 export default RecoveryForm;

@@ -14,7 +14,7 @@ const SupplementScreen = (prop) => {
   const [showForm, setshowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
 
-  const { supplementData } = useUserSupplementContext(); // ✅ Fetch context data
+  const { supplementData ,setRefresh} = useUserSupplementContext(); // ✅ Fetch context data
 
   useEffect(() => {
     console.log("🔥 Supplement Data from Context (Screen):", supplementData);
@@ -23,7 +23,10 @@ const SupplementScreen = (prop) => {
   const closeForm = () => {
     setshowForm(false);
   };
-
+  const handleFormSave = () => {
+    setshowForm(false);  // Hide the form
+    setRefresh(prev => !prev); // Toggle refresh to trigger data reload
+  };
   return (
     <View style={styles.container}>
       <HeaderComponent />
@@ -31,8 +34,8 @@ const SupplementScreen = (prop) => {
 
       {showForm ? (
         <>
-          <SupplmentFormComponent save={closeForm} />
-          <View style={styles.bottomButtonRow}>
+          <SupplmentFormComponent save={closeForm} onSave={handleFormSave} />
+          {/* <View style={styles.bottomButtonRow}>
             <Button
               containerStyle={{ marginLeft: 21 }}
               onPress={() => setshowForm(true)}
@@ -47,7 +50,7 @@ const SupplementScreen = (prop) => {
               title="Save"
               titleStyle={styles.buttonTextStyle}
             />
-          </View>
+          </View> */}
         </>
       ) : (
         <>

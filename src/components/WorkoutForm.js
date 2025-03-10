@@ -1,7 +1,15 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
-import {Button, Text} from '@rneui/themed';
-import {Dropdown} from 'react-native-element-dropdown';
+import React, { useState, useMemo, useEffect } from 'react';
+import { COLLECTIONS } from '../firebase/collections';
+import {
+  collection,
+  addDoc,
+} from '@react-native-firebase/firestore';
+import { FirestoreDB } from '../firebase/firebase_client';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Button, Text } from '@rneui/themed';
+import { Dropdown } from 'react-native-element-dropdown';
+import { useUserDetailsContext } from '../context/UserDetailsContext';
+import { useDetails } from '../context/DeatailsContext';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
 
@@ -9,56 +17,218 @@ const WorkoutForm = props => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
-  const [sets, setSets] = useState(null);
+  const [filteredExercises, setFilteredExercises] = useState([]);
+  const [exercisesList, setExercisesList] = useState([]);
+  const [currentExercise, setCurrentExercise] = useState({
+    name: '', 
+    sets: []
+  });
+  // const [sets, setSets] = useState(null);
+  const [sets, setSets] = useState(1);
+  const [reps, setReps] = useState(Array(sets).fill(''));
+  const [weights, setWeights] = useState(Array(sets).fill(''));
   const [hours, setHours] = useState('07');
   const [minutes, setMinutes] = useState('19');
-  const [reps, setReps] = useState(['3', '5', '10', '11', '7']);
-  const [weights, setWeights] = useState(['5', '5', '4.5', '4', '4.5']);
+  // 🔹 Get data from Context
+  const { categories, subCategories, parentIds } = useDetails();
+  const { userDetails } = useUserDetailsContext();
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  useEffect(() => {
+    console.log('🔥 parentIds:', parentIds);
+    console.log('🔥 parentIds.Workout:', parentIds?.Workout);
+  }, [parentIds]);
 
-  // Sample data for dropdowns
-  const categoryData = [
-    {label: 'Select Category', value: ''},
-    {label: 'Back', value: 'back'},
-    {label: 'Chest', value: 'chest'},
-    {label: 'Legs', value: 'legs'},
-    {label: 'Arms', value: 'arms'},
-    {label: 'Shoulders', value: 'shoulders'},
-    {label: 'Core', value: 'core'},
-  ];
+  useEffect(() => {
+    if (categories?.length > 0 && parentIds?.Workout) {
+      // Your existing filter code remains the same
+      const workoutCategories = categories
+        .filter(cat => {
+          const parentMatch = (cat.parentId?.trim() === parentIds.Workout?.trim()) ||
+            (cat.parent?.trim() === parentIds.Workout?.trim());
+          return parentMatch;
+        })
+        .map(cat => ({ label: cat.name, value: cat.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
 
-  const exerciseData = [
-    {label: 'Select Exercise', value: ''},
-    {label: 'Barbell Deadlift', value: 'barbell_deadlift'},
-    {label: 'Bench Press', value: 'bench_press'},
-    {label: 'Squats', value: 'squats'},
-    {label: 'Pull-ups', value: 'pull_ups'},
-  ];
+      console.log('Filtered Categories Count:', workoutCategories.length);
+      setFilteredCategories(workoutCategories);
+    }
+  }, [categories, parentIds]);
 
-  const setsData = Array.from({length: 10}, (_, i) => {
-    const val = (i + 1).toString();
-    return {label: val, value: val};
-  });
 
-  const hoursData = Array.from({length: 24}, (_, i) => {
-    const val = i.toString().padStart(2, '0');
-    return {label: val, value: val};
-  });
+  useEffect(() => {
+    if (subCategories?.length > 0 && category) {
+      const exercisesForCategory = subCategories
+        .filter(sub => {
+          const match = sub.category?.trim() === category.trim();
+          return match;
+        })
+        .map(sub => ({ label: sub.name, value: sub.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
+      console.log('🔥 Filtered Exercises Count:', exercisesForCategory.length);
+      setFilteredExercises(exercisesForCategory);
+    } else {
+      setFilteredExercises([]);
+    }
+  }, [category, subCategories]);
 
-  const minutesData = Array.from({length: 60}, (_, i) => {
-    const val = i.toString().padStart(2, '0');
-    return {label: val, value: val};
-  });
 
-  // Data for reps and weights dropdowns
-  const repsData = Array.from({length: 20}, (_, i) => {
-    const val = (i + 1).toString();
-    return {label: val, value: val};
-  });
+  // When sets change, dynamically adjust reps & weights
+  useEffect(() => {
+    setReps(prevReps => {
+      const newReps = [...prevReps.slice(0, sets)];
+      while (newReps.length < sets) newReps.push(''); // Add empty values if increasing sets
+      return newReps;
+    });
 
-  const weightsData = Array.from({length: 40}, (_, i) => {
-    const val = (i * 0.5 + 0.5).toFixed(1);
-    return {label: val, value: val};
-  });
+    setWeights(prevWeights => {
+      const newWeights = [...prevWeights.slice(0, sets)];
+      while (newWeights.length < sets) newWeights.push(''); // Add empty values if increasing sets
+      return newWeights;
+    });
+  }, [sets]);
+
+  // Dropdown Data
+  const setsData = Array.from({ length: 5 }, (_, i) => ({ label: (i + 1).toString(), value: (i + 1).toString() }));
+  const hoursData = Array.from({ length: 24 }, (_, i) => ({ label: i.toString().padStart(2, '0'), value: i.toString().padStart(2, '0') }));
+  const minutesData = Array.from({ length: 60 }, (_, i) => ({ label: i.toString().padStart(2, '0'), value: i.toString().padStart(2, '0') }));
+  const repsData = Array.from({ length: 12 }, (_, i) => ({ label: (i + 1).toString(), value: (i + 1).toString() }));
+
+const weightsData = [
+  ...Array.from({ length: 50 }, (_, i) => {
+    const value = (i + 1) * 0.5;
+    const label = value % 1 === 0 ? value.toString() : value.toFixed(1);
+    return {
+      label: label,
+      value: value.toString()
+    };
+  }),
+  ...Array.from({ length: 275 }, (_, i) => {
+    const value = i + 26;
+    return {
+      label: value.toString(),
+      value: value.toString()
+    };
+  })
+];
+
+// Modify your ADD button's onClick handler
+
+const handleAddExercise = () => {
+  if (category && exercise) {
+    // Get the exercise name for display purposes
+    const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+    
+    // Format the sets data as an array of objects with reps and weight properties
+    const setsData = [];
+    for (let i = 0; i < sets; i++) {
+      setsData.push({
+        reps: parseInt(reps[i] || '0', 10),
+        weight: parseFloat(weights[i] || '0')
+      });
+    }
+    
+    // Create workout object with necessary structure for Summary component
+    const newWorkout = {
+      category,               // Store category ID
+      subCategory: exercise,  // Store exercise ID
+      name: exerciseName,     // Add name for display in Summary
+      sets: setsData,         // Format sets as an array of objects with reps and weight
+      reps: [...reps],        // Keep original reps array for saving
+      weights: [...weights]   // Keep original weights array for saving
+    };
+    
+    // Add to exercises list
+    setExercisesList(prevList => [...prevList, newWorkout]);
+    
+    // Reset form fields
+    setExercise(null);
+    setSets(1);
+    setReps(Array(1).fill(''));
+    setWeights(Array(1).fill(''));
+  } else {
+    console.log('Please select both category and exercise');
+  }
+};
+
+const handleSaveWorkout = async () => {
+  try {
+    // Create date object with selected time
+    const currentDate = new Date();
+    const workoutTime = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      parseInt(hours, 10),
+      parseInt(minutes, 10),
+      0
+    );
+
+    // Format workout data for Firebase
+    // We need to transform our data structure back to what Firestore expects
+    const workoutData = {
+      data: exercisesList.map(exercise => ({
+        category: exercise.category,
+        subCategory: exercise.subCategory,
+        sets: exercise.sets.length,
+        reps: exercise.reps,
+        weights: exercise.weights,
+        notes: exercise.notes || ''
+      })),
+      createdAt: workoutTime,
+      parent: parentIds.Workout,
+      username: userDetails?.username,
+      template: null
+    };
+
+    // Reference to the collection
+    const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+    
+    // Add to Firestore
+    const docRef = await addDoc(dataCollection, workoutData);
+    console.log("Workout saved with ID: ", docRef.id);
+    
+    // Clear form and show success
+    setExercisesList([]);
+    setCategory(null);
+    setExercise(null);
+    setSets(1);
+    setReps(Array(1).fill(''));
+    setWeights(Array(1).fill(''));
+    
+    // Success message
+    console.log('Workout saved successfully');
+    
+    // Navigate back or to workout list
+    if (props.onSave) {
+      props.onSave(docRef.id);
+    }
+    
+  } catch (error) {
+    console.error("Error saving workout: ", error);
+    // Show error message
+    console.log('Failed to save workout');
+  }
+};
+  // Update Specific Rep
+  const updateRep = (index, value) => {
+    const updatedReps = [...reps];
+    updatedReps[index] = value;
+    setReps(updatedReps);
+  };
+
+  // Update Specific Weight
+  const updateWeight = (index, value) => {
+    const updatedWeights = [...weights];
+    updatedWeights[index] = value;
+    setWeights(updatedWeights);
+  };
+
+
+
+
 
   // Custom dropdown render
   const renderDropdownItem = item => {
@@ -72,38 +242,29 @@ const WorkoutForm = props => {
   // Update reps and weights based on sets
   const updateFormArrays = newSets => {
     const setsNumber = parseInt(newSets, 10) || 0;
-    // Adjust reps array
-    const newReps = [...reps];
-    while (newReps.length < setsNumber) {
-      newReps.push('5');
-    }
-    while (newReps.length > setsNumber) {
-      newReps.pop();
-    }
-    setReps(newReps);
 
-    // Adjust weights array
-    const newWeights = [...weights];
-    while (newWeights.length < setsNumber) {
-      newWeights.push('5');
-    }
-    while (newWeights.length > setsNumber) {
-      newWeights.pop();
-    }
-    setWeights(newWeights);
+    // For reps, preserve existing values and fill new slots with '5'
+    setReps(prevReps => {
+      if (setsNumber <= 0) return [];
+      const newReps = [...prevReps.slice(0, setsNumber)];
+      while (newReps.length < setsNumber) {
+        newReps.push('5');
+      }
+      return newReps;
+    });
+
+    // For weights, preserve existing values and fill new slots with '5'
+    setWeights(prevWeights => {
+      if (setsNumber <= 0) return [];
+      const newWeights = [...prevWeights.slice(0, setsNumber)];
+      while (newWeights.length < setsNumber) {
+        newWeights.push('5');
+      }
+      return newWeights;
+    });
   };
 
-  const updateRep = (index, value) => {
-    const newReps = [...reps];
-    newReps[index] = value;
-    setReps(newReps);
-  };
 
-  const updateWeight = (index, value) => {
-    const newWeights = [...weights];
-    newWeights[index] = value;
-    setWeights(newWeights);
-  };
 
   return (
     <View style={styles.container}>
@@ -115,13 +276,16 @@ const WorkoutForm = props => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={categoryData}
+            data={filteredCategories}
             labelField="label"
             valueField="value"
-            placeholder="Select Category"
+            placeholder="Choose"
             value={category}
-            onChange={item => setCategory(item.value)}
-            renderItem={renderDropdownItem}
+            // In your category dropdown onChange
+            onChange={item => {
+              console.log('Selected category item:', item);
+              setCategory(item.value);
+            }}
             renderRightIcon={() => <Down height={14} width={14} />}
           />
         </View>
@@ -132,13 +296,12 @@ const WorkoutForm = props => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={exerciseData}
+            data={filteredExercises} // 🔥 FIXED: Exercises now show correctly
             labelField="label"
             valueField="value"
-            placeholder="Select Exercise"
+            placeholder="Choose"
             value={exercise}
-            onChange={item => setExercise(item.value)}
-            renderItem={renderDropdownItem}
+            onChange={(item) => setExercise(item.value)}
             renderRightIcon={() => <Down height={14} width={14} />}
           />
         </View>
@@ -156,11 +319,8 @@ const WorkoutForm = props => {
             labelField="label"
             valueField="value"
             placeholder="Sets"
-            value={sets}
-            onChange={item => {
-              setSets(item.value);
-              updateFormArrays(item.value);
-            }}
+            value={sets.toString()}
+            onChange={item => setSets(parseInt(item.value))}
             renderItem={renderDropdownItem}
             renderRightIcon={() => <Down height={10} width={10} />}
           />
@@ -212,7 +372,11 @@ const WorkoutForm = props => {
                 labelField="label"
                 valueField="value"
                 value={rep}
-                onChange={item => updateRep(index, item.value)}
+                onChange={item => {
+                  const newReps = [...reps];
+                  newReps[index] = item.value;
+                  setReps(newReps);
+                }}
                 renderItem={renderDropdownItem}
                 renderRightIcon={() => <Down height={10} width={10} />}
               />
@@ -236,7 +400,11 @@ const WorkoutForm = props => {
                 labelField="label"
                 valueField="value"
                 value={weight}
-                onChange={item => updateWeight(index, item.value)}
+                onChange={item => {
+                  const newWeights = [...weights];
+                  newWeights[index] = item.value;
+                  setWeights(newWeights);
+                }}
                 renderItem={renderDropdownItem}
                 renderRightIcon={() => <Down height={10} width={10} />}
               />
@@ -270,24 +438,18 @@ const WorkoutForm = props => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={props.addButton}
+          onPress={handleAddExercise}
           buttonStyle={styles.buttonStyle}
           title="ADD"
           titleStyle={styles.buttonTextStyle}
         />
       </View>
-      <Summary />
+      <Summary Summary title="Workout Summary" exercises={exercisesList}  />
       <View style={styles.bottomButton}>
         <Button
-          onPress={() => {
-            if (props.onSave) {
-              props.onSave();
-            } else {
-              console.log('Save pressed');
-            }
-          }}
+      onPress={handleSaveWorkout}
           buttonStyle={styles.buttonStyle}
-          title="Save"
+          title="Save Workout"
           titleStyle={styles.buttonTextStyle}
         />
       </View>

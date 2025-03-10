@@ -322,6 +322,22 @@ export const getCategories = async () => {
   }
 };
 
+export const getSubCategories = async () => {
+  try {
+    const lang = await AsyncStorage.getItem('lang') || 'en';
+    const subCategoriesRef = collection(FirestoreDB, COLLECTIONS.SUB_CATERGORY);
+    const querySnapshot = await getDocs(subCategoriesRef);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      let name = lang === 'de' ? data.translatedNameDe || data.name : data.name;
+      return { id: doc.id, ...data, name };
+    });
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    throw error;
+  }
+};
 
 export const fetchUserData = async (username, parentId) => {
   try {
@@ -350,22 +366,7 @@ export const fetchUserData = async (username, parentId) => {
   }
 };
 
-export const getSubCategories = async () => {
-  try {
-    const lang = await AsyncStorage.getItem('lang') || 'en';
-    const subCategoriesRef = collection(FirestoreDB, COLLECTIONS.SUB_CATERGORY);
-    const querySnapshot = await getDocs(subCategoriesRef);
 
-    return querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      let name = lang === 'de' ? data.translatedNameDe || data.name : data.name;
-      return { id: doc.id, ...data, name };
-    });
-  } catch (error) {
-    console.error('Error fetching subcategories:', error);
-    throw error;
-  }
-};
 
 // export const addCategory = async (category) => {
 //   try {

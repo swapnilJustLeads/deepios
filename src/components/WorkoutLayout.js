@@ -41,12 +41,14 @@ const WorkoutLayout = (props) => {
   });
   
   // Helper function to get exercise name from subCategory ID
-  function getExerciseName(subCategoryId) {
+  function getExerciseName(subCategoryId, exerciseName) {
+    if (exerciseName) return exerciseName; // 🔥 Use stored name directly
     if (!subCategoryId || !subCategories) return 'Unknown Exercise';
     
     const subCategory = subCategories.find(sc => sc.id === subCategoryId);
     return subCategory ? subCategory.name : 'Unknown Exercise';
   }
+  
   
   // Transform data based on its type
   const transformData = () => {

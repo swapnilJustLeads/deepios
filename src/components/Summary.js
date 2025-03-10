@@ -1,29 +1,140 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Delete from '../assets/images/delete.svg';
 
-const Summary = ({ title = "SUMMARY", exercise = "Barbell Deadlift", sets = [
-  { reps: 15, weight: 125.9 },
-  { reps: 15, weight: 125.9 },
-  { reps: 15, weight: 125.9 }
-] }) => {
+const Summary = ({ 
+  title, 
+  exercises = [],
+  cardio = [],
+  recovery = [],
+  supplement = [],
+  onDeleteExercise,
+  onDeleteCardio,
+  onDeleteRecovery,
+  onDeleteSupplement
+}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <View style={styles.listContainer}>
-        <View style={styles.exerciseHeader}>
-          <Text style={styles.exerciseName}>{exercise}</Text>
-        <Delete height={21} width={21} />
-        </View>
-        <View style={styles.setsContainer}>
-          {sets.map((set, index) => (
-            <View key={index} style={styles.setItem}>
-              <Text style={styles.setNumber}>{index + 1} |</Text>
-              <Text style={styles.setText}>{`${set.reps} × ${set.weight}kg`}</Text>
+
+      {/* Workout/Exercise Items */}
+      {exercises.length > 0 && (
+        <>
+          {exercises.map((exercise, idx) => (
+            <View key={`exercise-${idx}`} style={styles.listContainer}>
+              <View style={styles.exerciseHeader}>
+                <Text style={styles.exerciseName}>{exercise.name}</Text>
+                <TouchableOpacity onPress={() => onDeleteExercise && onDeleteExercise(idx)}>
+                  <Delete height={21} width={21} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.setsContainer}>
+                {exercise.sets && exercise.sets.map((set, index) => (
+                  <View key={index} style={styles.setItem}>
+                    <Text style={styles.setNumber}>{index + 1} |</Text>
+                    <Text style={styles.setText}>{`${set.reps} × ${set.weight}kg`}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           ))}
-        </View>
-      </View>
+        </>
+      )}
+
+      {/* Recovery Items */}
+      {recovery.length > 0 && (
+        <>
+          {recovery.map((item, idx) => (
+            <View key={`recovery-${idx}`} style={styles.listContainer}>
+              <View style={styles.exerciseHeader}>
+                <Text style={styles.exerciseName}>{item.name}</Text>
+                <TouchableOpacity onPress={() => onDeleteRecovery && onDeleteRecovery(idx)}>
+                  <Delete height={21} width={21} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.detailsRow}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Time:</Text>
+                  <Text style={styles.detailText}>{item.time || '00:00'}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Intensity:</Text>
+                  <Text style={styles.detailText}>{item.intensity || 'N/A'}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Rounds:</Text>
+                  <Text style={styles.detailText}>{item.rounds || 'N/A'}</Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+
+      {/* Cardio Items */}
+      {cardio.length > 0 && (
+        <>
+          {cardio.map((item, idx) => (
+            <View key={`cardio-${idx}`} style={styles.listContainer}>
+              <View style={styles.exerciseHeader}>
+                <Text style={styles.exerciseName}>{item.name}</Text>
+                <TouchableOpacity onPress={() => onDeleteCardio && onDeleteCardio(idx)}>
+                  <Delete height={21} width={21} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.detailsRow}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Duration:</Text>
+                  <Text style={styles.detailText}>{item.duration || '00:00'}</Text>
+                </View>
+                {item.distance && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Distance:</Text>
+                    <Text style={styles.detailText}>{item.distance}km</Text>
+                  </View>
+                )}
+                {item.calories && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Calories:</Text>
+                    <Text style={styles.detailText}>{item.calories}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+
+      {/* Supplement Items */}
+      {supplement.length > 0 && (
+        <>
+          {supplement.map((item, idx) => (
+            <View key={`supplement-${idx}`} style={styles.listContainer}>
+              <View style={styles.exerciseHeader}>
+                <Text style={styles.exerciseName}>{item.name}</Text>
+                <TouchableOpacity onPress={() => onDeleteSupplement && onDeleteSupplement(idx)}>
+                  <Delete height={21} width={21} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.detailsRow}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Dosage:</Text>
+                  <Text style={styles.detailText}>{item.dosage || 'N/A'}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Time:</Text>
+                  <Text style={styles.detailText}>{item.time || '00:00'}</Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+
+      {/* Show empty state if no items of any type */}
+      {exercises.length === 0 && cardio.length === 0 && recovery.length === 0 && supplement.length === 0 && (
+        <Text style={styles.emptyText}>No items added yet</Text>
+      )}
     </View>
   );
 };
@@ -36,7 +147,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
     padding: 7,
-    marginTop:21
+    marginTop: 21,
   },
   title: {
     fontFamily: 'Stomic',
@@ -46,8 +157,16 @@ const styles = StyleSheet.create({
     color: '#000000',
     textTransform: 'uppercase',
   },
+  emptyText: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: 10,
+    marginBottom: 10,
+    fontFamily: 'Inter',
+  },
   listContainer: {
     marginTop: 4,
+    marginBottom: 8,
   },
   exerciseHeader: {
     flexDirection: 'row',
@@ -63,19 +182,17 @@ const styles = StyleSheet.create({
     color: '#000000',
     lineHeight: 20,
   },
-  deleteIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   setsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
     paddingHorizontal: 17,
     marginTop: 4,
   },
   setItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 10,
   },
   setNumber: {
     fontFamily: 'Inter',
@@ -92,7 +209,32 @@ const styles = StyleSheet.create({
     color: '#000000',
     lineHeight: 18,
   },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    paddingHorizontal: 17,
+    marginTop: 4,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  detailLabel: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000000',
+    marginRight: 4,
+  },
+  detailText: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#000000',
+    lineHeight: 18,
+  },
 });
 
 export default Summary;
-

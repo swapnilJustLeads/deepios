@@ -1,49 +1,78 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import {Button, Text} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
+import { useUserDetailsContext } from '../context/UserDetailsContext';
+import { useDetails } from '../context/DeatailsContext';
+import {
+  collection,
+  addDoc,
+} from '@react-native-firebase/firestore';
+import { COLLECTIONS } from '../firebase/collections';
+import { FirestoreDB } from '../firebase/firebase_client';
 
-const CardioForm = (props) => {
+
+const CardioForm = ({onSave}) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
+  const [duration, setDuration] = useState('');
   const [hours, setHours] = useState('09');
   const [minutes, setMinutes] = useState('35');
   const [intensity, setIntensity] = useState('km/h');
+  const [cardioItems, setCardioItems] = useState([]);
+  const [filteredExercises, setFilteredExercises] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const { categories, subCategories, parentIds } = useDetails();
+  const { userDetails } = useUserDetailsContext();
   const [rounds, setRounds] = useState('%');
   // Added state location field
   const [location, setLocation] = useState('');
 
-  // Sample data for dropdowns
-  const categoryData = [
-    {label: 'Select Category', value: ''},
-    {label: 'Back', value: 'back'},
-    {label: 'Chest', value: 'chest'},
-    {label: 'Legs', value: 'legs'},
-    {label: 'Arms', value: 'arms'},
-    {label: 'Shoulders', value: 'shoulders'},
-    {label: 'Core', value: 'core'},
-  ];
+  useEffect(() => {
+    console.log('🔥 parentIds:', parentIds);
+    console.log('🔥 parentIds.Workout:', parentIds?.Cardio);
+  }, [parentIds]);
 
-  const exerciseData = [
-    {label: 'Select Exercise', value: ''},
-    {label: 'Barbell Deadlift', value: 'barbell_deadlift'},
-    {label: 'Bench Press', value: 'bench_press'},
-    {label: 'Squats', value: 'squats'},
-    {label: 'Pull-ups', value: 'pull_ups'},
-  ];
+  useEffect(() => {
+    if (categories?.length > 0 && parentIds?.Cardio) {
+      // Your existing filter code remains the same
+      const cardioCategories = categories
+        .filter(cat => {
+          const parentMatch = (cat.parentId?.trim() === parentIds.Cardio?.trim()) ||
+            (cat.parent?.trim() === parentIds.Cardio?.trim());
+          return parentMatch;
+        })
+        .map(cat => ({ label: cat.name, value: cat.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
 
-  // Added state/location data
-  const locationData = [
-    {label: 'Select State', value: ''},
-    {label: 'New York', value: 'NY'},
-    {label: 'California', value: 'CA'},
-    {label: 'Texas', value: 'TX'},
-    {label: 'Florida', value: 'FL'},
-    {label: 'Illinois', value: 'IL'},
-  ];
+      console.log('Filtered Categories Count:', cardioCategories.length);
+      setFilteredCategories(cardioCategories);
+    }
+  }, [categories, parentIds]);
+
+
+  useEffect(() => {
+    if (subCategories?.length > 0 && category) {
+      const exercisesForCategory = subCategories
+        .filter(sub => {
+          const match = sub.category?.trim() === category.trim();
+          return match;
+        })
+        .map(sub => ({ label: sub.name, value: sub.id }))
+        // Add sort here - sort alphabetically by label (name)
+        .sort((a, b) => a.label.localeCompare(b.label));
+      console.log('🔥 Filtered Exercises Count:', exercisesForCategory.length);
+      setFilteredExercises(exercisesForCategory);
+    } else {
+      setFilteredExercises([]);
+    }
+  }, [category, subCategories]);
+
+
 
   const hoursData = Array.from({length: 24}, (_, i) => {
     const val = i.toString().padStart(2, '0');
@@ -85,7 +114,91 @@ const CardioForm = (props) => {
     };
     console.log('Form data:', formData);
   };
+  const handleDeleteCardio = (index) => {
+    setCardioItems(prevItems => prevItems.filter((_, idx) => idx !== index));
+  };
 
+  const handleAddCardio = () => {
+    if (!category || !exercise) {
+      console.log('Please select both category and exercise');
+      return;
+    }
+  
+    // Get names for display
+    const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+    
+    // Create cardio item
+    const newCardioItem = {
+      category,
+      subCategory: exercise,
+      name: exerciseName,
+      duration: `${hours}:${minutes}`,
+      speed: intensity,
+      incline: rounds,
+      location: location
+    };
+    
+    // Add to cardio items list
+    setCardioItems(prevItems => [...prevItems, newCardioItem]);
+    
+    // Reset form fields
+    setExercise(null);
+    setIntensity('km/h');
+    setRounds('%');
+    
+    console.log('Cardio item added:', newCardioItem);
+  };
+  const handleSaveCardio = async () => {
+    try {
+      // Create date with selected time
+      const currentDate = new Date();
+      const cardioTime = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+        parseInt(hours, 10),
+        parseInt(minutes, 10),
+        0
+      );
+      
+      // Format data for Firebase
+      const payload = {
+        data: cardioItems.map(item => ({
+          category: item.category,
+          subCategory: item.subCategory,
+          duration: item.duration,
+          speed: item.speed,
+          incline: item.incline,
+          location: item.location
+        })),
+        createdAt: cardioTime,
+        parent: parentIds.Cardio,
+        username: userDetails?.username,
+        template: null
+      };
+      
+      // Save to Firestore
+      const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+      const docRef = await addDoc(dataCollection, payload);
+      console.log("Cardio data saved with ID: ", docRef.id);
+      
+      // Reset form
+      setCardioItems([]);
+      setCategory(null);
+      setExercise(null);
+      setIntensity('km/h');
+      setRounds('%');
+      
+      // Callback
+      if (onSave) {
+        onSave(docRef.id);
+      }
+      
+      console.log('Cardio data saved successfully');
+    } catch (error) {
+      console.error("Error saving cardio data:", error);
+    }
+  };
   return (
     <View style={styles.container}>
       {/* First Row: Category and Exercise */}
@@ -96,7 +209,7 @@ const CardioForm = (props) => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={categoryData}
+            data={filteredCategories}
             labelField="label"
             valueField="value"
             placeholder="Select Category"
@@ -113,7 +226,7 @@ const CardioForm = (props) => {
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
-            data={exerciseData}
+            data={filteredExercises}
             labelField="label"
             valueField="value"
             placeholder="Select Exercise"
@@ -161,11 +274,13 @@ const CardioForm = (props) => {
           <View style={styles.smallColumn}>
             <Text style={styles.label}>Time</Text>
             <View style={styles.minContainer}>
-              <TextInput
-                style={styles.minInput}
-                value="min."
-                editable={false}
-              />
+            <TextInput
+  style={styles.minInput}
+  value={duration}
+  onChangeText={setDuration}
+  placeholder="min."
+  keyboardType="numeric"
+/>
             </View>
           </View>
 
@@ -218,18 +333,22 @@ const CardioForm = (props) => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={handleAdd}
+          onPress={handleAddCardio}
           buttonStyle={[styles.buttonStyle]}
           title="ADD"
           titleStyle={styles.buttonTextStyle}
         />
       </View>
-      <Summary />
+      <Summary 
+  title="Cardio Summary" 
+  cardio={cardioItems}
+  onDeleteCardio={handleDeleteCardio} 
+/>
       <View style={styles.bottomButtonRow}>
         {/* <CustomButton /> */}
         <Button
       
-          onPress={() => setshowForm(true)}
+          // onPress={() => setshowForm(true)}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -240,7 +359,7 @@ const CardioForm = (props) => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={props.save}
+          onPress={handleSaveCardio}
           buttonStyle={[styles.buttonStyle]}
           title="Save"
           titleStyle={styles.buttonTextStyle}

@@ -1,5 +1,5 @@
 import {StyleSheet, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState,useRef} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import WorkoutCard from '../components/WorkoutCard';
 import Recovery from '../assets/images/recovery.svg';
@@ -22,7 +22,8 @@ import {
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
-  const { recoveryData } = useUserRecoveryContext();
+  const { recoveryData,setRefresh } = useUserRecoveryContext();
+  const recoveryFormRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -54,21 +55,20 @@ const RecoveryScreen = () => {
   const recoveryTimeMonth = calculateTotalRecoveryTime(
     filterDataByRange(recoveryData, 'Month')
   );
-
+  const handleFormSave = () => {
+    setshowForm(false);  // Hide the form
+    setRefresh(prev => !prev); // Toggle refresh to trigger data reload
+  };
   return (
     <View style={styles.container}>
       <HeaderComponent />
       {showForm ? (
         <>
-          <RecoveryForm />
-          <View style={styles.bottomButton}>
-            <Button
-              onPress={() => setshowForm(false)}
-              buttonStyle={styles.buttonStyle}
-              title="Save"
-              titleStyle={styles.buttonTextStyle}
-            />
-          </View>
+          <RecoveryForm   
+          ref={recoveryFormRef}
+  onSave={handleFormSave} 
+  onCancel={() => setshowForm(false)} />
+          
         </>
       
       ) : (
@@ -88,7 +88,7 @@ const RecoveryScreen = () => {
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}
-              title="New Intake"
+              title="New Recovery"
               titleStyle={styles.buttonTextStyle}
             />
           </View>

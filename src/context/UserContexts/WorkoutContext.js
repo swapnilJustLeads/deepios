@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import Toast from "react-native-toast-message";
-import { useUserDetailsContext } from "../UserDetailsContext";
-import { fetchUserData, updateTraningName } from "../../firebase/firebase_client";
-import { useDetails } from "../DeatailsContext";
-import { useGlobalContext } from "../GlobalContext";
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import Toast from 'react-native-toast-message';
+import { useUserDetailsContext } from '../UserDetailsContext';
+import { fetchUserData, updateTraningName } from '../../firebase/firebase_client';
+import { useDetails } from '../DeatailsContext';
+import { useGlobalContext } from '../GlobalContext';
 
 const UserWorkoutContext = createContext();
 export const useUserWorkoutContext = () => useContext(UserWorkoutContext);
@@ -21,15 +21,15 @@ export const UserWorkoutProvider = ({ children }) => {
   // ✅ Stable fetch function to prevent infinite loops
   const fetchWorkoutData = useCallback(async () => {
     if (!userDetails?.username || !parentIds?.Workout) {
-      console.log("⚠️ Skipping fetch, missing username or parent ID.");
+      console.log('⚠️ Skipping fetch, missing username or parent ID.');
       return;
     }
 
     setLoading(true);
     try {
-      console.log("⏳ Fetching Workout Data...");
+      console.log('⏳ Fetching Workout Data...');
       const workoutList = await fetchUserData(userDetails.username, parentIds.Workout);
-      console.log("✅ Workout Data Fetched:", workoutList);
+      console.log('✅ Workout Data Fetched:', workoutList);
 
       // ✅ Prevent unnecessary updates
       setWorkoutData((prevData) => {
@@ -39,8 +39,8 @@ export const UserWorkoutProvider = ({ children }) => {
         return prevData;
       });
     } catch (error) {
-      console.error("❌ Error fetching workout data:", error);
-      Toast.show({ type: "error", text1: t("toastMessages.errorFetchingWorkout") });
+      console.error('❌ Error fetching workout data:', error);
+      Toast.show({ type: 'error', text1: t('toastMessages.errorFetchingWorkout') });
     } finally {
       setGlobalLoading((prev) => ({ ...prev, workoutDataLoading: false }));
       setLoading(false);
@@ -54,20 +54,20 @@ export const UserWorkoutProvider = ({ children }) => {
 
   const handleWorkoutUpdateName = async (id, name) => {
     if (!id || !name) {
-      Toast.show({ type: "error", text1: t("toastMessages.invalidNameOrId") });
+      Toast.show({ type: 'error', text1: t('toastMessages.invalidNameOrId') });
       return;
     }
 
-    Toast.show({ type: "info", text1: t("toastMessages.updatingName") });
+    Toast.show({ type: 'info', text1: t('toastMessages.updatingName') });
 
     try {
       await updateTraningName(id, name);
       setWorkoutData((prevData) =>
         prevData.map((workout) => (workout.id === id ? { ...workout, name } : workout))
       );
-      Toast.show({ type: "success", text1: t("toastMessages.nameUpdatedSuccess") });
+      Toast.show({ type: 'success', text1: t('toastMessages.nameUpdatedSuccess') });
     } catch (error) {
-      Toast.show({ type: "error", text1: t("toastMessages.failedToUpdateName") });
+      Toast.show({ type: 'error', text1: t('toastMessages.failedToUpdateName') });
     }
   };
 

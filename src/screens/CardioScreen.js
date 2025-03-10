@@ -27,7 +27,7 @@ import WorkoutLayout from '../components/WorkoutLayout';
 
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
-  const { cardioData } = useUserCardioContext();
+  const { cardioData ,setRefresh} = useUserCardioContext();
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -63,11 +63,16 @@ const CardioScreen = () => {
     filterDataByRange(cardioData, 'Month'),
     'time'
   );
+  const handleFormSave = () => {
+    setshowForm(false);  // Hide the form
+    setRefresh(prev => !prev); // Toggle refresh to trigger data reload
+  };
   return (
     <View style={styles.container}>
       <HeaderComponent />
       {showForm ? (
-        <CardioForm save={closeSave} />
+        <CardioForm   onSave={handleFormSave} 
+        onCancel={() => setshowForm(false)}  />
       ) : (
         <>
           <WorkoutCard
@@ -79,9 +84,10 @@ const CardioScreen = () => {
            unit={'min'}
           />
           <HorizontalDatePicker />
+          <WorkoutLayout title="Cardio" type="cardio" selectedDate={selectedDate} />
           <View style={styles.bottomButton}>
             
-          <WorkoutLayout title="Cardio" type="cardio" selectedDate={selectedDate} />
+
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}

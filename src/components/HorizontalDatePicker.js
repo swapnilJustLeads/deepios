@@ -1,72 +1,112 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from 'react-native';
 import moment from 'moment';
-// handleDateSelection(item)
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ITEM_WIDTH = 30; // Base width for date items
 const SELECTED_ITEM_WIDTH = 121; // Width of selected date item
 const ITEM_MARGIN = 10; // Total horizontal margin (5 on each side)
 
-const HorizontalDatePicker = () => {
-  const [dates, setDates] = useState(generateWeek(moment()));
+const HorizontalDatePicker = ({ onDateSelect }) => {
+  // Generate dates centered around today
+  const generateDatesAroundToday = () => {
+    const today = moment();
+    let dates = [];
+    
+    // Add dates before today (past 7 days)
+    for (let i = 7; i > 0; i--) {
+      dates.push(moment(today).subtract(i, 'days').format('YYYY-MM-DD'));
+    }
+    
+    // Add today
+    dates.push(today.format('YYYY-MM-DD'));
+    
+    // Add dates after today (next 14 days)
+    for (let i = 1; i <= 14; i++) {
+      dates.push(moment(today).add(i, 'days').format('YYYY-MM-DD'));
+    }
+    
+    return dates;
+  };
+
+  const [dates, setDates] = useState(generateDatesAroundToday());
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
   const flatListRef = useRef(null);
+  const initialScrollDone = useRef(false);
 
-  function generateWeek(startDate) {
-    let week = [];
-    for (let i = 0; i < 14; i++) { // Generate more dates to ensure smooth scrolling
-      week.push(moment(startDate).add(i, 'days').format('YYYY-MM-DD'));
+  // More precise centering calculation
+  const centerSelectedDate = (dateString) => {
+    if (!flatListRef.current) return;
+    
+    const index = dates.indexOf(dateString);
+    if (index === -1) return;
+    
+    // Calculate the middle of the screen
+    const screenCenter = SCREEN_WIDTH / 2;
+    
+    // For dates before the selected date, calculate their total width
+    let widthBeforeSelected = 0;
+    for (let i = 0; i < index; i++) {
+      widthBeforeSelected += (ITEM_WIDTH + ITEM_MARGIN);
     }
-    return week;
-  }
+    
+    // Calculate the position that would center the selected item
+    const offset = widthBeforeSelected - screenCenter + (SELECTED_ITEM_WIDTH / 2);
+    
+    // Apply the scroll with a safe offset (not less than 0)
+    flatListRef.current.scrollToOffset({
+      offset: Math.max(0, offset),
+      animated: true,
+    });
+  };
 
-  function centerSelectedDate(index) {
-    if (flatListRef.current && index !== -1) {
-      // Calculate the center position of the viewport
-      const viewportCenter = SCREEN_WIDTH / 2;
-      
-      // Calculate the position where we want the selected item to be
-      const targetPosition = viewportCenter - SELECTED_ITEM_WIDTH / 2;
-      
-      // Calculate the offset needed to position the selected item at the target position
-      const offset = index * (ITEM_WIDTH + ITEM_MARGIN) - targetPosition + ITEM_MARGIN / 2;
-      
-      // Ensure we don't scroll to negative offsets
-      const safeOffset = Math.max(0, offset);
-      
-      flatListRef.current.scrollToOffset({
-        offset: safeOffset,
-        animated: true,
-      });
-    }
-  }
-
-  function handleDateSelection(date) {
-    console.log(date)
+  const handleDateSelection = (date) => {
     setSelectedDate(date);
+    centerSelectedDate(date);
     
-    // Find the index of the selected date
-    const selectedIndex = dates.indexOf(date);
-    centerSelectedDate(selectedIndex);
-
-    // Check if approaching end of list, then add new week
-    const lastVisibleIndex = dates.length - 5; // Add more dates when we're 5 items from the end
-    if (selectedIndex >= lastVisibleIndex) {
-      const nextWeekStart = moment(dates[dates.length - 1]).add(1, 'days');
-      setDates((prevDates) => [...prevDates, ...generateWeek(nextWeekStart)]);
+    // Call parent callback if provided
+    if (onDateSelect) {
+      onDateSelect(date);
     }
-  }
 
+    // Add more dates if we're approaching the end
+    const lastVisibleIndex = dates.length - 5;
+    if (dates.indexOf(date) >= lastVisibleIndex) {
+      const lastDate = dates[dates.length - 1];
+      const nextDates = Array.from({ length: 7 }, (_, i) => 
+        moment(lastDate).add(i + 1, 'days').format('YYYY-MM-DD')
+      );
+      setDates(prevDates => [...prevDates, ...nextDates]);
+    }
+  };
+
+  // Center today's date when component mounts
   useEffect(() => {
-  
-    // Center the initially selected date on mount
-    const initialIndex = dates.indexOf(selectedDate);
+    const todayIndex = dates.indexOf(moment().format('YYYY-MM-DD'));
     
-    // Use a slightly longer timeout to ensure the layout is complete
-    setTimeout(() => {
-      centerSelectedDate(initialIndex);
-    }, 400);
+    // Use a longer timeout to ensure rendering is complete
+    const timer = setTimeout(() => {
+      if (!initialScrollDone.current) {
+        centerSelectedDate(selectedDate);
+        initialScrollDone.current = true;
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
+
+  // Pre-scroll to approximately center the view when FlatList renders
+  const getItemLayout = (data, index) => {
+    const itemSize = index === dates.indexOf(selectedDate) ? SELECTED_ITEM_WIDTH : ITEM_WIDTH;
+    
+    // Calculate offset based on item sizes
+    let offset = 0;
+    for (let i = 0; i < index; i++) {
+      offset += (i === dates.indexOf(selectedDate) ? SELECTED_ITEM_WIDTH : ITEM_WIDTH) + ITEM_MARGIN;
+    }
+    
+    return { length: itemSize + ITEM_MARGIN, offset, index };
+  };
 
   const renderDateItem = ({ item }) => {
     const isSelected = selectedDate === item;
@@ -75,10 +115,7 @@ const HorizontalDatePicker = () => {
     
     return (
       <TouchableOpacity
-        onPress={() =>
-          // console.log(item)
-           handleDateSelection(item)
-          }
+        onPress={() => handleDateSelection(item)}
         style={[
           styles.dateContainer,
           isSelected && styles.selectedDate,
@@ -103,9 +140,11 @@ const HorizontalDatePicker = () => {
         horizontal
         keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
-        initialNumToRender={14}
-        maxToRenderPerBatch={14}
-        windowSize={7}
+        initialNumToRender={dates.length}
+        getItemLayout={getItemLayout}
+        initialScrollIndex={dates.indexOf(selectedDate) - 3} // Start a bit before today
+        maxToRenderPerBatch={dates.length}
+        windowSize={21}
         onScrollToIndexFailed={(info) => {
           // Handle scroll failure gracefully
           setTimeout(() => {
@@ -126,7 +165,6 @@ const HorizontalDatePicker = () => {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 10,
-    // backgroundColor: '#B3B3B3', 
   },
   dateContainer: {
     width: ITEM_WIDTH,
@@ -141,7 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     borderRadius: 20,
     paddingHorizontal: 10,
-    width: 121, // Wider width for selected date
+    width: SELECTED_ITEM_WIDTH, // Wider width for selected date
   },
   dateText: {
     fontSize: 16,
@@ -149,7 +187,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   doubleDigitDate: {
-    // Slight adjustment for double digit dates
     fontSize: 16,
   },
   selectedDateText: {

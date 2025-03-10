@@ -1,37 +1,83 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import SupplementCard from './SupplementCard';
-import Copy from '../assets/images/copy.svg';
-import Edit from '../assets/images/edit.svg';
-import Delete from '../assets/images/delete.svg';
+import React from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
+import { useUserSupplementContext } from '../context/UserContexts';
+import { useDetails } from '../context/DeatailsContext';
 import moment from 'moment';
 
-// ✅ Import the supplement context
-import { useUserSupplementContext } from '../context/UserContexts/SupplementContext';
-
-const SupplementLayout = () => {
-  const { supplementData } = useUserSupplementContext(); // ✅ Fetch data from context
-  const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
-
-  console.log("🔥 Supplement Data from Context:", supplementData); // Debugging
+const SupplementLayout = (props) => {
+  const { supplementData } = useUserSupplementContext();
+  const { subCategories } = useDetails();
+  
+  // Filter data for the selected date
+  const selectedDate = props.selectedDate || moment().format('YYYY-MM-DD');
+  
+  const filteredData = supplementData.filter(item => {
+    if (item.createdAt) {
+      const itemDate = moment(new Date(item.createdAt.seconds * 1000)).format('YYYY-MM-DD');
+      return itemDate === selectedDate;
+    }
+    return false;
+  });
+  
+  // Helper function to get supplement name from subCategory ID
+  function getSupplementName(subCategoryId, supplementName) {
+    if (supplementName) return supplementName;
+    if (!subCategoryId || !subCategories) return 'Unknown Supplement';
+    
+    const subCategory = subCategories.find(sc => sc.id === subCategoryId);
+    return subCategory ? subCategory.name : 'Unknown Supplement';
+  }
+  
+  // Transform data into format expected by MainContainer_Header_ExerciseItem
+  const transformData = () => {
+    const transformedData = [];
+    
+    filteredData.forEach(item => {
+      if (!item.data || !Array.isArray(item.data)) return;
+      
+      item.data.forEach(supplement => {
+        const supplementName = getSupplementName(supplement.subCategory, supplement.name);
+        
+        // For supplements, show dosage and timing
+        const dosageInfo = supplement.amount ? `${supplement.amount}` : '';
+        const liquidInfo = supplement.liquid ? `${supplement.liquid}ml` : '';
+        const timingInfo = supplement.timing ? ` (${supplement.timing.replace('_', ' ')})` : '';
+        
+        const displayInfo = [dosageInfo, liquidInfo]
+          .filter(info => info) // Remove empty strings
+          .join(' × ');
+        
+        const setsArray = [
+          {
+            number: '1',
+            weight: displayInfo + timingInfo
+          }
+        ];
+        
+        transformedData.push({
+          name: supplementName,
+          sets: setsArray
+        });
+      });
+    });
+    
+    return transformedData;
+  };
+  
+  const supplementItems = transformData();
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>SUPPLEMENT</Text>
-        <Text style={styles.time}>02:30 PM</Text>
-        <View style={styles.icons}>
-          <Edit style={styles.icon} />
-          <Copy style={styles.icon} />
-          <Delete style={styles.icon} />
-        </View>
-      </View>
-
-      {/* ✅ Pass supplementData to SupplementCard */}
-      {supplementData.length > 0 ? (
-        <SupplementCard selectedDate={selectedDate} supplementData={supplementData} />
+      {supplementItems.length > 0 ? (
+        <MainContainer_Header_ExerciseItem 
+          title={props.title || "Supplement"} 
+          exercises={supplementItems} 
+        />
       ) : (
-        <Text style={styles.noData}>No supplements available</Text>
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>No supplements found for today</Text>
+        </View>
       )}
     </View>
   );
@@ -39,48 +85,20 @@ const SupplementLayout = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '91%',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#fff',
-    padding: 16,
-    alignSelf: 'center'
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flex: 1,
     alignItems: 'center',
-    marginBottom: 16,
+    width: '100%',
   },
-  title: {
-    fontFamily: 'Stomic',
-    fontSize: 18,
-    fontWeight: '400',
-    textTransform: 'uppercase',
-    lineHeight: 27,
+  noDataContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
   },
-  time: {
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-  },
-  icons: {
-    flexDirection: 'row',
-  },
-  icon: {
-    width: 20,
-    height: 20,
-    marginLeft: 8,
-  },
-  noData: {
-    fontFamily: 'Inter',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-    color: '#666',
-  },
+  noDataText: {
+    fontSize: 16,
+    color: '#555',
+  }
 });
 
 export default SupplementLayout;
