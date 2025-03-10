@@ -9,6 +9,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Text } from '@rneui/themed';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useUserDetailsContext } from '../context/UserDetailsContext';
+import CustomDropdown from './CustomDropdown';
 import { useDetails } from '../context/DeatailsContext';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
@@ -272,7 +273,7 @@ const handleSaveWorkout = async () => {
       <View style={styles.topRow}>
         <View style={styles.column}>
           <Text style={styles.label}>Category</Text>
-          <Dropdown
+          {/* <Dropdown
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
@@ -287,12 +288,24 @@ const handleSaveWorkout = async () => {
               setCategory(item.value);
             }}
             renderRightIcon={() => <Down height={14} width={14} />}
-          />
+          /> */}
+          <CustomDropdown
+  options={filteredCategories}
+  value={category}
+  onChange={(value) => {
+    console.log('Selected category item:', {value});
+    setCategory(value);
+  }}
+  placeholder="Choose"
+  containerStyle={styles.dropdown}
+  placeholderStyle={styles.placeholderText}
+  selectedStyle={styles.selectedText}
+/>
         </View>
 
         <View style={styles.column}>
           <Text style={styles.label}>Exercise</Text>
-          <Dropdown
+          {/* <Dropdown
             style={styles.dropdown}
             placeholderStyle={styles.placeholderText}
             selectedTextStyle={styles.selectedText}
@@ -303,7 +316,16 @@ const handleSaveWorkout = async () => {
             value={exercise}
             onChange={(item) => setExercise(item.value)}
             renderRightIcon={() => <Down height={14} width={14} />}
-          />
+          /> */}
+          <CustomDropdown
+  options={filteredExercises}
+  value={exercise}
+  onChange={(value) => setExercise(value)}
+  placeholder="Choose"
+  containerStyle={styles.dropdown}
+  placeholderStyle={styles.placeholderText}
+  selectedStyle={styles.selectedText}
+/>
         </View>
       </View>
 

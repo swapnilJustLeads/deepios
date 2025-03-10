@@ -1,36 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from '@rneui/themed';
-import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // ✅ Import navigation hook
+import { TouchableOpacity, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Dashboardlogo from '../assets/images/dashboardlogo.svg';
 import Rightlogo from '../assets/images/rightlogo.svg';
-import LeftLogo from '../assets/images/LeftLogo.svg';
-import Navigation from '../navigation/Navigation';
+import { useUserDetailsContext } from '../context/UserDetailsContext';
 
 const HeaderComponent = () => {
-  const navigation = useNavigation(); // ✅ Get navigation instance
+  const navigation = useNavigation();
+  const { userDetails } = useUserDetailsContext();
+  const [profileImage, setProfileImage] = useState('');
+  
+  useEffect(() => {
+    console.log('🔍 Current userDetails from context:', userDetails);
+
+    if (userDetails) {
+      setProfileImage(userDetails.profilePicture || '');
+    }
+  }, [userDetails]);
 
   return (
     <Header
       containerStyle={{
-        backgroundColor: 'transparent', // Keep background transparent if needed
-        // paddingHorizontal: 30,
-
-        borderBottomWidth: 0, // Remove border if not needed
+        backgroundColor: 'transparent',
+        borderBottomWidth: 0,
       }}
-      // leftComponent={
-      //   <TouchableOpacity>
-      //     <LeftLogo width={50} height={50} />
-      //   </TouchableOpacity>
-      // }
       centerComponent={
         <TouchableOpacity>
           <Dashboardlogo width={146} height={42} />
         </TouchableOpacity>
       }
       rightComponent={
-        <TouchableOpacity style={{ marginRight:9, marginTop:5}} onPress={()=>navigation.navigate('Home', { screen: 'ProfileScreen' })}>
-          <Rightlogo width={33} height={33} />
+        <TouchableOpacity 
+          style={{ marginRight: 9, marginTop: 5 }} 
+          onPress={() => navigation.navigate('Home', { screen: 'ProfileScreen' })}
+        >
+          {profileImage && profileImage.trim() !== '' ? (
+            <Image
+              source={{ uri: profileImage }}
+              style={{ 
+                width: 33, 
+                height: 33, 
+                borderRadius: 16.5
+              }}
+            />
+          ) : (
+            <Rightlogo width={33} height={33} />
+          )}
         </TouchableOpacity>
       }
     />
