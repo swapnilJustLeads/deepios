@@ -35,22 +35,7 @@ const SupplementScreen = (prop) => {
       {showForm ? (
         <>
           <SupplmentFormComponent save={closeForm} onSave={handleFormSave} />
-          {/* <View style={styles.bottomButtonRow}>
-            <Button
-              containerStyle={{ marginLeft: 21 }}
-              onPress={() => setshowForm(true)}
-              buttonStyle={[styles.buttonStyle, { backgroundColor: '#fff' }]}
-              title="Delete"
-              titleStyle={styles.buttonTextStyle}
-            />
-            <Button
-              containerStyle={{ marginRight: 21 }}
-              onPress={() => setshowForm(false)}
-              buttonStyle={[styles.buttonStyle]}
-              title="Save"
-              titleStyle={styles.buttonTextStyle}
-            />
-          </View> */}
+          
         </>
       ) : (
         <>

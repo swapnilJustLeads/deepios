@@ -32,29 +32,20 @@ const Tab = createBottomTabNavigator();
 
 const TabIcon = ({icon, iconFocused, label, focused}) => {
   const IconComponent = focused ? iconFocused : icon;
-  const iconSize = label === 'Home' ? (focused ? 51 : 36) : 28; // Bigger size for Home icon
+  const iconSize = label === 'Home' ? (focused ? 51 : 32) : 32; // Bigger size for Home icon
 
   return (
-    <View style={{alignItems: 'center', width: 70}}>
+    <View style={{
+      alignItems: 'center', 
+      width: 70,
+      height: 51, // Set consistent height for all icon containers
+      justifyContent: 'center', // Center content vertically
+      gap:40
+    }}>
       {' '}
       {/* Ensure enough space */}
       <IconComponent width={iconSize} height={iconSize} />
-      {label !== 'Home' && (
-        <Text
-          style={{
-            fontFamily: 'Stomic',
-            fontSize: 16,
-            lineHeight: 24,
-            fontWeight: '400',
-            color: focused ? '#00E5FF' : '#000000',
-            textTransform: 'uppercase',
-            textAlign: 'center', // Prevents wrapping
-          }}
-          numberOfLines={1} // Force single line
-        >
-          {label}
-        </Text>
-      )}
+     
     </View>
   );
 };

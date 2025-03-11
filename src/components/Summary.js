@@ -117,15 +117,15 @@ const Summary = ({
                 </TouchableOpacity>
               </View>
               <View style={styles.detailsRow}>
-                <View style={styles.detailItem}>
+                {/* <View style={styles.detailItem}>
                   <Text style={styles.detailLabel}>Dosage:</Text>
                   <Text style={styles.detailText}>{item.dosage || 'N/A'}</Text>
-                </View>
-                <View style={styles.detailItem}>
+                </View> */}
+                {/* <View style={styles.detailItem}>
                   <Text style={styles.detailLabel}>Time:</Text>
                   <Text style={styles.detailText}>{item.time || '00:00'}</Text>
-                </View>
-              </View>
+                </View> */}
+              </View> 
             </View>
           ))}
         </>

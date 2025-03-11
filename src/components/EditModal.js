@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useUserSupplementContext } from '../context/UserContexts';
 
 const EditModal = ({ visible, onClose, onSave }) => {
   const [inputValue, setInputValue] = useState('');
+  const {
+    handleSupplementUpdateName,
+    refresh: refreshSupplement,
+    setRefresh: setRefreshSupplement,
+  } = useUserSupplementContext();
 
   return (
     <Modal
@@ -50,7 +56,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: 280,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 15,
     padding: 20,
     alignItems: 'center',
     shadowColor: '#000',

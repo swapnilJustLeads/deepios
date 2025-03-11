@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		306A53842D79B73A00C588B0 /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 306A53832D79B73A00C588B0 /* Inter.ttf */; };
 		4D4A12393BAEDBAE5CA0A5D1 /* Pods_DeepIos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55FD316216AB17C2046F4D73 /* Pods_DeepIos.framework */; };
 		515E070B2D797CBD00B605EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 515E070A2D797CBD00B605EE /* GoogleService-Info.plist */; };
 		75035B6DE5174920882D4529 /* Stomic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A44D69E8EB774AAAACEAFAFF /* Stomic-Regular.ttf */; };
@@ -293,8 +292,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CMH485C2XV;
+				DEVELOPMENT_TEAM = QJ4953V669;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DeepIos/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -309,8 +310,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leads.deep;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deep;
 				PRODUCT_NAME = DeepIos;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -323,8 +325,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CMH485C2XV;
+				DEVELOPMENT_TEAM = QJ4953V669;
 				INFOPLIST_FILE = DeepIos/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -338,8 +342,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leads.deep;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deep;
 				PRODUCT_NAME = DeepIos;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -426,10 +431,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -510,10 +512,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
