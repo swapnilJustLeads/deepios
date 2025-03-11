@@ -1,11 +1,11 @@
-import {StyleSheet, View} from 'react-native';
-import React, {useState,useRef} from 'react';
+import { StyleSheet, View } from 'react-native';
+import React, { useState, useRef } from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import WorkoutCard from '../components/WorkoutCard';
 import Recovery from '../assets/images/recovery.svg';
 import moment from 'moment';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
-import {Button} from '@rneui/themed';
+import { Button } from '@rneui/themed';
 import RecoveryForm from '../components/RecoveryForm';
 import WorkoutLayout from '../components/WorkoutLayout';
 import {
@@ -22,7 +22,7 @@ import {
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
-  const { recoveryData,setRefresh } = useUserRecoveryContext();
+  const { recoveryData, setRefresh } = useUserRecoveryContext();
   const recoveryFormRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
@@ -64,13 +64,11 @@ const RecoveryScreen = () => {
       <HeaderComponent />
       {showForm ? (
         <>
-          <RecoveryForm   
-          ref={recoveryFormRef}
-  onSave={handleFormSave} 
-  onCancel={() => setshowForm(false)} />
-          
+          <RecoveryForm
+            ref={recoveryFormRef}
+            onSave={handleFormSave}
+            onCancel={() => setshowForm(false)} />
         </>
-      
       ) : (
         <>
           <WorkoutCard
@@ -82,16 +80,18 @@ const RecoveryScreen = () => {
             unit={'min'}
           />
           <HorizontalDatePicker />
-          <WorkoutLayout title="Recovery" type="recovery" selectedDate={selectedDate} />
-
-          <View style={styles.bottomButton}>
+          <View style={{ position: 'absolute', bottom: 9, alignSelf: 'center' }}>
             <Button
               onPress={() => setshowForm(true)}
-              buttonStyle={styles.buttonStyle}
               title="New Recovery"
               titleStyle={styles.buttonTextStyle}
+              containerStyle={[styles.buttonConatiner]}
+              buttonStyle={[styles.buttonStyle]}
             />
           </View>
+          <WorkoutLayout title="Recovery" type="recovery" selectedDate={selectedDate} />
+
+
         </>
       )}
     </View>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   buttonStyle: {
-    width: 100,
+    width: 103,
     backgroundColor: '#00E5FF',
     borderRadius: 8,
     justifyContent: 'center',
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   buttonTextStyle: {
     fontFamily: 'Inter',
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '900',
     color: '#000000',
     textTransform: 'uppercase',
@@ -144,5 +144,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 21,
     alignSelf: 'center',
+  },
+  buttonConatiner: {
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    marginTop: 9,
   },
 });

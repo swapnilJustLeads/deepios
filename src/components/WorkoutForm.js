@@ -21,7 +21,7 @@ const WorkoutForm = props => {
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [exercisesList, setExercisesList] = useState([]);
   const [currentExercise, setCurrentExercise] = useState({
-    name: '', 
+    name: '',
     sets: []
   });
   // const [sets, setSets] = useState(null);
@@ -97,122 +97,122 @@ const WorkoutForm = props => {
   const minutesData = Array.from({ length: 60 }, (_, i) => ({ label: i.toString().padStart(2, '0'), value: i.toString().padStart(2, '0') }));
   const repsData = Array.from({ length: 12 }, (_, i) => ({ label: (i + 1).toString(), value: (i + 1).toString() }));
 
-const weightsData = [
-  ...Array.from({ length: 50 }, (_, i) => {
-    const value = (i + 1) * 0.5;
-    const label = value % 1 === 0 ? value.toString() : value.toFixed(1);
-    return {
-      label: label,
-      value: value.toString()
-    };
-  }),
-  ...Array.from({ length: 275 }, (_, i) => {
-    const value = i + 26;
-    return {
-      label: value.toString(),
-      value: value.toString()
-    };
-  })
-];
+  const weightsData = [
+    ...Array.from({ length: 50 }, (_, i) => {
+      const value = (i + 1) * 0.5;
+      const label = value % 1 === 0 ? value.toString() : value.toFixed(1);
+      return {
+        label: label,
+        value: value.toString()
+      };
+    }),
+    ...Array.from({ length: 275 }, (_, i) => {
+      const value = i + 26;
+      return {
+        label: value.toString(),
+        value: value.toString()
+      };
+    })
+  ];
 
-// Modify your ADD button's onClick handler
+  // Modify your ADD button's onClick handler
 
-const handleAddExercise = () => {
-  if (category && exercise) {
-    // Get the exercise name for display purposes
-    const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
-    
-    // Format the sets data as an array of objects with reps and weight properties
-    const setsData = [];
-    for (let i = 0; i < sets; i++) {
-      setsData.push({
-        reps: parseInt(reps[i] || '0', 10),
-        weight: parseFloat(weights[i] || '0')
-      });
+  const handleAddExercise = () => {
+    if (category && exercise) {
+      // Get the exercise name for display purposes
+      const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+
+      // Format the sets data as an array of objects with reps and weight properties
+      const setsData = [];
+      for (let i = 0; i < sets; i++) {
+        setsData.push({
+          reps: parseInt(reps[i] || '0', 10),
+          weight: parseFloat(weights[i] || '0')
+        });
+      }
+
+      // Create workout object with necessary structure for Summary component
+      const newWorkout = {
+        category,               // Store category ID
+        subCategory: exercise,  // Store exercise ID
+        name: exerciseName,     // Add name for display in Summary
+        sets: setsData,         // Format sets as an array of objects with reps and weight
+        reps: [...reps],        // Keep original reps array for saving
+        weights: [...weights]   // Keep original weights array for saving
+      };
+
+      // Add to exercises list
+      setExercisesList(prevList => [...prevList, newWorkout]);
+
+      // Reset form fields
+      setExercise(null);
+      setSets(1);
+      setReps(Array(1).fill(''));
+      setWeights(Array(1).fill(''));
+    } else {
+      console.log('Please select both category and exercise');
     }
-    
-    // Create workout object with necessary structure for Summary component
-    const newWorkout = {
-      category,               // Store category ID
-      subCategory: exercise,  // Store exercise ID
-      name: exerciseName,     // Add name for display in Summary
-      sets: setsData,         // Format sets as an array of objects with reps and weight
-      reps: [...reps],        // Keep original reps array for saving
-      weights: [...weights]   // Keep original weights array for saving
-    };
-    
-    // Add to exercises list
-    setExercisesList(prevList => [...prevList, newWorkout]);
-    
-    // Reset form fields
-    setExercise(null);
-    setSets(1);
-    setReps(Array(1).fill(''));
-    setWeights(Array(1).fill(''));
-  } else {
-    console.log('Please select both category and exercise');
-  }
-};
+  };
 
-const handleSaveWorkout = async () => {
-  try {
-    // Create date object with selected time
-    const currentDate = new Date();
-    const workoutTime = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      currentDate.getDate(),
-      parseInt(hours, 10),
-      parseInt(minutes, 10),
-      0
-    );
+  const handleSaveWorkout = async () => {
+    try {
+      // Create date object with selected time
+      const currentDate = new Date();
+      const workoutTime = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+        parseInt(hours, 10),
+        parseInt(minutes, 10),
+        0
+      );
 
-    // Format workout data for Firebase
-    // We need to transform our data structure back to what Firestore expects
-    const workoutData = {
-      data: exercisesList.map(exercise => ({
-        category: exercise.category,
-        subCategory: exercise.subCategory,
-        sets: exercise.sets.length,
-        reps: exercise.reps,
-        weights: exercise.weights,
-        notes: exercise.notes || ''
-      })),
-      createdAt: workoutTime,
-      parent: parentIds.Workout,
-      username: userDetails?.username,
-      template: null
-    };
+      // Format workout data for Firebase
+      // We need to transform our data structure back to what Firestore expects
+      const workoutData = {
+        data: exercisesList.map(exercise => ({
+          category: exercise.category,
+          subCategory: exercise.subCategory,
+          sets: exercise.sets.length,
+          reps: exercise.reps,
+          weights: exercise.weights,
+          notes: exercise.notes || ''
+        })),
+        createdAt: workoutTime,
+        parent: parentIds.Workout,
+        username: userDetails?.username,
+        template: null
+      };
 
-    // Reference to the collection
-    const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
-    
-    // Add to Firestore
-    const docRef = await addDoc(dataCollection, workoutData);
-    console.log("Workout saved with ID: ", docRef.id);
-    
-    // Clear form and show success
-    setExercisesList([]);
-    setCategory(null);
-    setExercise(null);
-    setSets(1);
-    setReps(Array(1).fill(''));
-    setWeights(Array(1).fill(''));
-    
-    // Success message
-    console.log('Workout saved successfully');
-    
-    // Navigate back or to workout list
-    if (props.onSave) {
-      props.onSave(docRef.id);
+      // Reference to the collection
+      const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+
+      // Add to Firestore
+      const docRef = await addDoc(dataCollection, workoutData);
+      console.log("Workout saved with ID: ", docRef.id);
+
+      // Clear form and show success
+      setExercisesList([]);
+      setCategory(null);
+      setExercise(null);
+      setSets(1);
+      setReps(Array(1).fill(''));
+      setWeights(Array(1).fill(''));
+
+      // Success message
+      console.log('Workout saved successfully');
+
+      // Navigate back or to workout list
+      if (props.onSave) {
+        props.onSave(docRef.id);
+      }
+
+    } catch (error) {
+      console.error("Error saving workout: ", error);
+      // Show error message
+      console.log('Failed to save workout');
     }
-    
-  } catch (error) {
-    console.error("Error saving workout: ", error);
-    // Show error message
-    console.log('Failed to save workout');
-  }
-};
+  };
   // Update Specific Rep
   const updateRep = (index, value) => {
     const updatedReps = [...reps];
@@ -273,59 +273,33 @@ const handleSaveWorkout = async () => {
       <View style={styles.topRow}>
         <View style={styles.column}>
           <Text style={styles.label}>Category</Text>
-          {/* <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderText}
-            selectedTextStyle={styles.selectedText}
-            data={filteredCategories}
-            labelField="label"
-            valueField="value"
-            placeholder="Choose"
-            value={category}
-            // In your category dropdown onChange
-            onChange={item => {
-              console.log('Selected category item:', item);
-              setCategory(item.value);
-            }}
-            renderRightIcon={() => <Down height={14} width={14} />}
-          /> */}
           <CustomDropdown
-  options={filteredCategories}
-  value={category}
-  onChange={(value) => {
-    console.log('Selected category item:', {value});
-    setCategory(value);
-  }}
-  placeholder="Choose"
-  containerStyle={styles.dropdown}
-  placeholderStyle={styles.placeholderText}
-  selectedStyle={styles.selectedText}
-/>
+            options={filteredCategories}
+            value={category}
+            onChange={(value) => {
+              console.log('Selected category item:', { value });
+              setCategory(value);
+            }}
+            placeholder="Choose"
+            containerStyle={styles.dropdown}
+            placeholderStyle={styles.placeholderText}
+            selectedStyle={styles.selectedText}
+            isBullet={true}
+          />
         </View>
 
         <View style={styles.column}>
           <Text style={styles.label}>Exercise</Text>
-          {/* <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderText}
-            selectedTextStyle={styles.selectedText}
-            data={filteredExercises} // 🔥 FIXED: Exercises now show correctly
-            labelField="label"
-            valueField="value"
-            placeholder="Choose"
-            value={exercise}
-            onChange={(item) => setExercise(item.value)}
-            renderRightIcon={() => <Down height={14} width={14} />}
-          /> */}
           <CustomDropdown
-  options={filteredExercises}
-  value={exercise}
-  onChange={(value) => setExercise(value)}
-  placeholder="Choose"
-  containerStyle={styles.dropdown}
-  placeholderStyle={styles.placeholderText}
-  selectedStyle={styles.selectedText}
-/>
+            options={filteredExercises}
+            value={exercise}
+            onChange={(value) => setExercise(value)}
+            placeholder="Choose"
+            containerStyle={styles.dropdown}
+            placeholderStyle={styles.placeholderText}
+            selectedStyle={styles.selectedText}
+            isBullet={true}
+          />
         </View>
       </View>
 
@@ -333,47 +307,34 @@ const handleSaveWorkout = async () => {
       <View style={styles.middleRow}>
         <View style={styles.setsColumn}>
           <Text style={styles.label}>Sets</Text>
-          <Dropdown
-            style={styles.setsDropdown}
-            placeholderStyle={styles.selectedText}
-            selectedTextStyle={styles.selectedText}
-            data={setsData}
-            labelField="label"
-            valueField="value"
-            placeholder="Sets"
+          <CustomDropdown
+            options={setsData}
             value={sets.toString()}
-            onChange={item => setSets(parseInt(item.value))}
-            renderItem={renderDropdownItem}
-            renderRightIcon={() => <Down height={10} width={10} />}
+            onChange={(value) => setSets(parseInt(value))}
+            placeholder="Sets"
+            containerStyle={styles.setsDropdown}
+            selectedStyle={styles.selectedText}
           />
         </View>
 
         <View style={styles.timeColumn}>
           <Text style={styles.label}>Time</Text>
           <View style={styles.timeContainer}>
-            <Dropdown
-              style={styles.timeDropdown}
-              placeholderStyle={styles.selectedText}
-              selectedTextStyle={styles.selectedText}
-              data={hoursData}
-              labelField="label"
-              valueField="value"
+            <CustomDropdown
+              options={hoursData}
               value={hours}
-              onChange={item => setHours(item.value)}
-              renderItem={renderDropdownItem}
-              renderRightIcon={() => <Down height={10} width={10} />}
+              onChange={(value) => setHours(value)}
+              placeholder="00"
+              containerStyle={styles.timeDropdown}
+              selectedStyle={styles.selectedText}
             />
-            <Dropdown
-              style={styles.timeDropdown}
-              placeholderStyle={styles.selectedText}
-              selectedTextStyle={styles.selectedText}
-              data={minutesData}
-              labelField="label"
-              valueField="value"
+            <CustomDropdown
+              options={minutesData}
               value={minutes}
-              onChange={item => setMinutes(item.value)}
-              renderItem={renderDropdownItem}
-              renderRightIcon={() => <Down height={10} width={10} />}
+              onChange={(value) => setMinutes(value)}
+              placeholder="00"
+              containerStyle={styles.timeDropdown}
+              selectedStyle={styles.selectedText}
             />
           </View>
         </View>
@@ -385,22 +346,18 @@ const handleSaveWorkout = async () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.scrollableContainer}>
             {reps.map((rep, index) => (
-              <Dropdown
+              <CustomDropdown
                 key={`rep-${index}`}
-                style={styles.repWeightDropdown}
-                placeholderStyle={styles.selectedText}
-                selectedTextStyle={styles.selectedText}
-                data={repsData}
-                labelField="label"
-                valueField="value"
+                options={repsData}
                 value={rep}
-                onChange={item => {
+                onChange={(value) => {
                   const newReps = [...reps];
-                  newReps[index] = item.value;
+                  newReps[index] = value;
                   setReps(newReps);
                 }}
-                renderItem={renderDropdownItem}
-                renderRightIcon={() => <Down height={10} width={10} />}
+                placeholder=""
+                containerStyle={styles.repWeightDropdown}
+                selectedStyle={styles.selectedText}
               />
             ))}
           </View>
@@ -413,22 +370,18 @@ const handleSaveWorkout = async () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.scrollableContainer}>
             {weights.map((weight, index) => (
-              <Dropdown
+              <CustomDropdown
                 key={`weight-${index}`}
-                style={styles.repWeightDropdown}
-                placeholderStyle={styles.selectedText}
-                selectedTextStyle={styles.selectedText}
-                data={weightsData}
-                labelField="label"
-                valueField="value"
+                options={weightsData}
                 value={weight}
-                onChange={item => {
+                onChange={(value) => {
                   const newWeights = [...weights];
-                  newWeights[index] = item.value;
+                  newWeights[index] = value;
                   setWeights(newWeights);
                 }}
-                renderItem={renderDropdownItem}
-                renderRightIcon={() => <Down height={10} width={10} />}
+                placeholder=""
+                containerStyle={styles.repWeightDropdown}
+                selectedStyle={styles.selectedText}
               />
             ))}
           </View>
@@ -466,10 +419,10 @@ const handleSaveWorkout = async () => {
           titleStyle={styles.buttonTextStyle}
         />
       </View>
-      <Summary Summary title="Workout Summary" exercises={exercisesList}  />
+      <Summary Summary title="Workout Summary" exercises={exercisesList} />
       <View style={styles.bottomButton}>
         <Button
-      onPress={handleSaveWorkout}
+          onPress={handleSaveWorkout}
           buttonStyle={styles.buttonStyle}
           title="Save Workout"
           titleStyle={styles.buttonTextStyle}
@@ -539,7 +492,7 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     color: '#000',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
   },
   dropdownItem: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
@@ -42,25 +42,29 @@ const WorkoutLayout = (props) => {
   
   // Helper function to get exercise name from subCategory ID
   function getExerciseName(subCategoryId, exerciseName) {
-    if (exerciseName) return exerciseName; // 🔥 Use stored name directly
+    if (exerciseName) return exerciseName; // Use stored name directly
     if (!subCategoryId || !subCategories) return 'Unknown Exercise';
     
     const subCategory = subCategories.find(sc => sc.id === subCategoryId);
     return subCategory ? subCategory.name : 'Unknown Exercise';
   }
   
-  
-  // Transform data based on its type
+  // Transform data to keep workout sessions separate
   const transformData = () => {
-    const transformedData = [];
-    
-    filteredData.forEach(item => {
-      if (!item.data || !Array.isArray(item.data)) return;
+    return filteredData.map(item => {
+      // Get time from createdAt timestamp
+      const timestamp = item.createdAt ? moment(new Date(item.createdAt.seconds * 1000)) : null;
+      const timeString = timestamp ? timestamp.format('hh:mm A') : '';
+      
+      // Transform exercises based on type
+      const exercises = [];
+      
+      if (!item.data || !Array.isArray(item.data)) return null;
       
       if (type === 'workout') {
         // Transform workout data
         item.data.forEach(exercise => {
-          const exerciseName = getExerciseName(exercise.subCategory);
+          const exerciseName = getExerciseName(exercise.subCategory, exercise.exerciseName);
           
           // Create sets array based on reps and weights arrays
           const setsArray = [];
@@ -75,7 +79,7 @@ const WorkoutLayout = (props) => {
             }
           }
           
-          transformedData.push({
+          exercises.push({
             name: exerciseName || 'Unnamed Exercise',
             sets: setsArray
           });
@@ -83,54 +87,80 @@ const WorkoutLayout = (props) => {
       } else if (type === 'recovery') {
         // Transform recovery data
         item.data.forEach(recovery => {
-          const recoveryName = getExerciseName(recovery.subCategory) || recovery.name || 'Recovery Activity';
+          const recoveryName = getExerciseName(recovery.subCategory, recovery.name) || 'Recovery Activity';
           
-          // For recovery, we'll show duration instead of weight
+          // For recovery, we'll show time/duration and intensity
           const setsArray = [
             {
               number: '1',
-              weight: `${recovery.duration || 0} min`
+              weight: `${recovery.time || '0'} min, Intensity: ${recovery.intensity || 'N/A'}`
             }
           ];
           
-          transformedData.push({
+          exercises.push({
             name: recoveryName,
             sets: setsArray
           });
         });
       } else if (type === 'cardio') {
-        // Transform cardio data
+        // Transform cardio data to match web display format
         item.data.forEach(cardio => {
-          const cardioName = getExerciseName(cardio.subCategory) || cardio.name || 'Cardio Activity';
+          const cardioName = getExerciseName(cardio.subCategory, cardio.name) || 'Cardio Activity';
           
-          // For cardio, we'll show duration and distance/intensity
+          // For cardio, we need to format it like the web version
+          // Extract time parts from duration if available
+          let durationText = '';
+          if (cardio.duration) {
+            // If duration is in format HH:MM
+            durationText = cardio.duration;
+          }
+          
+          // Create sets array to match web display format
           const setsArray = [
             {
               number: '1',
-              weight: `${cardio.duration || 0} min, ${cardio.distance || 0} km`
+              // Format to match web display with speed and incline
+              weight: `${cardio.speed || 'N/A'}, ${cardio.incline || '0%'} Incline`
             }
           ];
           
-          transformedData.push({
+          // Add location if available
+          if (cardio.location) {
+            setsArray[0].location = cardio.location;
+          }
+          
+          exercises.push({
             name: cardioName,
+            duration: durationText,
             sets: setsArray
           });
         });
       }
-    });
-    
-    return transformedData;
+      
+      return {
+        time: timeString,
+        exercises: exercises,
+        id: item.id || `${type}-${timestamp?.valueOf() || Date.now()}`
+      };
+    }).filter(Boolean); // Remove any null entries
   };
   
-  const exerciseData = transformData();
+  const sessionData = transformData();
 
   return (
     <View style={styles.container}>
-      {exerciseData.length > 0 ? (
-        <MainContainer_Header_ExerciseItem 
-          title={props.title || type.charAt(0).toUpperCase() + type.slice(1)} 
-          exercises={exerciseData} 
-        />
+      {sessionData.length > 0 ? (
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {sessionData.map((session, index) => (
+            <View key={session.id || index} style={styles.sessionContainer}>
+              <MainContainer_Header_ExerciseItem 
+                title={`${type.charAt(0).toUpperCase() + type.slice(1)}`} 
+                exercises={session.exercises} 
+                time={session.time}
+              />
+            </View>
+          ))}
+        </ScrollView>
       ) : (
         <View style={styles.noDataContainer}>
           <Text style={styles.noDataText}>No {type} activities found for today</Text>
@@ -140,17 +170,29 @@ const WorkoutLayout = (props) => {
   );
 };
 
+// Updated styles for the WorkoutLayout component
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
     width: '100%',
+    flex: 1,
+  },
+  scrollView: {
+    width: '100%',
+    marginBottom: 55
+  },
+  scrollContent: {
+    paddingBottom: 20, // Reduced padding to avoid extra space
+    alignItems: 'center',
+  },
+  sessionContainer: {
+    width: '100%',
+    marginBottom: 15,
+    alignItems: 'center',
   },
   noDataContainer: {
-    flex: 1,
+    padding: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50,
   },
   noDataText: {
     fontSize: 16,

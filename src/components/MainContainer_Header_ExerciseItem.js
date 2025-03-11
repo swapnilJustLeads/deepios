@@ -4,22 +4,29 @@ import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
 import Delete from '../assets/images/delete.svg';
 
-const MainContainer_Header_ExerciseItem = ({ exercises = [], title }) => {
+
+const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
+  // Use the provided title directly without modification
+  const displayTime = time || '07:57 AM';
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.time}>07:57 AM</Text>
+        <Text style={styles.time}>{displayTime}</Text>
         <View style={styles.headerButtons}>
-        <Edit style={styles.headerIcon} />
-          <Copy  style={styles.headerIcon} />
-          <Delete  style={styles.headerIcon} />
+          <Edit style={styles.headerIcon} />
+          <Copy style={styles.headerIcon} />
+          <Delete style={styles.headerIcon} />
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.exerciseList}>
         {exercises.map((exercise, index) => (
-          <View key={index} style={styles.exerciseItem}>
+          <View key={index} style={[
+            styles.exerciseItem,
+            index === exercises.length - 1 && styles.lastExerciseItem
+          ]}>
             <Text style={styles.exerciseName}>{exercise.name}</Text>
             <View style={styles.setsContainer}>
               {exercise.sets.map((set, setIndex) => (
@@ -39,20 +46,19 @@ const MainContainer_Header_ExerciseItem = ({ exercises = [], title }) => {
 const styles = StyleSheet.create({
   container: {
     width: '90%',
-    minHeight: 388,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#000',
     backgroundColor: '#fff',
     overflow: 'hidden',
+    // Remove fixed height to allow it to grow
+    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 21,
     paddingVertical: 8,
-    // borderBottomWidth: 1,
-    borderBottomColor: '#000',
   },
   title: {
     fontFamily: 'Stomic',
@@ -82,7 +88,10 @@ const styles = StyleSheet.create({
   exerciseItem: {
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#000',
+    borderBottomColor: '#DDDDDD', // Lighter border color for dividers
+  },
+  lastExerciseItem: {
+    borderBottomWidth: 0, // Remove border for last item
   },
   exerciseName: {
     fontFamily: 'Inter',
@@ -94,19 +103,12 @@ const styles = StyleSheet.create({
   setsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    
-    // backgroundColor:'green'
-    
-    // gap: 8,
   },
   setRow: {
     flexDirection: 'row',
     justifyContent:'flex-start',   
-    // alignItems: 'center',
     minWidth: 93,
-    // backgroundColor:'red',
-    paddingRight:9,
-    
+    paddingRight: 9,
   },
   setNumber: {
     fontFamily: 'Inter',
@@ -115,17 +117,13 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginRight: 4,
     textAlign:'right',
-    // backgroundColor:'red',
-    width:18
-
+    width: 18
   },
   setWeight: {
     fontFamily: 'Inter',
     fontSize: 12,
     lineHeight: 18,
-    
   },
 });
 
 export default MainContainer_Header_ExerciseItem;
-

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		306A53842D79B73A00C588B0 /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 306A53832D79B73A00C588B0 /* Inter.ttf */; };
 		4D4A12393BAEDBAE5CA0A5D1 /* Pods_DeepIos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55FD316216AB17C2046F4D73 /* Pods_DeepIos.framework */; };
 		515E070B2D797CBD00B605EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 515E070A2D797CBD00B605EE /* GoogleService-Info.plist */; };
 		75035B6DE5174920882D4529 /* Stomic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A44D69E8EB774AAAACEAFAFF /* Stomic-Regular.ttf */; };

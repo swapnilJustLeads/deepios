@@ -98,7 +98,7 @@ const WorkoutScreen = ({
           </View>
 
           <WorkoutLayout title="Workout" selectedDate={selectedDate} />
-          <View style={styles.bottomButton}></View>
+          {/* <View style={styles.bottomButton}></View> */}
         </>
       )}
     </View>

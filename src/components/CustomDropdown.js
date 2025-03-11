@@ -12,7 +12,8 @@ const CustomDropdown = ({
   placeholderStyle,
   selectedStyle,
   itemTextStyle,
-  dropdownStyle
+  dropdownStyle,
+  isBullet
 }) => {
   // Ensure options are in the correct format
   const formattedOptions = options.map(opt => 
@@ -23,14 +24,24 @@ const CustomDropdown = ({
 
   // Custom render for dropdown item with bullet
   const renderItem = (item) => {
-    return (
-      <View style={styles.item}>
-        <View style={styles.bulletContainer}>
-          <View style={styles.bullet} />
+    if (isBullet) {
+      // With bullet (left-aligned with bullet)
+      return (
+        <View style={styles.item}>
+          <View style={styles.bulletContainer}>
+            <View style={styles.bullet} />
+          </View>
+          <Text style={[styles.itemText, itemTextStyle]}>{item.label}</Text>
         </View>
-        <Text style={[styles.itemText, itemTextStyle]}>{item.label}</Text>
-      </View>
-    );
+      );
+    } else {
+      // Without bullet (centered)
+      return (
+        <View style={styles.centeredItem}>
+          <Text style={[styles.itemText, itemTextStyle]}>{item.label}</Text>
+        </View>
+      );
+    }
   };
 
   return (
@@ -103,7 +114,8 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     borderWidth: 1,
     borderColor: '#000',
-    borderRadius: 6,
+    borderRadius: 8,  // Increased for more visible rounding
+    overflow: 'hidden', // Ensures content stays within rounded corners
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -112,7 +124,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
     elevation: 3,
-  }
+  },
+  centeredItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    alignItems: 'center',  // Center items horizontally
+    justifyContent: 'center', // Center items vertically,
+
+  },
 });
 
 export default CustomDropdown;
