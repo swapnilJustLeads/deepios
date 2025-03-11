@@ -59,7 +59,9 @@ export const UserSupplementProvider = ({ children }) => {
         )
       );
       Toast.show({ type: "success", text1: t("toastMessages.nameUpdatedSuccess") });
+      console.log('succes')
     } catch (error) {
+      console.error(error);
       Toast.show({ type: "error", text1: t("toastMessages.failedToUpdateName") });
     }
   };

@@ -86,7 +86,11 @@ const WorkoutScreen = ({
             unit={'kg'}
           />
           <HorizontalDatePicker />
-          <View style={{position: 'absolute', bottom: 9, alignSelf: 'center'}}>
+          <View style={{
+            position: 'absolute', 
+            bottom: 9, 
+            alignSelf: 'center'
+            }}>
             <Button
               containerStyle={[styles.buttonConatiner]}
               onPress={()=> setshowForm(true)}
