@@ -13,33 +13,73 @@ import { useUserSupplementContext } from '../context/UserContexts/SupplementCont
 const SupplementScreen = (prop) => {
   const [showForm, setshowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
+  const [selectedSupplement, setSelectedSupplement] = useState(null);
 
-  const { supplementData ,setRefresh} = useUserSupplementContext(); // ✅ Fetch context data
+  const { supplementData, setRefresh } = useUserSupplementContext(); // ✅ Fetch context data
 
   useEffect(() => {
-    console.log("🔥 Supplement Data from Context (Screen):", supplementData);
-  }, [supplementData]); // Log when data changes
+    // Filter workouts for today's date on initial load
+    const today = moment().format('YYYY-MM-DD');
+    onDateSelect(today);
+  }, [supplementData]); // 🔥 Run this effect whenever `workoutData` changes
+  const onDateSelect = (selectedDate) => {
+    console.log("📅 Selected Date:", selectedDate);
+    setSelectedDate(selectedDate); // ✅ Update selected date state properly
+  };
 
   const closeForm = () => {
     setshowForm(false);
+    setSelectedSupplement(null);
   };
+
   const handleFormSave = () => {
     setshowForm(false);  // Hide the form
+    setSelectedSupplement(null); // Reset selected supplement
     setRefresh(prev => !prev); // Toggle refresh to trigger data reload
   };
+
+  // Handle selection of a supplement item
+  const handleSelectSupplement = (supplementsData) => {
+    setSelectedSupplement(supplementsData);
+    setshowForm(true);
+  };
+
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      <HorizontalDatePicker />
+      <HorizontalDatePicker 
+            value={selectedDate}
+            onChange={setSelectedDate}
+            minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
+            maxDate={moment().add(30, 'days').format('YYYY-MM-DD')}
+            onCalendarOpen={() => console.log('Calendar opened')}
+            onCalendarClose={() => console.log('Calendar closed')}
+            onDateSelect={onDateSelect}
+          />
 
       {showForm ? (
         <>
-          <SupplmentFormComponent save={closeForm} onSave={handleFormSave} />
-          
+     {selectedSupplement ? (
+  // For existing supplement - pass both onClose and onSave
+  <SupplmentFormComponent 
+    supplementData={selectedSupplement}
+    save={closeForm}
+    onSave={handleFormSave}  // Add this to ensure refresh after update
+  />
+) : (
+  // For new supplement
+  <SupplmentFormComponent 
+    save={closeForm} 
+    onSave={handleFormSave}
+  />
+)}
         </>
       ) : (
         <>
-          <SupplementLayout selectedDate={selectedDate} />
+          <SupplementLayout 
+            selectedDate={selectedDate} 
+            onSelectSupplement={handleSelectSupplement} // Pass the handler
+          />
           <View style={styles.bottomButton}>
             <Button
               onPress={() => setshowForm(true)}

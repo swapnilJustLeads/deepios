@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-native/no-inline-styles */
 import React, {useState,useEffect} from 'react';
 import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import {Button, Text, Input, Divider, Icon} from '@rneui/themed';
@@ -8,6 +10,8 @@ import { useDetails } from '../context/DeatailsContext';
 import {
   collection,
   addDoc,
+  doc,
+  updateDoc
 } from '@react-native-firebase/firestore';
 import { COLLECTIONS } from '../firebase/collections';
 import { FirestoreDB } from '../firebase/firebase_client';
@@ -15,10 +19,11 @@ import Summary from './Summary';
 
 
 
-const SupplmentFormComponent = ({onSave}) => {
+const SupplmentFormComponent = ({onSave,supplementData}) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [supplement, setSupplement] = useState(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [hours, setHours] = useState('13');
   const [minutes, setMinutes] = useState('06');
   const [liquid, setLiquid] = useState('');
@@ -26,7 +31,10 @@ const SupplmentFormComponent = ({onSave}) => {
   const [company, setCompany] = useState('');
   const [timing, setTiming] = useState(null);
   const { userDetails } = useUserDetailsContext();
-    // Added state for tracking supplement items
+    const [isEditMode, setIsEditMode] = useState(false);
+    // Use two separate state variables for clarity
+const [isItemEditMode, setIsItemEditMode] = useState(false);      // For individual supplement item editing
+const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
     const [supplementItems, setSupplementItems] = useState([]);
   const { categories, subCategories, parentIds } = useDetails();
   const [filteredExercises, setFilteredExercises] = useState([]);
@@ -43,7 +51,34 @@ const SupplmentFormComponent = ({onSave}) => {
   //     setTiming(supplementData.data[0].timing || null); // Set timing from data
   //   }
   // }, [props.supplementData]); // Run only when data changes
-
+  useEffect(() => {
+    if (supplementData) {
+      // We have supplement data, so we're in some form of edit mode
+      if (supplementData.id) {
+        // If we have an ID, we're editing an entire intake
+        setIsIntakeEditMode(true);
+      }
+      
+      // Don't set isItemEditMode here - wait for user to select an item
+      setIsItemEditMode(false);
+      
+      // Set the supplementItems for display in the summary
+      if (supplementData.data && Array.isArray(supplementData.data)) {
+        setSupplementItems(supplementData.data);
+      }
+    } else {
+      // No supplementData, reset both edit modes
+      setIsIntakeEditMode(false);
+      setIsItemEditMode(false);
+    }
+    
+    // Cleanup function when component unmounts
+    return () => {
+      setIsItemEditMode(false);
+      setIsIntakeEditMode(false);
+    };
+  }, [supplementData]);
+  
   useEffect(() => {
     if (categories?.length > 0 && parentIds?.Supplement) {
       // Your existing filter code remains the same
@@ -63,6 +98,31 @@ const SupplmentFormComponent = ({onSave}) => {
   }, [categories, parentIds]);
 
 
+useEffect(() => {
+  if (supplementData && supplementData.data && Array.isArray(supplementData.data)) {
+    // Transform each item to ensure it has a name while preserving all other properties
+    const transformedData = supplementData.data.map(item => {
+      // Get supplement name from subCategory if needed
+      const supplementName = getSupplementName(item.subCategory);
+   // Return all existing data plus a name property
+      return {
+        ...item,  // Keep all existing properties
+        name: item.name || supplementName || `Supplement (${item.amount || ''})`
+      };
+    });
+setSupplementItems(transformedData);
+    console.log("Setting supplement items:", transformedData);
+  }
+}, [supplementData]);
+
+// Helper function to get supplement name from subCategory ID (using your context)
+function getSupplementName(subCategoryId) {
+  if (!subCategoryId || !subCategories) return null;
+  
+  const subCategory = subCategories.find(sc => sc.id === subCategoryId);
+  return subCategory ? subCategory.name : null;
+}
+
   useEffect(() => {
     if (subCategories?.length > 0 && category) {
       const exercisesForCategory = subCategories
@@ -80,20 +140,6 @@ const SupplmentFormComponent = ({onSave}) => {
     }
   }, [category, subCategories]);
 
-  // Sample data for dropdowns
-  const categoryData = [
-    {label: 'Vitamins', value: 'vitamins'},
-    {label: 'Minerals', value: 'minerals'},
-    {label: 'Herbs', value: 'herbs'},
-    {label: 'Protein', value: 'protein'},
-  ];
-
-  const supplementData = [
-    {label: 'Vitamin C', value: 'vitamin_c'},
-    {label: 'Vitamin D', value: 'vitamin_d'},
-    {label: 'Zinc', value: 'zinc'},
-    {label: 'Magnesium', value: 'magnesium'},
-  ];
 
   const hoursData = Array.from({length: 24}, (_, i) => {
     const val = i.toString().padStart(2, '0');
@@ -129,7 +175,7 @@ const SupplmentFormComponent = ({onSave}) => {
 
     // Get names for display
     const supplementName = filteredExercises.find(item => item.value === supplement)?.label || 'Unknown Supplement';
-    
+
     // Create supplement item
     const newSupplementItem = {
       category,
@@ -139,18 +185,31 @@ const SupplmentFormComponent = ({onSave}) => {
       liquid,
       amount,
       company,
-      timing: timing || ''
+      timing: timing || '',
     };
+
+  // If in edit mode, update the existing item
+  if (isEditMode && selectedItemIndex !== null) {
+    setSupplementItems(prevItems => {
+      const updatedItems = [...prevItems];
+      updatedItems[selectedItemIndex] = newSupplementItem;
+      return updatedItems;
+    });
     
-    // Add to supplement items list
+    // Reset edit mode
+    setIsEditMode(false);
+    setSelectedItemIndex(null);
+  } else {
+    // Add new item if not in edit mode
     setSupplementItems(prevItems => [...prevItems, newSupplementItem]);
-    
+  }
+
     // Reset form fields
     setSupplement(null);
     setLiquid('');
     setAmount('1-10');
     setCompany('');
-    
+
     console.log('Supplement item added:', newSupplementItem);
   };
 
@@ -160,20 +219,109 @@ const SupplmentFormComponent = ({onSave}) => {
   };
 
   // Save all supplement items
-  const handleSaveSupplement = async () => {
+  // const handleSaveSupplement = async () => {
+  //   try {
+  //     // Create date with selected time
+  //     const currentDate = new Date();
+  //     const supplementTime = new Date(
+  //       currentDate.getFullYear(),
+  //       currentDate.getMonth(),
+  //       currentDate.getDate(),
+  //       parseInt(hours, 10),
+  //       parseInt(minutes, 10),
+  //       0
+  //     );
+
+  //     // Format data for Firebase
+  //     const payload = {
+  //       data: supplementItems.map(item => ({
+  //         category: item.category,
+  //         subCategory: item.subCategory,
+  //         time: item.time,
+  //         liquid: item.liquid,
+  //         amount: item.amount,
+  //         company: item.company,
+  //         timing: item.timing,
+  //       })),
+  //       createdAt: supplementTime,
+  //       parent: parentIds.Supplement,
+  //       username: userDetails?.username,
+  //       template: null,
+  //     };
+
+  //     // Save to Firestore
+  //     const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+  //     const docRef = await addDoc(dataCollection, payload);
+  //     console.log('Supplement data saved with ID: ', docRef.id);
+
+  //     // Reset form
+  //     setSupplementItems([]);
+  //     setCategory(null);
+  //     setSupplement(null);
+  //     setLiquid('');
+  //     setAmount('1-10');
+  //     setCompany('');
+  //     setTiming(null);
+
+  //     // Callback
+  //     if (onSave) {
+  //       onSave(docRef.id);
+  //     }
+
+  //     console.log('Supplement data saved successfully');
+  //   } catch (error) {
+  //     console.error('Error saving supplement data:', error);
+  //   }
+  // };
+// In SupplmentFormComponent.js
+
+const handleUpdateSupplementItem = () => {
+  if (!category || !supplement) {
+    console.log('Please select both category and supplement');
+    return;
+  }
+
+  // Get names for display
+  const supplementName = filteredExercises.find(item => item.value === supplement)?.label || 'Unknown Supplement';
+  
+  // Create updated supplement item
+  const updatedItem = {
+    category,
+    subCategory: supplement,
+    name: supplementName,
+    time: `${hours}:${minutes}`,
+    liquid,
+    amount,
+    company,
+    timing: timing || ''
+  };
+  
+  console.log("Updating supplement at index:", selectedItemIndex, "with:", updatedItem);
+  
+  // Update the specific item in the array
+  if (selectedItemIndex !== null && selectedItemIndex >= 0) {
+    // Create a new array with the updated item
+    const newItems = [...supplementItems];
+    newItems[selectedItemIndex] = updatedItem;
+    
+    // Set the state with the new array
+    setSupplementItems(newItems);
+    
+    console.log("Updated supplementItems:", newItems);
+  }
+  
+  // Reset form fields after update
+  setSupplement(null);
+  setLiquid('');
+  setAmount('1-10');
+  setCompany('');
+  setTiming(null);
+  setIsItemEditMode(false);
+  setSelectedItemIndex(null);
+};
+  const handleSaveOrUpdate = async () => {
     try {
-      // Create date with selected time
-      const currentDate = new Date();
-      const supplementTime = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        currentDate.getDate(),
-        parseInt(hours, 10),
-        parseInt(minutes, 10),
-        0
-      );
-      
-      // Format data for Firebase
+      // Create payload with the updated supplement items
       const payload = {
         data: supplementItems.map(item => ({
           category: item.category,
@@ -184,16 +332,26 @@ const SupplmentFormComponent = ({onSave}) => {
           company: item.company,
           timing: item.timing
         })),
-        createdAt: supplementTime,
+        // Keep the original timestamp if editing an intake
+        createdAt: supplementData?.createdAt || new Date(),
         parent: parentIds.Supplement,
         username: userDetails?.username,
         template: null
       };
       
-      // Save to Firestore
-      const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
-      const docRef = await addDoc(dataCollection, payload);
-      console.log("Supplement data saved with ID: ", docRef.id);
+      let docRef;
+      
+      if (isIntakeEditMode && supplementData.id) {
+        // Update existing document if editing an intake
+        docRef = doc(FirestoreDB, COLLECTIONS.DATA, supplementData.id);
+        await updateDoc(docRef, payload);
+        console.log("Supplement intake updated with ID: ", supplementData.id);
+      } else {
+        // Create new document
+        const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+        docRef = await addDoc(dataCollection, payload);
+        console.log("New supplement intake saved with ID: ", docRef.id);
+      }
       
       // Reset form
       setSupplementItems([]);
@@ -203,18 +361,40 @@ const SupplmentFormComponent = ({onSave}) => {
       setAmount('1-10');
       setCompany('');
       setTiming(null);
+      setIsEditMode(false);
+      setSelectedItemIndex(null);
       
       // Callback
       if (onSave) {
-        onSave(docRef.id);
+        onSave(docRef);
       }
-      
-      console.log('Supplement data saved successfully');
     } catch (error) {
-      console.error("Error saving supplement data:", error);
+      console.error("Error saving/updating supplement data:", error);
     }
   };
-
+  const handleSupplementSelect = (selectedItem,index) => {
+    // Populate the form fields with the selected supplement's data
+    if (selectedItem) {
+      // Set category
+      setSelectedItemIndex(index);
+      setCategory(selectedItem.category);
+      setIsItemEditMode(true);
+      setSupplement(selectedItem.subCategory);
+      
+      // Parse time into hours and minutes if available
+      if (selectedItem.time) {
+        const [hoursValue, minutesValue] = selectedItem.time.split(':');
+        setHours(hoursValue);
+        setMinutes(minutesValue);
+      }
+      
+      // Set other fields
+      setLiquid(selectedItem.liquid || '');
+      setAmount(selectedItem.amount || '1-10');
+      setCompany(selectedItem.company || '');
+      setTiming(selectedItem.timing || null);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.categoryRowView}>
@@ -364,9 +544,9 @@ const SupplmentFormComponent = ({onSave}) => {
           // onPress={() => setshowForm(true)}
           buttonStyle={[
             styles.buttonStyle,{
-              backgroundColor:'#fff'
-            }
-           
+              backgroundColor:'#fff',
+            },
+
           ]}
           title="Add Templete"
           titleStyle={styles.buttonTextStyle}
@@ -377,30 +557,30 @@ const SupplmentFormComponent = ({onSave}) => {
           buttonStyle={[
             styles.buttonStyle,
             {
-              backgroundColor:'#fff'
-            }
-           
+              backgroundColor:'#fff',
+            },
+
           ]}
           title="Save Templete"
           titleStyle={styles.buttonTextStyle}
         />
-        <Button
-          // containerStyle={{marginLeft: 21}}
-           onPress={handleAddSupplement}
-          buttonStyle={[
-            styles.buttonStyle,
-           
-          ]}
-          title="ADD"
-          titleStyle={styles.buttonTextStyle}
-        />
+     <Button
+  onPress={isItemEditMode ? handleUpdateSupplementItem : handleAddSupplement}
+  buttonStyle={[
+    styles.buttonStyle,
+    isItemEditMode && { backgroundColor: '#FFD700' }
+  ]}
+  title={isItemEditMode ? "UPDATE INTAKE" : "ADD INTAKE"}
+  titleStyle={styles.buttonTextStyle}
+/>
       </View>
         {/* Summary component */}
-        <Summary 
-        title="Supplement Summary" 
-        supplement={supplementItems}
-        // onDeleteSupplement={handleDeleteSupplement} 
-      />
+     <Summary 
+  title="Supplement Summary" 
+  supplement={supplementItems} // Always use the state variable
+  onDeleteSupplement={handleDeleteSupplement} 
+  onSelectSupplement={(item, index) => handleSupplementSelect(item, index)} 
+/>
             <View style={styles.bottomButtonRow}>
             <Button
               containerStyle={{ marginLeft: 21 }}
@@ -410,11 +590,14 @@ const SupplmentFormComponent = ({onSave}) => {
               titleStyle={styles.buttonTextStyle}
             />
             <Button
-              containerStyle={{ marginRight: 21 }}
-              onPress={handleSaveSupplement}
-              buttonStyle={[styles.buttonStyle]}
-              title="Save"
-              titleStyle={styles.buttonTextStyle}
+             containerStyle={{ marginRight: 21 }}
+             onPress={handleSaveOrUpdate}
+             buttonStyle={[
+               styles.buttonStyle,
+               isIntakeEditMode && { backgroundColor: '#FF9500' }
+             ]}
+             title={isIntakeEditMode ? "UPDATE INTAKE" : "SAVE"}
+             titleStyle={styles.buttonTextStyle}
             />
           </View>
     </View>
@@ -425,7 +608,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     borderRadius: 8,
-    flex:1
+    flex:1,
   },
   row: {
     marginBottom: 8,
@@ -599,7 +782,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-   alignSelf:'center'
+   alignSelf:'center',
   },
   bottomButton: {
     position: 'absolute',

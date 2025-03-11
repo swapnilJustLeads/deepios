@@ -11,8 +11,10 @@ const Summary = ({
   onDeleteExercise,
   onDeleteCardio,
   onDeleteRecovery,
-  onDeleteSupplement
+  onDeleteSupplement,
+  onSelectSupplement
 }) => {
+  console.log("here is data from parent supplement screen",supplement)
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -106,30 +108,61 @@ const Summary = ({
       )}
 
       {/* Supplement Items */}
-      {supplement.length > 0 && (
-        <>
-          {supplement.map((item, idx) => (
-            <View key={`supplement-${idx}`} style={styles.listContainer}>
-              <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseName}>{item.name}</Text>
-                <TouchableOpacity onPress={() => onDeleteSupplement && onDeleteSupplement(idx)}>
-                  <Delete height={21} width={21} />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.detailsRow}>
-                {/* <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Dosage:</Text>
-                  <Text style={styles.detailText}>{item.dosage || 'N/A'}</Text>
-                </View> */}
-                {/* <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Time:</Text>
-                  <Text style={styles.detailText}>{item.time || '00:00'}</Text>
-                </View> */}
-              </View> 
+ {/* Supplement Items */}
+ {supplement.length > 0 && (
+  <>
+    {supplement.map((item, idx) => (
+      <TouchableOpacity 
+        key={`supplement-${idx}`} 
+        style={styles.listContainer}
+        onPress={() => onSelectSupplement && onSelectSupplement(item, idx)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.exerciseHeader}>
+          <Text style={styles.exerciseName}>{item.name}</Text>
+          {/* We need to stop propagation on the delete button */}
+          <TouchableOpacity 
+            onPress={(e) => {
+              // Prevent the parent onPress from firing
+              e.stopPropagation();
+              onDeleteSupplement && onDeleteSupplement(idx);
+            }}
+          >
+            <Delete height={21} width={21} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.detailsRow}>
+          {item.amount && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Amount:</Text>
+              <Text style={styles.detailText}>{item.amount}</Text>
             </View>
-          ))}
-        </>
-      )}
+          )}
+          {item.liquid && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Liquid:</Text>
+              <Text style={styles.detailText}>{item.liquid}</Text>
+            </View>
+          )}
+          {item.company && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Company:</Text>
+              <Text style={styles.detailText}>{item.company}</Text>
+            </View>
+          )}
+          {item.timing && (
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>Timing:</Text>
+              <Text style={styles.detailText}>
+                {item.timing.replace(/_/g, ' ')}
+              </Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    ))}
+  </>
+)}
 
       {/* Show empty state if no items of any type */}
       {exercises.length === 0 && cardio.length === 0 && recovery.length === 0 && supplement.length === 0 && (

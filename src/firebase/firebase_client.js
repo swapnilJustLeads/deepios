@@ -496,17 +496,17 @@ export const fetchUserData = async (username, parentId) => {
 //   }
 // };
 
-// export const updateTraningName = async (id, name) => {
-//   try {
-//     await firestore()
-//       .collection(COLLECTIONS.DATA)
-//       .doc(id)
-//       .update({ name: name });
-//   } catch (error) {
-//     console.error("Error updating name: ", error);
-//     throw error;
-//   }
-// };
+export const updateTraningName = async (id, name) => {
+  try {
+    await getFirestore()
+      .collection(COLLECTIONS.DATA)
+      .doc(id)
+      .update({ name: name });
+  } catch (error) {
+    console.error("Error updating name: ", error);
+    throw error;
+  }
+};
 
 // // =============================== Supplement Reminder ===============================
 

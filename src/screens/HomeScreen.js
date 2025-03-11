@@ -47,6 +47,10 @@ export default function HomeScreen({navigation}) {
   const onPress = () => {
     setShowJournal(true);
   };
+  const onPressSupplement = () => {
+    navigation.navigate("Supplement")
+  }
+
   const closeJournal = () => {
     setShowJournal(false)
   }
@@ -141,7 +145,7 @@ export default function HomeScreen({navigation}) {
                   width: 133,
                 },
               ]}
-              onPress={onPress}
+              onPress={onPressSupplement}
               activeOpacity={0.8}>
               <Text style={styles.text}>SUPPLEMENT</Text>
             </TouchableOpacity>

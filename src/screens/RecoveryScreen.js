@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef ,useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import WorkoutCard from '../components/WorkoutCard';
 import Recovery from '../assets/images/recovery.svg';
@@ -23,6 +23,7 @@ import {
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
   const { recoveryData, setRefresh } = useUserRecoveryContext();
+  const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
   const recoveryFormRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
@@ -33,6 +34,26 @@ const RecoveryScreen = () => {
       dates.push(moment().add(i, 'days').format('YYYY-MM-DD'));
     }
     return dates;
+  };
+  useEffect(() => {
+    console.log("🔥 cardioData on load:", recoveryData); // ✅ Check if cardio data exists
+    const today = moment().format('YYYY-MM-DD');
+    onDateSelect(today);
+  }, [recoveryData]); // Runs whenever `cardioData` updates
+  
+  const onDateSelect = (selectedDate) => {
+    console.log("📅 Selected Date:", selectedDate);
+    setSelectedDate(selectedDate);
+    const filteredCardioData = recoveryData.filter((item) => {
+      if (item.createdAt) {
+        const itemDate = moment.unix(item.createdAt.seconds).format("YYYY-MM-DD");
+        return itemDate === selectedDate;
+      }
+      return false;
+    });
+  
+    console.log("📊 Filtered Cardio Data:", filteredCardioData);
+    setFilteredWorkoutData(filteredCardioData);
   };
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
@@ -79,7 +100,15 @@ const RecoveryScreen = () => {
             monthValue={recoveryTimeMonth}
             unit={'min'}
           />
-          <HorizontalDatePicker />
+             <HorizontalDatePicker 
+            value={selectedDate}
+            onChange={setSelectedDate}
+            minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
+            maxDate={moment().add(30, 'days').format('YYYY-MM-DD')}
+            onCalendarOpen={() => console.log('Calendar opened')}
+            onCalendarClose={() => console.log('Calendar closed')}
+            onDateSelect={onDateSelect}
+          />
           <View style={{ position: 'absolute', bottom: 9, alignSelf: 'center' }}>
             <Button
               onPress={() => setshowForm(true)}

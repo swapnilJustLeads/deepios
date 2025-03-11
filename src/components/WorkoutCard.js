@@ -4,6 +4,7 @@ import {Card} from '@rneui/themed';
 
 const WorkoutCard = props => {
   const [selectedTab, setSelectedTab] = useState('Today');
+  
   // Get the appropriate value based on selected tab
   const getValueForSelectedTab = () => {
     if (props.todayValue !== undefined && 
@@ -23,6 +24,7 @@ const WorkoutCard = props => {
     }
     return props.unitNumber || 0;
   };
+  
   return (
     <Card containerStyle={styles.card}>
       <View style={styles.header}>
@@ -36,6 +38,7 @@ const WorkoutCard = props => {
                 selectedTab === tab && styles.selectedTab,
                 index === 0 && selectedTab === tab && styles.leftRounded, // "Today"
                 index === 2 && selectedTab === tab && styles.rightRounded, // "Month"
+                index === 1 && selectedTab === tab && styles.middleTab, // "Week"
               ]}
               onPress={() => setSelectedTab(tab)}>
               <Text
@@ -49,13 +52,15 @@ const WorkoutCard = props => {
           ))}
         </View>
       </View>
-<View style={{height:9}} />
+      
+      <View style={{height:9}} />
+      
       {/* Data Section */}
       <View style={styles.dataWrapper}>
         <View style={styles.imageContainer}>{props.image}</View>
 
         <View style={styles.dataContainer}>
-        <Text style={styles.dataText}>{getValueForSelectedTab()}</Text>
+          <Text style={styles.dataText}>{getValueForSelectedTab()}</Text>
           <Text style={styles.unitText}>{props.unit}</Text>
         </View>
       </View>
@@ -108,20 +113,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedTab: {
-    backgroundColor: '#00E5FF',
-    borderBottomLeftRadius:30,
-    borderTopLeftRadius:30,
-    borderBottomRightRadius:30,
-    borderTopRightRadius:30
-    
+    backgroundColor: '#00E5FF'
   },
   leftRounded: {
     borderTopLeftRadius: 6,
     borderBottomLeftRadius: 6,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0
+  },
+  middleTab: {
+    borderRadius: 0
   },
   rightRounded: {
     borderTopRightRadius: 6,
     borderBottomRightRadius: 6,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0
   },
   tabText: {
     fontSize: 9,
@@ -144,15 +151,14 @@ const styles = StyleSheet.create({
   },
   dataContainer: {
     flexDirection: 'row',
-    // alignItems: 'baseline',
     justifyContent: 'center',
   },
   dataText: {
-    fontSize: 39  ,
+    fontSize: 39,
     fontWeight: '700',
     color: '#000',
     fontFamily: 'Inter',
-    marginTop:10
+    marginTop: 10
   },
   unitText: {
     fontSize: 18,
@@ -161,9 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     alignSelf: 'center',
     marginRight: 5,
-    marginTop:9
-  
-    
+    marginTop: 9
   },
 });
 

@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import { useTranslation } from 'react-i18next';
 import WorkoutCard from '../components/WorkoutCard';
@@ -19,6 +19,7 @@ import {
 } from '../utils/calculate';
 import { useDetails } from '../context/DeatailsContext';
 import {Button} from '@rneui/themed';
+import { addUser } from '../firebase/firebase_client';
 
 const WorkoutScreen = ({
   id,
@@ -36,6 +37,8 @@ const WorkoutScreen = ({
 }) => {
   const [showForm, setshowForm] = useState(false);
   const { t } = useTranslation();
+  // const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
+
   const { refresh, setRefresh ,workoutData} = useUserWorkoutContext();
   const { parentIds, subCategories } = useDetails();
   const [selectedDate, setSelectedDate] = useState(
@@ -48,6 +51,16 @@ const WorkoutScreen = ({
     }
     return dates;
   };
+  useEffect(() => {
+    // Filter workouts for today's date on initial load
+    const today = moment().format('YYYY-MM-DD');
+    onDateSelect(today);
+  }, [workoutData]); // 🔥 Run this effect whenever `workoutData` changes
+  const onDateSelect = (selectedDate) => {
+    console.log("📅 Selected Date:", selectedDate);
+    setSelectedDate(selectedDate); // ✅ Update selected date state properly
+  };
+  
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
     return data.filter((item) => {
@@ -67,6 +80,9 @@ const WorkoutScreen = ({
   const workoutWeightMonth = calculateTotalWorkoutWeight(
     filterDataByRange(workoutData, 'Month')
   );
+
+  
+  
   return (
     <View style={styles.container}>
       <HeaderComponent />
@@ -85,7 +101,15 @@ const WorkoutScreen = ({
             monthValue={workoutWeightMonth}
             unit={'kg'}
           />
-          <HorizontalDatePicker />
+          <HorizontalDatePicker 
+            value={selectedDate}
+            onChange={setSelectedDate}
+            minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
+            maxDate={moment().add(30, 'days').format('YYYY-MM-DD')}
+            onCalendarOpen={() => console.log('Calendar opened')}
+            onCalendarClose={() => console.log('Calendar closed')}
+            onDateSelect={onDateSelect}
+          />
           <View style={{
             position: 'absolute', 
             bottom: 9, 
@@ -101,7 +125,9 @@ const WorkoutScreen = ({
             />
           </View>
 
-          <WorkoutLayout title="Workout" selectedDate={selectedDate} />
+          <WorkoutLayout title="Workout"  selectedDate={selectedDate} />
+
+
           {/* <View style={styles.bottomButton}></View> */}
         </>
       )}

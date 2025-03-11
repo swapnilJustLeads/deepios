@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Button, Input } from '@rneui/themed';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../../firebase/hooks/auth'; // ✅ Import useAuth hook
+import React, {useState} from 'react';
+import {View} from 'react-native';
+import {Button, Input} from '@rneui/themed';
+import {useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../../firebase/hooks/auth'; // ✅ Import useAuth hook
 import Toast from 'react-native-toast-message';
 import Logo from '../../assets/images/logo.svg';
 
 export default function LoginScreen() {
-  const isDarkMode = useSelector((state) => state.theme.darkMode);
-  const { t, i18n } = useTranslation();
+  const isDarkMode = useSelector(state => state.theme.darkMode);
+  const {t, i18n} = useTranslation();
   const navigation = useNavigation();
-  const { login, loading } = useAuth(); // ✅ Use useAuth for authentication
+  const {login, loading} = useAuth(); // ✅ Use useAuth for authentication
 
   const [email, setEmail] = useState('shubham@justgetleads.com');
   const [password, setPassword] = useState('shubham@123');
@@ -21,7 +21,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Toast.show({ type: 'error', text1: 'Please enter email and password' });
+      Toast.show({type: 'error', text1: 'Please enter email and password'});
       return;
     }
 
@@ -38,30 +38,70 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor,
+      }}>
       <Logo width={270} height={65} />
-      <View style={{ height: 21 }} />
-      <Input 
-        placeholder='eMail' 
-        containerStyle={{ width: '50%' }} 
-        value={email} 
-        onChangeText={setEmail} 
+      <View style={{height: 21}} />
+      <Input
+        labelStyle={{ color: 'white' }}
+        inputContainerStyle={{ borderBottomColor: '#E5E7EB', color: 'white' }}
+        inputStyle={styles.inputText}
+        placeholder="eMail"
+        placeholderTextColor="white"
+        containerStyle={{ width: '50%' }}
+        value={email}
+        onChangeText={setEmail}
       />
-      <Input 
-        placeholder='Password' 
-        containerStyle={{ width: '50%' }} 
-        value={password} 
-        onChangeText={setPassword} 
-        secureTextEntry 
+      <Input
+        inputContainerStyle={{ borderBottomColor: '#E5E7EB' }}
+        inputStyle={styles.inputText}
+        placeholder="Password"
+        placeholderTextColor="white"
+        containerStyle={{ width: '50%' }}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
       />
-      <Button 
-        onPress={handleLogin} 
-        title={loading ? "Logging in..." : "LOGIN"} 
-        buttonStyle={{ backgroundColor: '#00E5FF' }} 
-        titleStyle={{ color: '#000' }} 
-        containerStyle={{ width: '50%', borderRadius: 12 }} 
-        disabled={loading} 
-      />
+     <Button
+      onPress={handleLogin}
+      title={loading ? 'Logging in...' : 'LOGIN'}
+      buttonStyle={{ 
+        backgroundColor: '#00E5FF',  // Same background color for both states
+        height: 40 // Optional: standard height for the button
+      }}
+      titleStyle={{
+        color: '#000',
+        fontFamily: 'Inter',
+        fontWeight: '900',
+        textTransform: 'uppercase',
+      }}
+      containerStyle={{ 
+        width: 133, 
+        borderRadius: 8
+      }}
+      disabled={loading}
+      disabledStyle={{ 
+        backgroundColor: '#00E5FF'  // Keep same background color when disabled
+      }}
+      disabledTitleStyle={{
+        color: '#000'  // Keep same text color when disabled
+      }}
+      loading={loading}
+      loadingProps={{ 
+        color: '#000'  // Color of the loading indicator
+      }}
+    />
     </View>
   );
 }
+
+const styles = {
+  inputText: {
+    color: 'white',
+  },
+};

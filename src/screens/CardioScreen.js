@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import WorkoutCard from '../components/WorkoutCard';
 import Cardio from '../assets/images/cardio.svg';
@@ -28,6 +28,7 @@ import WorkoutLayout from '../components/WorkoutLayout';
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
   const { cardioData ,setRefresh} = useUserCardioContext();
+  const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
@@ -41,6 +42,28 @@ const CardioScreen = () => {
   const closeSave = () => {
     setshowForm(false);
   } 
+  useEffect(() => {
+    console.log("🔥 cardioData on load:", cardioData); // ✅ Check if cardio data exists
+    const today = moment().format('YYYY-MM-DD');
+    onDateSelect(today);
+  }, [cardioData]); // Runs whenever `cardioData` updates
+  
+  const onDateSelect = (selectedDate) => {
+    console.log("📅 Selected Date:", selectedDate);
+    setSelectedDate(selectedDate);
+    const filteredCardioData = cardioData.filter((item) => {
+      if (item.createdAt) {
+        const itemDate = moment.unix(item.createdAt.seconds).format("YYYY-MM-DD");
+        return itemDate === selectedDate;
+      }
+      return false;
+    });
+  
+    console.log("📊 Filtered Cardio Data:", filteredCardioData);
+    setFilteredWorkoutData(filteredCardioData);
+  };
+  
+
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
     return data.filter((item) => {
@@ -67,6 +90,8 @@ const CardioScreen = () => {
     setshowForm(false);  // Hide the form
     setRefresh(prev => !prev); // Toggle refresh to trigger data reload
   };
+
+
   return (
     <View style={styles.container}>
       <HeaderComponent />
@@ -83,15 +108,25 @@ const CardioScreen = () => {
            monthValue={cardioTimeMonth}
            unit={'min'}
           />
-          <HorizontalDatePicker />
+             <HorizontalDatePicker 
+            value={selectedDate}
+            onChange={setSelectedDate}
+            minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
+            maxDate={moment().add(30, 'days').format('YYYY-MM-DD')}
+            onCalendarOpen={() => console.log('Calendar opened')}
+            onCalendarClose={() => console.log('Calendar closed')}
+            onDateSelect={onDateSelect}
+          />
           <WorkoutLayout title="Cardio" type="cardio" selectedDate={selectedDate} />
+
+
           <View style={styles.bottomButton}>
             
 
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}
-              title="New TRAINING"
+              title="New CARDIO"
               titleStyle={styles.buttonTextStyle}
             />
           </View>

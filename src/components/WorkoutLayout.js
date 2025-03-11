@@ -34,11 +34,15 @@ const WorkoutLayout = (props) => {
   
   const filteredData = dataSource.filter(item => {
     if (item.createdAt) {
-      const itemDate = moment(item.createdAt.seconds * 1000).format('YYYY-MM-DD');
+      const itemDate = moment.unix(item.createdAt.seconds).format("YYYY-MM-DD");
+      console.log(`🛠️ Comparing Item Date: ${itemDate} === Selected Date: ${selectedDate}`);
       return itemDate === selectedDate;
     }
     return false;
   });
+  
+  console.log("✅ Filtered Data Count:", filteredData.length);
+  
   
   // Helper function to get exercise name from subCategory ID
   function getExerciseName(subCategoryId, exerciseName) {
