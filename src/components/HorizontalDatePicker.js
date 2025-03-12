@@ -25,7 +25,7 @@ const HorizontalDatePicker = ({
   itemWidth = 30,
   showCalendarOnSelectedDatePress = true,
   confirmButtonText = 'Confirm',
-  calendarHeaderText = 'Select a Date'
+  calendarHeaderText = ''
 }) => {
   // Generate dates centered around today
   const generateDatesAroundToday = () => {
@@ -52,6 +52,7 @@ const HorizontalDatePicker = ({
   const [selectedDate, setSelectedDate] = useState(initialDate || moment().format('YYYY-MM-DD'));
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
+  const [currentMonth, setCurrentMonth] = useState(moment(selectedDate).format('MMMM YYYY'));
   const flatListRef = useRef(null);
   const initialScrollDone = useRef(false);
 
@@ -103,6 +104,9 @@ const HorizontalDatePicker = ({
 
   // Function to open calendar when selected date is clicked
   const handleSelectedDateClick = () => {
+    // Set current month to the month of selected date
+    setCurrentMonth(moment(selectedDate).format('MMMM YYYY'));
+    
     // Update marked dates to highlight the currently selected date
     const updatedMarkedDates = {
       [selectedDate]: {
@@ -154,6 +158,27 @@ const HorizontalDatePicker = ({
     if (onDateSelect) {
       onDateSelect(dateString);
     }
+  };
+
+  // Handle month navigation in calendar
+  const handleMonthChange = (direction) => {
+    const newMonth = moment(currentMonth, 'MMMM YYYY').add(direction, 'month');
+    setCurrentMonth(newMonth.format('MMMM YYYY'));
+  };
+
+  // Render custom header for calendar
+  const renderCalendarHeader = () => {
+    return (
+      <View style={styles.customCalendarHeader}>
+        <TouchableOpacity onPress={() => handleMonthChange(-1)}>
+          <Text style={styles.navigationArrow}>◀</Text>
+        </TouchableOpacity>
+        <Text style={styles.monthYearText}>{currentMonth}</Text>
+        <TouchableOpacity onPress={() => handleMonthChange(1)}>
+          <Text style={styles.navigationArrow}>▶</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   // Center today's date when component mounts
@@ -252,32 +277,86 @@ const HorizontalDatePicker = ({
       >
         <View style={styles.modalContainer}>
           <View style={styles.calendarContainer}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.headerText}>{calendarHeaderText}</Text>
-              <TouchableOpacity onPress={() => setCalendarVisible(false)}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            
             <Calendar
               current={selectedDate}
               onDayPress={handleCalendarDateSelect}
               markedDates={markedDates}
+              renderHeader={renderCalendarHeader}
+              hideArrows={true}
+              enableSwipeMonths={false}
               theme={{
-                selectedDayBackgroundColor: themeColor,
+                backgroundColor: 'white',
+                calendarBackground: 'white',
+                textSectionTitleColor: '#666',
+                selectedDayBackgroundColor: '#4169E1',
+                selectedDayTextColor: 'white',
                 todayTextColor: accentColor,
-                arrowColor: themeColor,
+                dayTextColor: '#333',
+                textDisabledColor: '#d9e1e8',
                 dotColor: themeColor,
                 selectedDotColor: 'white',
+                monthTextColor: 'black',
+                textDayFontWeight: '400',
+                textMonthFontWeight: 'bold',
+                textDayHeaderFontWeight: 'bold',
+                textDayFontSize: 16,
+                textMonthFontSize: 18,
+                textDayHeaderFontSize: 13,
+                'stylesheet.calendar.header': {
+                  header: {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                    marginTop: 6,
+                    alignItems: 'center'
+                  },
+                  week: {
+                    marginTop: 7,
+                    flexDirection: 'row',
+                    justifyContent: 'space-around'
+                  },
+                  dayHeader: {
+                    marginTop: 2,
+                    marginBottom: 7,
+                    width: 32,
+                    textAlign: 'center',
+                    fontSize: 13,
+                    fontWeight: 'bold',
+                    color: '#666'
+                  }
+                },
+                'stylesheet.day.basic': {
+                  base: {
+                    width: 32,
+                    height: 32,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  },
+                  today: {
+                    borderWidth: 1,
+                    borderColor: accentColor,
+                    borderRadius: 16
+                  },
+                  todayText: {
+                    color: accentColor,
+                    fontWeight: 'bold'
+                  },
+                  selected: {
+                    backgroundColor: '#4169E1',
+                    borderRadius: 16
+                  },
+                  selectedText: {
+                    color: 'white',
+                    fontWeight: 'bold'
+                  },
+                  disabledText: {
+                    color: '#d9e1e8'
+                  }
+                }
               }}
             />
-            
-            <TouchableOpacity 
-              style={styles.confirmButton}
-              onPress={() => setCalendarVisible(false)}
-            >
-              <Text style={styles.confirmButtonText}>{confirmButtonText}</Text>
-            </TouchableOpacity>
+
           </View>
         </View>
       </Modal>
@@ -344,26 +423,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  headerText: {
+  
+  // Custom Calendar Header Styles
+  customCalendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    width: '100%',
+  },
+  monthYearText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'black',
   },
-  closeButton: {
-    fontSize: 22,
+  navigationArrow: {
+    fontSize: 18,
     color: '#666',
-  },
-  confirmButton: {
-    backgroundColor: 'black',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  confirmButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    padding: 5,
   },
 });
 

@@ -47,7 +47,28 @@ const SupplementScreen = (prop) => {
   return (
     <View style={styles.container}>
       <HeaderComponent />
-      <HorizontalDatePicker 
+
+      {showForm ? (
+        // Form view - no date picker here
+        <>
+          {selectedSupplement ? (
+            <SupplmentFormComponent
+              supplementData={selectedSupplement}
+              save={closeForm}
+              onSave={handleFormSave}
+            />
+          ) : (
+            // For new supplement
+            <SupplmentFormComponent
+              save={closeForm}
+              onSave={handleFormSave}
+            />
+          )}
+        </>
+      ) : (
+        // List view - include date picker here
+        <>
+          <HorizontalDatePicker
             value={selectedDate}
             onChange={setSelectedDate}
             minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
@@ -57,29 +78,11 @@ const SupplementScreen = (prop) => {
             onDateSelect={onDateSelect}
           />
 
-      {showForm ? (
-        <>
-     {selectedSupplement ? (
-  // For existing supplement - pass both onClose and onSave
-  <SupplmentFormComponent 
-    supplementData={selectedSupplement}
-    save={closeForm}
-    onSave={handleFormSave}  // Add this to ensure refresh after update
-  />
-) : (
-  // For new supplement
-  <SupplmentFormComponent 
-    save={closeForm} 
-    onSave={handleFormSave}
-  />
-)}
-        </>
-      ) : (
-        <>
-          <SupplementLayout 
-            selectedDate={selectedDate} 
-            onSelectSupplement={handleSelectSupplement} // Pass the handler
+          <SupplementLayout
+            selectedDate={selectedDate}
+            onSelectSupplement={handleSelectSupplement}
           />
+
           <View style={styles.bottomButton}>
             <Button
               onPress={() => setshowForm(true)}

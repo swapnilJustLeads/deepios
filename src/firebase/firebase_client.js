@@ -414,87 +414,87 @@ export const fetchUserData = async (username, parentId) => {
 //   }
 // };
 
-// export const getTemplates = async () => {
-//   try {
-//     const lang = await AsyncStorage.getItem("lang") || "en";
-//     const querySnapshot = await firestore()
-//       .collection(COLLECTIONS.TEMPLATE)
-//       .get();
+export const getTemplates = async () => {
+  try {
+    const lang = await AsyncStorage.getItem("lang") || "en";
+    const querySnapshot = await getFirestore()
+      .collection(COLLECTIONS.TEMPLATE)
+      .get();
     
-//     return querySnapshot.docs.map((doc) => {
-//       const data = doc.data();
-//       const name = data.translated_templateName
-//         ? data.translated_templateName[lang]
-//         : data.templateName;
-//       return {
-//         id: doc.id,
-//         ...data,
-//         templateName: name,
-//         name: name,
-//       };
-//     });
-//   } catch (error) {
-//     console.error("Error fetching templates:", error);
-//     throw error;
-//   }
-// };
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const name = data.translated_templateName
+        ? data.translated_templateName[lang]
+        : data.templateName;
+      return {
+        id: doc.id,
+        ...data,
+        templateName: name,
+        name: name,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    throw error;
+  }
+};
 
-// export const getUserTemplates = async (username) => {
-//   try {
-//     const querySnapshot = await firestore()
-//       .collection(COLLECTIONS.TEMPLATE)
-//       .where("users", "array-contains", username)
-//       .get();
+export const getUserTemplates = async (username) => {
+  try {
+    const querySnapshot = await getFirestore()
+      .collection(COLLECTIONS.TEMPLATE)
+      .where("users", "array-contains", username)
+      .get();
     
-//     return querySnapshot.docs.map((doc) => {
-//       return { id: doc.id, ...doc.data() };
-//     });
-//   } catch (error) {
-//     console.error("Error fetching templates:", error);
-//     throw error;
-//   }
-// };
+    return querySnapshot.docs.map((doc) => {
+      return { id: doc.id, ...doc.data() };
+    });
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    throw error;
+  }
+};
 
-// export const addTemplate = async (template) => {
-//   try {
-//     if (!template.name) {
-//       throw new Error("Template name is required.");
-//     }
+export const addTemplate = async (template) => {
+  try {
+    if (!template.name) {
+      throw new Error("Template name is required.");
+    }
     
-//     const docRef = await firestore()
-//       .collection(COLLECTIONS.TEMPLATE)
-//       .add(template);
+    const docRef = await getFirestore()
+      .collection(COLLECTIONS.TEMPLATE)
+      .add(template);
     
-//     return { id: docRef.id, ...template };
-//   } catch (error) {
-//     console.error("Error adding template:", error);
-//     throw error;
-//   }
-// };
+    return { id: docRef.id, ...template };
+  } catch (error) {
+    console.error("Error adding template:", error);
+    throw error;
+  }
+};
 
-// export const deleteTemplate = async (templateId) => {
-//   try {
-//     await firestore()
-//       .collection(COLLECTIONS.TEMPLATE)
-//       .doc(templateId)
-//       .delete();
-//   } catch (error) {
-//     console.error("Error deleting template:", error);
-//     throw error;
-//   }
-// };
+export const deleteTemplate = async (templateId) => {
+  try {
+    await getFirestore()
+      .collection(COLLECTIONS.TEMPLATE)
+      .doc(templateId)
+      .delete();
+  } catch (error) {
+    console.error("Error deleting template:", error);
+    throw error;
+  }
+};
 
-// export const updateTemplate = async (templateId, updatedTemplate) => {
-//   try {
-//     await firestore()
-//       .collection(COLLECTIONS.TEMPLATE)
-//       .doc(templateId)
-//       .update(updatedTemplate);
-//   } catch (error) {
-//     console.error("Error updating template:", error);
-//     throw error;
-//   }
-// };
+export const updateTemplate = async (templateId, updatedTemplate) => {
+  try {
+    await getFirestore()
+      .collection(COLLECTIONS.TEMPLATE)
+      .doc(templateId)
+      .update(updatedTemplate);
+  } catch (error) {
+    console.error("Error updating template:", error);
+    throw error;
+  }
+};
 
 export const updateTraningName = async (id, name) => {
   try {

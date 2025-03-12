@@ -41,7 +41,6 @@ const WorkoutScreen = ({
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const { t } = useTranslation();
   const {isDarkMode} = useTheme();
-  
   const { refresh, setRefresh, workoutData } = useUserWorkoutContext();
   const { parentIds, subCategories } = useDetails();
   const [selectedDate, setSelectedDate] = useState(
@@ -101,6 +100,8 @@ const WorkoutScreen = ({
     setSelectedWorkout(workoutItem);
     setshowForm(true);
   };
+
+
   
   return (
     <View style={[styles.container, {backgroundColor: isDarkMode ? 'black' : '#AFAFAF'}]}>
@@ -153,6 +154,7 @@ const WorkoutScreen = ({
           </View>
         </>
       )}
+      
     </View>
   );
 };

@@ -6,6 +6,7 @@ import {
   updateDoc,
   doc
 } from '@react-native-firebase/firestore';
+import Toast from 'react-native-toast-message';
 import { FirestoreDB } from '../firebase/firebase_client';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Text } from '@rneui/themed';
@@ -13,7 +14,8 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { useUserDetailsContext } from '../context/UserDetailsContext';
 import CustomDropdown from './CustomDropdown';
 import { useDetails } from '../context/DeatailsContext';
-import Down from '../assets/images/down.svg';
+import SaveTemplateModal from './SaveTemplateModal';
+import { useTemplatesContext } from '../context/TemplatesContext';
 import Summary from './Summary';
 
 const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
@@ -22,6 +24,9 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
   const [exercise, setExercise] = useState(null);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [exercisesList, setExercisesList] = useState([]);
+  const [filteredUserTemplates, setFilteredUserTemplates] = useState([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const { templates, fetchTemplates ,addTemplate} = useTemplatesContext();
   const [currentExercise, setCurrentExercise] = useState({
     name: '',
     sets: []
@@ -29,8 +34,18 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
   const [sets, setSets] = useState(1);
   const [reps, setReps] = useState(Array(sets).fill(''));
   const [weights, setWeights] = useState(Array(sets).fill(''));
-  const [hours, setHours] = useState('07');
-  const [minutes, setMinutes] = useState('19');
+  const getCurrentTime = () => {
+    const now = new Date();
+    return {
+      hours: now.getHours().toString().padStart(2, '0'),
+      minutes: now.getMinutes().toString().padStart(2, '0'),
+    };
+  };
+  const currentTime = getCurrentTime();
+  const [hours, setHours] = useState(currentTime.hours);
+  const [minutes, setMinutes] = useState(currentTime.minutes);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [isItemEditMode, setIsItemEditMode] = useState(false);
   const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
@@ -103,6 +118,27 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
       setIsIntakeEditMode(false);
     };
   }, [workoutData]);
+
+// 1. Add this useEffect to filter templates based on user and parent ID
+useEffect(() => {
+  // Filter templates to only show those that belong to current user and match workout parent ID
+  const filteredTemplates = templates.filter(template => {
+    // Check if this is a workout template (by parent ID)
+    const isWorkoutTemplate = template.parent === parentIds?.Workout;
+    
+    // Check if the template belongs to this user
+    const belongsToUser = template.users && 
+      template.users.includes(userDetails?.username);
+    
+    return isWorkoutTemplate && belongsToUser;
+  });
+  
+  // Log the filtered templates for debugging
+  console.log('Filtered templates for current user:', filteredTemplates.length);
+  
+  // Set this as a new state variable
+  setFilteredUserTemplates(filteredTemplates);
+}, [templates, userDetails?.username, parentIds?.Workout]);
   
   // Helper function to get exercise name from subCategory ID
   function getExerciseName(subCategoryId) {
@@ -188,7 +224,52 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
       }
     }
   };
-
+  const handleTemplateSelect = (templateId) => {
+    const template = filteredUserTemplates.find((t) => t.id === templateId);
+    if (template && template.list && Array.isArray(template.list)) {
+      // Map the template data to the expected structure for exercisesList
+      const formattedExercises = template.list.map(item => {
+        // Get the exercise name for display in the summary
+        const exerciseName = getExerciseName(item.subCategory);
+        
+        // Create sets array for the summary display
+        const setsArray = [];
+        if (Array.isArray(item.reps) && Array.isArray(item.weights)) {
+          const setCount = Math.min(item.reps.length, item.weights.length);
+          
+          for (let i = 0; i < setCount; i++) {
+            setsArray.push({
+              reps: parseInt(item.reps[i] || '0', 10),
+              weight: parseFloat(item.weights[i] || '0')
+            });
+          }
+        }
+        
+        // Return a properly formatted exercise item with template name included
+        return {
+          category: item.category,
+          subCategory: item.subCategory,
+          name: exerciseName || "Unknown Exercise",
+          sets: setsArray,
+          reps: item.reps || [],
+          weights: item.weights || [],
+          templateName: template.name // Pass the template name for the summary
+        };
+      });
+      
+      // Update the exercises list with the template data
+      setExercisesList(formattedExercises);
+      console.log(`Applied template: ${template.name} with ${formattedExercises.length} exercises`);
+      
+      // Reset the dropdown selection to null after applying the template
+      // This ensures the placeholder shows again
+      setTimeout(() => {
+        setSelectedTemplate(null);
+      }, 300); // Short delay to ensure the selection is registered before resetting
+    } else {
+      console.log('Template not found or has invalid data');
+    }
+  };
   // Dropdown Data
   const setsData = Array.from({ length: 5 }, (_, i) => ({ label: (i + 1).toString(), value: (i + 1).toString() }));
   const hoursData = Array.from({ length: 24 }, (_, i) => ({ label: i.toString().padStart(2, '0'), value: i.toString().padStart(2, '0') }));
@@ -268,38 +349,44 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
   // Modify your ADD button's onClick handler
   const handleAddExercise = () => {
     if (category && exercise) {
-      // Get the exercise name for display purposes
-      const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
-
+      // Get the exercise name for display
+      const exerciseName =
+        filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+  
       // Format the sets data as an array of objects with reps and weight properties
       const setsData = [];
       for (let i = 0; i < sets; i++) {
-        setsData.push({
-          reps: parseInt(reps[i] || '0', 10),
-          weight: parseFloat(weights[i] || '0')
-        });
+        const rep = parseInt(reps[i] || '1', 10);
+        const weight = parseFloat(weights[i] || '0');
+  
+        let setObj = { reps: rep };
+        if (weight > 0) {
+          setObj.weight = weight;
+        } 
+        
+        setsData.push(setObj);
       }
-
-      // Create workout object with necessary structure for Summary component
+  
+      // Create workout object
       const newWorkout = {
-        category,               // Store category ID
-        subCategory: exercise,  // Store exercise ID
-        name: exerciseName,     // Add name for display in Summary
-        sets: setsData,         // Format sets as an array of objects with reps and weight
-        reps: [...reps],        // Keep original reps array for saving
-        weights: [...weights]   // Keep original weights array for saving
+        category, 
+        subCategory: exercise, 
+        name: exerciseName, 
+        sets: setsData, 
+        reps: reps.map(r => r || '1'), 
+        weights: weights.filter(w => w && parseFloat(w) > 0), // ✅ Remove empty or zero values
       };
-
+  
       // Add to exercises list
       setExercisesList(prevList => [...prevList, newWorkout]);
-
+  
       // Reset form fields
       setExercise(null);
       setSets(1);
       setReps(Array(1).fill(''));
       setWeights(Array(1).fill(''));
     } else {
-      console.log('Please select both category and exercise');
+      Toast.show({type: 'error', text1: 'Please fill all the details'});
     }
   };
 
@@ -321,6 +408,19 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
         0
       );
 
+         // Check if all exercises have the same template name
+    let templateName = null;
+    if (exercisesList.length > 0 && exercisesList[0].templateName) {
+      const firstTemplateName = exercisesList[0].templateName;
+      const allSameTemplate = exercisesList.every(ex => 
+        ex.templateName === firstTemplateName
+      );
+      
+      if (allSameTemplate) {
+        templateName = firstTemplateName;
+      }
+    }
+
       // Format workout data for Firebase - avoid undefined values
       const payload = {
         data: exercisesList.map(exercise => {
@@ -339,7 +439,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
         createdAt: isIntakeEditMode && workoutData?.createdAt ? workoutData.createdAt : workoutTime,
         parent: parentIds.Workout,
         username: userDetails?.username,
-        template: null
+        template: templateName 
       };
 
       let docId;
@@ -383,53 +483,62 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
     }
   };
   
-  // Update Specific Rep
-  const updateRep = (index, value) => {
-    const updatedReps = [...reps];
-    updatedReps[index] = value;
-    setReps(updatedReps);
+  const handleOpenModal = () => {
+    setIsModalVisible(true);
+  };
+  
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
   };
 
-  // Update Specific Weight
-  const updateWeight = (index, value) => {
-    const updatedWeights = [...weights];
-    updatedWeights[index] = value;
-    setWeights(updatedWeights);
-  };
-
-  // Custom dropdown render
-  const renderDropdownItem = item => {
-    return (
-      <View style={styles.dropdownItem}>
-        <Text style={styles.dropdownItemText}>{item.label}</Text>
-      </View>
-    );
-  };
-
-  // Update reps and weights based on sets
-  const updateFormArrays = newSets => {
-    const setsNumber = parseInt(newSets, 10) || 0;
-
-    // For reps, preserve existing values and fill new slots with '5'
-    setReps(prevReps => {
-      if (setsNumber <= 0) return [];
-      const newReps = [...prevReps.slice(0, setsNumber)];
-      while (newReps.length < setsNumber) {
-        newReps.push('5');
-      }
-      return newReps;
+const handleSaveTemplate = async (templateName) => {
+  try {
+    if (!templateName.trim() || exercisesList.length === 0) {
+      console.log('Need a template name and at least one exercise');
+      return;
+    }
+    
+    // Create the template object with the current data
+    const templateData = {
+      name: templateName,
+      templateName: templateName,
+      type: 'workout',
+      list: exercisesList.map(exercise => ({
+        category: exercise.category,
+        subCategory: exercise.subCategory,
+        sets: exercise.sets.length,
+        reps: exercise.reps,
+        weights: exercise.weights,
+        notes: ""
+      })),
+      parent: parentIds.Workout,
+      users: [userDetails?.username],
+      createdAt: new Date()
+    };
+    
+    // Save the template using the context function
+    await addTemplate(templateData);
+    console.log('Template saved successfully');
+    
+    // IMPORTANT: Explicitly fetch templates to refresh the dropdown
+    await fetchTemplates();
+    
+    // After successful save and refresh, update the filteredUserTemplates
+    // This is needed because the fetchTemplates might not immediately update the filtered templates
+    const newFilteredTemplates = templates.filter(template => {
+      const isWorkoutTemplate = template.parent === parentIds?.Workout;
+      const belongsToUser = template.users && 
+        template.users.includes(userDetails?.username);
+      return isWorkoutTemplate && belongsToUser;
     });
-
-    // For weights, preserve existing values and fill new slots with '5'
-    setWeights(prevWeights => {
-      if (setsNumber <= 0) return [];
-      const newWeights = [...prevWeights.slice(0, setsNumber)];
-      while (newWeights.length < setsNumber) {
-        newWeights.push('5');
-      }
-      return newWeights;
-    });
-  };
+    setFilteredUserTemplates(newFilteredTemplates);
+    
+    // Close modal after saving
+    handleCloseModal();
+  } catch (error) {
+    console.error('Error saving workout template:', error);
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -478,6 +587,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
             placeholder="Sets"
             containerStyle={styles.setsDropdown}
             selectedStyle={styles.selectedText}
+            showChevron={false}
           />
         </View>
 
@@ -491,6 +601,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
               placeholder="00"
               containerStyle={styles.timeDropdown}
               selectedStyle={styles.selectedText}
+              showChevron={false}
             />
             <CustomDropdown
               options={minutesData}
@@ -499,6 +610,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
               placeholder="00"
               containerStyle={styles.timeDropdown}
               selectedStyle={styles.selectedText}
+                     showChevron={false}
             />
           </View>
         </View>
@@ -522,6 +634,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
                 placeholder=""
                 containerStyle={styles.repWeightDropdown}
                 selectedStyle={styles.selectedText}
+                showChevron={false}
               />
             ))}
           </View>
@@ -546,6 +659,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
                 placeholder=""
                 containerStyle={styles.repWeightDropdown}
                 selectedStyle={styles.selectedText}
+                showChevron={false}
               />
             ))}
           </View>
@@ -554,19 +668,18 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
 
       {/* Buttons Row */}
       <View style={styles.buttonRow}>
+      <CustomDropdown
+  options={filteredUserTemplates.map((t) => ({ label: t.name, value: t.id }))}
+  value={selectedTemplate} // This will be null after selection, showing the placeholder again
+  onChange={handleTemplateSelect}
+  placeholder="ADD TEMPLATE"
+  containerStyle={styles.templateDropdown}
+  placeholderStyle={styles.templateDropdownText}
+  selectedStyle={styles.templateDropdownText}
+  isBullet={true}
+/>
         <Button
-          onPress={() => console.log('Add Template pressed')}
-          buttonStyle={[
-            styles.buttonStyle,
-            {
-              backgroundColor: '#fff',
-            },
-          ]}
-          title="Add Template"
-          titleStyle={styles.buttonTextStyle}
-        />
-        <Button
-          onPress={() => console.log('Save Template pressed')}
+          onPress={handleOpenModal}
           buttonStyle={[
             styles.buttonStyle,
             {
@@ -597,13 +710,19 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
       
       {/* Bottom Button */}
       <View style={styles.bottomButton}>
-        <Button
-          onPress={handleSaveWorkout}
-          buttonStyle={styles.buttonStyle}
-          title={isIntakeEditMode ? "UPDATE WORKOUT" : "SAVE WORKOUT"}
-          titleStyle={styles.buttonTextStyle}
-        />
-      </View>
+  <Button
+    onPress={handleSaveWorkout} // Changed from handleOpenModal to handleSaveWorkout
+    buttonStyle={styles.buttonStyle}
+    title={isIntakeEditMode ? "UPDATE WORKOUT" : "SAVE WORKOUT"}
+    titleStyle={styles.buttonTextStyle}
+  />
+</View>
+      {isModalVisible && (
+  <SaveTemplateModal
+    onSave={handleSaveTemplate}
+    onClose={handleCloseModal}
+  />
+)}
     </View>
   );
 };
@@ -638,7 +757,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: 'white',
-    marginBottom: 6,
+    marginBottom: 3,
     fontFamily: 'Inter',
   },
   dropdown: {
@@ -736,6 +855,83 @@ const styles = StyleSheet.create({
     bottom: 21,
     alignSelf: 'center',
   },
+
+  dropdownButton: {
+    buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 5,
+    },
+    dropdownButton: {
+      height: 40,
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#E5E7EB',
+      paddingHorizontal: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 120, // Same width as buttons
+    },
+    dropdownText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#000',
+      textAlign: 'center',
+    },
+    button: {
+      backgroundColor: '#00E5FF',
+      borderRadius: 8,
+      width: 120, // Match width of dropdown
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#000',
+      textTransform: 'uppercase',
+    },
+  },
+  dropdownText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#00E5FF',
+    borderRadius: 8,
+    width: 120, // Match width of dropdown
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#000',
+    textTransform: 'uppercase',
+  },
+  templateDropdown: {
+    height: 30,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 130, // Match width with other buttons
+  },
+  templateDropdownText: {
+    fontFamily: 'Inter',
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#000000',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  
 });
 
 export default WorkoutForm;

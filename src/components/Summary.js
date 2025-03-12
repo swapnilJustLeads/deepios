@@ -17,7 +17,6 @@ const Summary = ({
   onSelectExercise,
   onSelectRecovery
 }) => {
-  console.log("here is data from parent supplement screen", supplement);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>

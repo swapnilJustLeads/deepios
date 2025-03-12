@@ -13,7 +13,10 @@ const CustomDropdown = ({
   selectedStyle,
   itemTextStyle,
   dropdownStyle,
-  isBullet
+  isBullet,
+  showChevron = true,
+  isScrollable = false, // New prop for scrollable content
+  maxHeight = 250 // Default max height 
 }) => {
   // Ensure options are in the correct format
   const formattedOptions = options.map(opt => 
@@ -44,6 +47,14 @@ const CustomDropdown = ({
     }
   };
 
+  // Conditional rendering for the right icon
+  const renderRightIcon = () => {
+    if (showChevron) {
+      return <Down height={14} width={14} />;
+    }
+    return null;
+  };
+
   return (
     <Dropdown
       style={[styles.dropdown, containerStyle]}
@@ -51,18 +62,20 @@ const CustomDropdown = ({
       selectedTextStyle={[styles.selectedText, selectedStyle]}
       itemTextStyle={[styles.itemText, itemTextStyle]}
       data={formattedOptions}
-      maxHeight={250}
+      maxHeight={isScrollable ? 200 : maxHeight} // Shorter height for scrollable dropdowns
       labelField="label"
       valueField="value"
       placeholder={placeholder}
       value={value}
       onChange={item => onChange(item.value)}
       renderItem={renderItem}
-      renderRightIcon={() => <Down height={14} width={14} />}
+      renderRightIcon={renderRightIcon}
       dropdownPosition="auto"
-      autoScroll
+      autoScroll={true}
       activeColor="#f0f0f0"
       containerStyle={[styles.dropdownContainer, dropdownStyle]}
+      search={isScrollable} // Enable search for scrollable content if needed
+      searchPlaceholder="Search..."
     />
   );
 };
@@ -77,16 +90,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingRight: 10,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   placeholderText: {
     color: '#000',
     fontSize: 10,
     fontWeight: '700',
+    textAlign: 'center',
   },
   selectedText: {
     color: '#000',
     fontSize: 10,
     fontWeight: '700',
+    textAlign: 'center',
+    width: '100%',
   },
   item: {
     padding: 12,
@@ -114,8 +131,8 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     borderWidth: 1,
     borderColor: '#000',
-    borderRadius: 8,  // Increased for more visible rounding
-    overflow: 'hidden', // Ensures content stays within rounded corners
+    borderRadius: 8,
+    overflow: 'hidden',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -129,9 +146,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    alignItems: 'center',  // Center items horizontally
-    justifyContent: 'center', // Center items vertically,
-
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
