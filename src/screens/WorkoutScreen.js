@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import { useTranslation } from 'react-i18next';
 import WorkoutCard from '../components/WorkoutCard';
@@ -20,6 +20,8 @@ import {
 import { useDetails } from '../context/DeatailsContext';
 import {Button} from '@rneui/themed';
 import { addUser } from '../firebase/firebase_client';
+import { useTheme } from '../hooks/useTheme';
+
 
 const WorkoutScreen = ({
   id,
@@ -36,14 +38,16 @@ const WorkoutScreen = ({
   handleMoveItem,
 }) => {
   const [showForm, setshowForm] = useState(false);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
   const { t } = useTranslation();
-  // const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
-
-  const { refresh, setRefresh ,workoutData} = useUserWorkoutContext();
+  const {isDarkMode} = useTheme();
+  
+  const { refresh, setRefresh, workoutData } = useUserWorkoutContext();
   const { parentIds, subCategories } = useDetails();
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
+  
   const getDates = () => {
     let dates = [];
     for (let i = -3; i <= 3; i++) {
@@ -51,11 +55,13 @@ const WorkoutScreen = ({
     }
     return dates;
   };
+  
   useEffect(() => {
     // Filter workouts for today's date on initial load
     const today = moment().format('YYYY-MM-DD');
     onDateSelect(today);
   }, [workoutData]); // 🔥 Run this effect whenever `workoutData` changes
+  
   const onDateSelect = (selectedDate) => {
     console.log("📅 Selected Date:", selectedDate);
     setSelectedDate(selectedDate); // ✅ Update selected date state properly
@@ -71,6 +77,7 @@ const WorkoutScreen = ({
       return false;
     });
   };
+  
   const workoutWeightToday = calculateTotalWorkoutWeight(
     filterDataByRange(workoutData, 'Today')
   );
@@ -81,15 +88,31 @@ const WorkoutScreen = ({
     filterDataByRange(workoutData, 'Month')
   );
 
+  // Handle form save (used for both new and edited workouts)
+  const handleFormSave = () => {
+    setshowForm(false);
+    setSelectedWorkout(null);
+    setRefresh(prev => !prev); // Toggle refresh to trigger data reload
+  };
   
+  // Handler for when a workout item is clicked
+  const handleSelectWorkout = (workoutItem) => {
+    console.log("Selected workout item:", workoutItem);
+    setSelectedWorkout(workoutItem);
+    setshowForm(true);
+  };
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: isDarkMode ? 'black' : '#AFAFAF'}]}>
       <HeaderComponent />
       {showForm ? (
         <WorkoutForm
-          onSave={() => setshowForm(false)}
-          addButton={() => setshowForm(false)}
+          onSave={handleFormSave}
+          onCancel={() => {
+            setshowForm(false);
+            setSelectedWorkout(null);
+          }}
+          workoutData={selectedWorkout}
         />
       ) : (
         <>
@@ -110,25 +133,24 @@ const WorkoutScreen = ({
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
+          <WorkoutLayout 
+            title="Workout" 
+            selectedDate={selectedDate} 
+            onSelectItem={handleSelectWorkout}
+          />
           <View style={{
             position: 'absolute', 
             bottom: 9, 
             alignSelf: 'center'
-            }}>
+          }}>
             <Button
               containerStyle={[styles.buttonConatiner]}
-              onPress={()=> setshowForm(true)}
-              // onPress={saveJournal}
+              onPress={() => setshowForm(true)}
               buttonStyle={[styles.buttonStyle]}
               title="New Workout"
               titleStyle={styles.buttonTextStyle}
             />
           </View>
-
-          <WorkoutLayout title="Workout"  selectedDate={selectedDate} />
-
-
-          {/* <View style={styles.bottomButton}></View> */}
         </>
       )}
     </View>

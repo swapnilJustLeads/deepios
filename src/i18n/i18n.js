@@ -1,40 +1,39 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import en from '../../locales/en.json';
+import de from '../../locales/de.json';
 
-const resources = {
-  en: {
-    translation: {
-      welcome: 'Welcome to MyApp',
-      increment: 'Increment',
-      decrement: 'Decrement',
-      details: 'Go to Details',
-      dashboard:'Go To Dashboard',
-      recovery:'Go to recovery',
-      back: 'Go Back',
-      toggleTheme: 'Toggle Theme',
-      changeLang: 'Change Language',
+// Initialize i18next
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      de: { translation: de }
     },
-  },
-  es: {
-    translation: {
-      welcome: 'Bienvenido a MyApp',
-      increment: 'Incrementar',
-      decrement: 'Disminuir',
-      details: 'Ir a Detalles',
-      back: 'Regresar',
-      toggleTheme: 'Cambiar Tema',
-      changeLang: 'Cambiar Idioma',
+    lng: 'en', // Default language
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false
     },
-  },
+    react: {
+      useSuspense: false
+    }
+  });
+
+// Detect and set saved language preference on startup
+const detectSavedLanguage = async () => {
+  try {
+    const savedLanguage = await AsyncStorage.getItem('userLanguage');
+    if (savedLanguage) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  } catch (error) {
+    console.error('Error loading saved language:', error);
+  }
 };
 
-i18n.use(initReactI18next).init({
-  resources,
-  lng: 'en', // Default language
-  fallbackLng: 'en',
-  interpolation: {
-    escapeValue: false,
-  },
-});
+detectSavedLanguage();
 
 export default i18n;

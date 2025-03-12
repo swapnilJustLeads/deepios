@@ -15,16 +15,22 @@ import Supplement from '../assets/images/suppliment.svg';
 import SupplementBlue from '../assets/images/supplement-blue.svg';
 import Bardumble from '../assets/images/bardumble.svg';
 import BardumbleBlue from '../assets/images/workout-blue.svg';
+import BardumbleWhite from '../assets/images/workout-white.svg';
+import Supplementwhite from '../assets/images/Supplement-white.svg';
+import MainIconwhite from '../assets/images/Main-iconwhite.svg';
 import Cardio from '../assets/images/cardio.svg';
+import CardioWhite from '../assets/images/Cardio-white.svg';
 import CardioBlue from '../assets/images/cardio-blue.svg';
 import Recovery from '../assets/images/recovery.svg';
 import RecoveryBlue from '../assets/images/recovery-blue.svg';
+import RecoveryWhite from '../assets/images/recovery-white.svg';
 import WorkoutScreen from '../screens/WorkoutScreen';
 import SupplementScreen from '../screens/SupplementScreen';
 import RecoveryScreen from '../screens/RecoveryScreen';
 import CardioScreen from '../screens/CardioScreen';
 import {Text, View} from 'react-native';
 import ProfileScreen from '../screens/ProfileScreen';
+import { useTheme } from '../hooks/useTheme';
 
 // Stack & Tab Navigators
 const Stack = createNativeStackNavigator();
@@ -38,8 +44,7 @@ const TabIcon = ({icon, iconFocused, label, focused}) => {
     <View style={{
       alignItems: 'center', 
       width: 70,
-      height: 51, // Set consistent height for all icon containers
-      justifyContent: 'center', // Center content vertically
+      marginTop: 6,
       gap:40
     }}>
       {' '}
@@ -62,10 +67,11 @@ const HomeStack = () => {
 
 // Custom tab bar pressable component to handle the home tab click
 const MyTabBar = ({state, descriptors, navigation}) => {
+  const {isDarkMode} = useTheme()
   return (
     <View style={{
       flexDirection: 'row',
-      backgroundColor: 'white',
+      backgroundColor: isDarkMode ? '#121212' : '#FFFFFF',
       height: 80,
       elevation: 10,
       paddingTop: 15,
@@ -126,6 +132,8 @@ const MyTabBar = ({state, descriptors, navigation}) => {
 
 // ✅ Bottom Tab Navigator (Tabs are only shown after login)
 const BottomTabNavigator = () => {
+  const {isDarkMode} = useTheme()
+
   return (
     <Tab.Navigator
       tabBar={props => <MyTabBar {...props} />}
@@ -139,7 +147,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Bardumble}
+              icon={isDarkMode ? BardumbleWhite: Bardumble}
               iconFocused={BardumbleBlue}
               label="Workout"
               focused={focused}
@@ -149,11 +157,11 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen
         name="Recovery"
-        component={RecoveryScreen}
+        component={ RecoveryScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Recovery}
+              icon={isDarkMode ? RecoveryWhite:Recovery}
               iconFocused={RecoveryBlue}
               label="Recovery"
               focused={focused}
@@ -167,7 +175,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={LogoBlack}
+              icon={isDarkMode ? MainIconwhite: LogoBlack}
               iconFocused={DashboardIcon}
               label="Home"
               focused={focused}
@@ -181,7 +189,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Cardio}
+              icon={isDarkMode ? CardioWhite:  Cardio}
               iconFocused={CardioBlue}
               label="Cardio"
               focused={focused}
@@ -195,7 +203,7 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              icon={Supplement}
+              icon={isDarkMode ?Supplementwhite: Supplement}
               iconFocused={SupplementBlue}
               label="Supplement"
               focused={focused}

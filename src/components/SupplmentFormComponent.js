@@ -643,19 +643,19 @@ const styles = StyleSheet.create({
     width: 165,
   },
   placeholderText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#000',
     fontFamily: 'Inter',
     fontWeight: '700',
   },
   placeholderTextTimining:{
-    fontSize: 11,
+    fontSize: 10,
     color: '#000',
     fontFamily: 'Inter',
     fontWeight: '400',
   },
   selectedText: {
-    fontSize: 14,
+    fontSize: 10,
     fontFamily: 'Inter',
     fontWeight: '700',
     textAlign: 'center',

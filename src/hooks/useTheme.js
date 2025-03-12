@@ -1,11 +1,14 @@
 import { useSelector } from 'react-redux';
-import { lightColors, darkColors } from '../theme/colors';
 
+import { lightTheme, darkTheme } from './themeSlice';
 export const useTheme = () => {
   const isDarkMode = useSelector((state) => state.theme.darkMode);
+  const theme = isDarkMode ? darkTheme : lightTheme;
+ 
   
   return {
-    colors: isDarkMode ? darkColors : lightColors,
     isDarkMode,
+     theme,
+   themeMode: isDarkMode ? 'dark' : 'light'
   };
 };

@@ -4,9 +4,13 @@ import { TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Dashboardlogo from '../assets/images/dashboardlogo.svg';
 import Rightlogo from '../assets/images/rightlogo.svg';
+import Logowhite from '../assets/images/Logo-white.svg';
 import { useUserDetailsContext } from '../context/UserDetailsContext';
+import { useTheme } from '../hooks/useTheme';
+
 
 const HeaderComponent = () => {
+  const{isDarkMode}  =useTheme()
   const navigation = useNavigation();
   const { userDetails } = useUserDetailsContext();
   const [profileImage, setProfileImage] = useState('');
@@ -27,7 +31,9 @@ const HeaderComponent = () => {
       }}
       centerComponent={
         <TouchableOpacity>
-          <Dashboardlogo width={146} height={42} />
+          {isDarkMode ? <Logowhite width={150} height={32} /> :  <Dashboardlogo width={146} height={42} />}
+         
+          
         </TouchableOpacity>
       }
       rightComponent={

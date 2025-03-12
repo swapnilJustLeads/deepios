@@ -1,4 +1,4 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import {Button, Text} from '@rneui/themed';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -9,12 +9,14 @@ import { useDetails } from '../context/DeatailsContext';
 import {
   collection,
   addDoc,
+  updateDoc,
+  doc
 } from '@react-native-firebase/firestore';
 import { COLLECTIONS } from '../firebase/collections';
 import { FirestoreDB } from '../firebase/firebase_client';
 
 
-const CardioForm = ({onSave}) => {
+const CardioForm = ({onSave, onCancel, cardioData}) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
@@ -28,17 +30,68 @@ const CardioForm = ({onSave}) => {
   const { categories, subCategories, parentIds } = useDetails();
   const { userDetails } = useUserDetailsContext();
   const [rounds, setRounds] = useState('%');
-  // Added state location field
   const [location, setLocation] = useState('');
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [isItemEditMode, setIsItemEditMode] = useState(false);
+  const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
 
   useEffect(() => {
     console.log('🔥 parentIds:', parentIds);
-    console.log('🔥 parentIds.Workout:', parentIds?.Cardio);
+    console.log('🔥 parentIds.Cardio:', parentIds?.Cardio);
   }, [parentIds]);
+
+  // Check if we're in edit mode when component mounts
+  useEffect(() => {
+    if (cardioData) {
+      // We're editing an entire cardio session
+      if (cardioData.id) {
+        setIsIntakeEditMode(true);
+      }
+      
+      // Set the cardioItems for display in the summary
+      if (cardioData.data && Array.isArray(cardioData.data)) {
+        // Get cardio names for display
+        const itemsWithNames = cardioData.data.map(item => {
+          const exerciseName = getExerciseName(item.subCategory);
+          
+          return {
+            ...item,
+            name: exerciseName || "Unknown Exercise"
+          };
+        });
+        
+        setCardioItems(itemsWithNames);
+        
+        // Set time from createdAt timestamp
+        if (cardioData.createdAt) {
+          const timestamp = new Date(cardioData.createdAt.seconds * 1000);
+          setHours(String(timestamp.getHours()).padStart(2, '0'));
+          setMinutes(String(timestamp.getMinutes()).padStart(2, '0'));
+        }
+      }
+    } else {
+      // Reset if no data
+      setIsIntakeEditMode(false);
+      setIsItemEditMode(false);
+    }
+    
+    // Cleanup function when component unmounts
+    return () => {
+      setIsItemEditMode(false);
+      setIsIntakeEditMode(false);
+    };
+  }, [cardioData]);
+  
+  // Helper function to get exercise name from subCategory ID
+  function getExerciseName(subCategoryId) {
+    if (!subCategoryId || !subCategories) return null;
+    
+    const subCategory = subCategories.find(sc => sc.id === subCategoryId);
+    return subCategory ? subCategory.name : null;
+  }
 
   useEffect(() => {
     if (categories?.length > 0 && parentIds?.Cardio) {
-      // Your existing filter code remains the same
       const cardioCategories = categories
         .filter(cat => {
           const parentMatch = (cat.parentId?.trim() === parentIds.Cardio?.trim()) ||
@@ -46,7 +99,6 @@ const CardioForm = ({onSave}) => {
           return parentMatch;
         })
         .map(cat => ({ label: cat.name, value: cat.id }))
-        // Add sort here - sort alphabetically by label (name)
         .sort((a, b) => a.label.localeCompare(b.label));
 
       console.log('Filtered Categories Count:', cardioCategories.length);
@@ -63,7 +115,6 @@ const CardioForm = ({onSave}) => {
           return match;
         })
         .map(sub => ({ label: sub.name, value: sub.id }))
-        // Add sort here - sort alphabetically by label (name)
         .sort((a, b) => a.label.localeCompare(b.label));
       console.log('🔥 Filtered Exercises Count:', exercisesForCategory.length);
       setFilteredExercises(exercisesForCategory);
@@ -71,8 +122,6 @@ const CardioForm = ({onSave}) => {
       setFilteredExercises([]);
     }
   }, [category, subCategories]);
-
-
 
   const hoursData = Array.from({length: 24}, (_, i) => {
     const val = i.toString().padStart(2, '0');
@@ -101,21 +150,78 @@ const CardioForm = ({onSave}) => {
     console.log('Save Template pressed');
   };
 
-  const handleAdd = () => {
-    console.log('Add pressed');
-    // Collect and send all form data here
-    const formData = {
-      category,
-      exercise,
-      location, // Added location to form data
-      time: `${hours}:${minutes}`,
-      intensity,
-      rounds,
-    };
-    console.log('Form data:', formData);
-  };
   const handleDeleteCardio = (index) => {
     setCardioItems(prevItems => prevItems.filter((_, idx) => idx !== index));
+  };
+
+  // Handle clicking on a cardio item in the summary
+  const handleSelectCardio = (item, index) => {
+    console.log("Selected cardio item:", item);
+    setSelectedItemIndex(index);
+    setIsItemEditMode(true);
+    
+    // Populate form with the selected item's data
+    if (item) {
+      setCategory(item.category);
+      setExercise(item.subCategory);
+      
+      if (item.duration) {
+        const [durationHours, durationMinutes] = item.duration.split(':');
+        if (durationHours) setHours(durationHours);
+        if (durationMinutes) setMinutes(durationMinutes);
+      }
+      
+      setIntensity(item.speed || 'km/h');
+      setRounds(item.incline || '%');
+      setLocation(item.location || '');
+      setDuration(item.time || '');
+    }
+  };
+
+  // Update an existing cardio item
+  const handleUpdateCardio = () => {
+    if (!category || !exercise) {
+      console.log('Please select both category and exercise');
+      return;
+    }
+  
+    // Get names for display
+    const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+    
+    // Create updated cardio item
+    const updatedCardioItem = {
+      category,
+      subCategory: exercise,
+      name: exerciseName,
+      duration: `${hours}:${minutes}`,
+      speed: intensity,
+      incline: rounds,
+      location: location,
+      time: duration
+    };
+    
+    console.log("Updating cardio at index:", selectedItemIndex, "with:", updatedCardioItem);
+    
+    // Update the specific item in the array
+    if (selectedItemIndex !== null && selectedItemIndex >= 0) {
+      // Create a new array with the updated item
+      const newItems = [...cardioItems];
+      newItems[selectedItemIndex] = updatedCardioItem;
+      
+      // Set the state with the new array
+      setCardioItems(newItems);
+      
+      console.log("Updated cardioItems:", newItems);
+    }
+    
+    // Reset form fields after update
+    setExercise(null);
+    setIntensity('km/h');
+    setRounds('%');
+    setLocation('');
+    setDuration('');
+    setIsItemEditMode(false);
+    setSelectedItemIndex(null);
   };
 
   const handleAddCardio = () => {
@@ -135,7 +241,8 @@ const CardioForm = ({onSave}) => {
       duration: `${hours}:${minutes}`,
       speed: intensity,
       incline: rounds,
-      location: location
+      location: location,
+      time: duration
     };
     
     // Add to cardio items list
@@ -145,9 +252,12 @@ const CardioForm = ({onSave}) => {
     setExercise(null);
     setIntensity('km/h');
     setRounds('%');
+    setLocation('');
+    setDuration('');
     
     console.log('Cardio item added:', newCardioItem);
   };
+
   const handleSaveCardio = async () => {
     try {
       // Create date with selected time
@@ -169,18 +279,31 @@ const CardioForm = ({onSave}) => {
           duration: item.duration,
           speed: item.speed,
           incline: item.incline,
-          location: item.location
+          location: item.location,
+          time: item.time
         })),
-        createdAt: cardioTime,
+        // Keep the original timestamp if editing an intake
+        createdAt: isIntakeEditMode && cardioData?.createdAt ? cardioData.createdAt : cardioTime,
         parent: parentIds.Cardio,
         username: userDetails?.username,
         template: null
       };
       
-      // Save to Firestore
-      const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
-      const docRef = await addDoc(dataCollection, payload);
-      console.log("Cardio data saved with ID: ", docRef.id);
+      let docId;
+      
+      if (isIntakeEditMode && cardioData?.id) {
+        // Update existing document if editing an intake
+        const docRef = doc(FirestoreDB, COLLECTIONS.DATA, cardioData.id);
+        await updateDoc(docRef, payload);
+        docId = cardioData.id;
+        console.log("Cardio intake updated with ID: ", docId);
+      } else {
+        // Create new document
+        const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+        const docRef = await addDoc(dataCollection, payload);
+        docId = docRef.id;
+        console.log("New cardio intake saved with ID: ", docId);
+      }
       
       // Reset form
       setCardioItems([]);
@@ -188,10 +311,13 @@ const CardioForm = ({onSave}) => {
       setExercise(null);
       setIntensity('km/h');
       setRounds('%');
+      setIsItemEditMode(false);
+      setIsIntakeEditMode(false);
+      setSelectedItemIndex(null);
       
       // Callback
       if (onSave) {
-        onSave(docRef.id);
+        onSave(docId);
       }
       
       console.log('Cardio data saved successfully');
@@ -199,6 +325,7 @@ const CardioForm = ({onSave}) => {
       console.error("Error saving cardio data:", error);
     }
   };
+
   return (
     <View style={styles.container}>
       {/* First Row: Category and Exercise */}
@@ -274,13 +401,13 @@ const CardioForm = ({onSave}) => {
           <View style={styles.smallColumn}>
             <Text style={styles.label}>Time</Text>
             <View style={styles.minContainer}>
-            <TextInput
-  style={styles.minInput}
-  value={duration}
-  onChangeText={setDuration}
-  placeholder="min."
-  keyboardType="numeric"
-/>
+              <TextInput
+                style={styles.minInput}
+                value={duration}
+                onChangeText={setDuration}
+                placeholder="min."
+                keyboardType="numeric"
+              />
             </View>
           </View>
 
@@ -333,35 +460,41 @@ const CardioForm = ({onSave}) => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={handleAddCardio}
-          buttonStyle={[styles.buttonStyle]}
-          title="ADD"
+          onPress={isItemEditMode ? handleUpdateCardio : handleAddCardio}
+          buttonStyle={[
+            styles.buttonStyle,
+            isItemEditMode && { backgroundColor: '#FFD700' } // Yellow for update mode
+          ]}
+          title={isItemEditMode ? "UPDATE" : "ADD"}
           titleStyle={styles.buttonTextStyle}
         />
       </View>
+
+      {/* Summary Component */}
       <Summary 
   title="Cardio Summary" 
   cardio={cardioItems}
   onDeleteCardio={handleDeleteCardio} 
+  onSelectCardio={handleSelectCardio}  // Add this line
 />
+
+      {/* Bottom Buttons */}
       <View style={styles.bottomButtonRow}>
-        {/* <CustomButton /> */}
         <Button
-      
-          // onPress={() => setshowForm(true)}
+          onPress={onCancel}
           buttonStyle={[
             styles.buttonStyle,
             {
               backgroundColor: '#fff',
             },
           ]}
-          title="Delete"
+          title="Cancel"
           titleStyle={styles.buttonTextStyle}
         />
         <Button
           onPress={handleSaveCardio}
           buttonStyle={[styles.buttonStyle]}
-          title="Save"
+          title={isIntakeEditMode ? "UPDATE CARDIO" : "SAVE"}
           titleStyle={styles.buttonTextStyle}
         />
       </View>
@@ -397,7 +530,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   smallColumn: {
-    // backgroundColor:'red'
     // width: '31%',
   },
   label: {
@@ -451,7 +583,6 @@ const styles = StyleSheet.create({
   },
   minContainer: {
     height: 30,
-    // width:36
   },
   minInput: {
     height: 30,
@@ -540,7 +671,6 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-   
     alignSelf:'center'
   },
 });

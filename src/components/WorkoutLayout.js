@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
@@ -10,13 +10,13 @@ const WorkoutLayout = (props) => {
   const { recoveryData } = useUserRecoveryContext();
   const { cardioData } = useUserCardioContext();
   const { parentIds, subCategories } = useDetails();
-  
+
   // Get the type from props (default to 'workout')
   const type = props.type?.toLowerCase() || 'workout';
-  
+
   // Get the appropriate data based on type
   const getData = () => {
-    switch(type) {
+    switch (type) {
       case 'recovery':
         return recoveryData || [];
       case 'cardio':
@@ -26,55 +26,50 @@ const WorkoutLayout = (props) => {
         return workoutData || [];
     }
   };
-  
+
   const dataSource = getData();
-  
+
   // Filter data for the selected date
   const selectedDate = props.selectedDate || moment().format('YYYY-MM-DD');
-  
+
   const filteredData = dataSource.filter(item => {
     if (item.createdAt) {
       const itemDate = moment.unix(item.createdAt.seconds).format("YYYY-MM-DD");
-      console.log(`🛠️ Comparing Item Date: ${itemDate} === Selected Date: ${selectedDate}`);
       return itemDate === selectedDate;
     }
     return false;
   });
-  
-  console.log("✅ Filtered Data Count:", filteredData.length);
-  
-  
   // Helper function to get exercise name from subCategory ID
   function getExerciseName(subCategoryId, exerciseName) {
     if (exerciseName) return exerciseName; // Use stored name directly
     if (!subCategoryId || !subCategories) return 'Unknown Exercise';
-    
+
     const subCategory = subCategories.find(sc => sc.id === subCategoryId);
     return subCategory ? subCategory.name : 'Unknown Exercise';
   }
-  
+
   // Transform data to keep workout sessions separate
   const transformData = () => {
     return filteredData.map(item => {
       // Get time from createdAt timestamp
       const timestamp = item.createdAt ? moment(new Date(item.createdAt.seconds * 1000)) : null;
       const timeString = timestamp ? timestamp.format('hh:mm A') : '';
-      
+
       // Transform exercises based on type
       const exercises = [];
-      
+
       if (!item.data || !Array.isArray(item.data)) return null;
-      
+
       if (type === 'workout') {
         // Transform workout data
         item.data.forEach(exercise => {
           const exerciseName = getExerciseName(exercise.subCategory, exercise.exerciseName);
-          
+
           // Create sets array based on reps and weights arrays
           const setsArray = [];
           if (Array.isArray(exercise.reps) && Array.isArray(exercise.weights)) {
             const setCount = Math.min(exercise.reps.length, exercise.weights.length);
-            
+
             for (let i = 0; i < setCount; i++) {
               setsArray.push({
                 number: String(i + 1),
@@ -82,7 +77,7 @@ const WorkoutLayout = (props) => {
               });
             }
           }
-          
+
           exercises.push({
             name: exerciseName || 'Unnamed Exercise',
             sets: setsArray
@@ -92,7 +87,7 @@ const WorkoutLayout = (props) => {
         // Transform recovery data
         item.data.forEach(recovery => {
           const recoveryName = getExerciseName(recovery.subCategory, recovery.name) || 'Recovery Activity';
-          
+
           // For recovery, we'll show time/duration and intensity
           const setsArray = [
             {
@@ -100,7 +95,7 @@ const WorkoutLayout = (props) => {
               weight: `${recovery.time || '0'} min, Intensity: ${recovery.intensity || 'N/A'}`
             }
           ];
-          
+
           exercises.push({
             name: recoveryName,
             sets: setsArray
@@ -110,7 +105,7 @@ const WorkoutLayout = (props) => {
         // Transform cardio data to match web display format
         item.data.forEach(cardio => {
           const cardioName = getExerciseName(cardio.subCategory, cardio.name) || 'Cardio Activity';
-          
+
           // For cardio, we need to format it like the web version
           // Extract time parts from duration if available
           let durationText = '';
@@ -118,7 +113,7 @@ const WorkoutLayout = (props) => {
             // If duration is in format HH:MM
             durationText = cardio.duration;
           }
-          
+
           // Create sets array to match web display format
           const setsArray = [
             {
@@ -127,12 +122,12 @@ const WorkoutLayout = (props) => {
               weight: `${cardio.speed || 'N/A'}, ${cardio.incline || '0%'} Incline`
             }
           ];
-          
+
           // Add location if available
           if (cardio.location) {
             setsArray[0].location = cardio.location;
           }
-          
+
           exercises.push({
             name: cardioName,
             duration: durationText,
@@ -140,29 +135,43 @@ const WorkoutLayout = (props) => {
           });
         });
       }
-      
+
       return {
         time: timeString,
         exercises: exercises,
-        id: item.id || `${type}-${timestamp?.valueOf() || Date.now()}`
+        id: item.id || `${type}-${timestamp?.valueOf() || Date.now()}`,
+        originalData: item // Store the original item for use when clicked
       };
     }).filter(Boolean); // Remove any null entries
   };
-  
+
   const sessionData = transformData();
+
+  // Function to handle item click
+  const handleItemClick = (session) => {
+    // If onSelectItem prop exists, call it with the clicked item's original data
+    if (props.onSelectItem && session.originalData) {
+      props.onSelectItem(session.originalData);
+    }
+  };
 
   return (
     <View style={styles.container}>
       {sessionData.length > 0 ? (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {sessionData.map((session, index) => (
-            <View key={session.id || index} style={styles.sessionContainer}>
-              <MainContainer_Header_ExerciseItem 
-                title={`${type.charAt(0).toUpperCase() + type.slice(1)}`} 
-                exercises={session.exercises} 
+            <TouchableOpacity 
+              key={session.id || index} 
+              style={styles.sessionContainer}
+              onPress={() => handleItemClick(session)}
+              activeOpacity={0.7}
+            >
+              <MainContainer_Header_ExerciseItem
+                title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
+                exercises={session.exercises}
                 time={session.time}
               />
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       ) : (

@@ -5,21 +5,12 @@ import WorkoutCard from '../components/WorkoutCard';
 import Cardio from '../assets/images/cardio.svg';
 import moment from 'moment';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
-import DefaultButton from '../components/DefaultButton';
-import WorkoutListComponent from '../components/WorkoutListComponent';
-import WorkoutForm from '../components/WorkoutForm';
-import RecoveryCard from '../components/RecoveryCard';
 import {Button} from '@rneui/themed';
-import RecoveryForm from '../components/RecoveryForm';
 import CardioForm from '../components/CardioForm';
 import {
   useUserCardioContext,
-  useUserRecoveryContext,
-  useUserWorkoutContext,
 } from '../context/UserContexts';
 import {
-  calculateTotalWorkoutWeight,
-  calculateTotalRecoveryTime,
   getStartAndEndDate,
   calculateTotalCardioTime,
 } from '../utils/calculate';
@@ -27,11 +18,13 @@ import WorkoutLayout from '../components/WorkoutLayout';
 
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
-  const { cardioData ,setRefresh} = useUserCardioContext();
+  const [selectedCardio, setSelectedCardio] = useState(null);
+  const { cardioData, setRefresh } = useUserCardioContext();
   const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
+
   const getDates = () => {
     let dates = [];
     for (let i = -3; i <= 3; i++) {
@@ -39,9 +32,12 @@ const CardioScreen = () => {
     }
     return dates;
   };
+
   const closeSave = () => {
     setshowForm(false);
+    setSelectedCardio(null);
   } 
+
   useEffect(() => {
     console.log("🔥 cardioData on load:", cardioData); // ✅ Check if cardio data exists
     const today = moment().format('YYYY-MM-DD');
@@ -63,7 +59,6 @@ const CardioScreen = () => {
     setFilteredWorkoutData(filteredCardioData);
   };
   
-
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
     return data.filter((item) => {
@@ -74,6 +69,7 @@ const CardioScreen = () => {
       return false;
     });
   };
+
   const cardioTimeToday = calculateTotalCardioTime(
     filterDataByRange(cardioData, 'Today'),
     'time'
@@ -86,29 +82,43 @@ const CardioScreen = () => {
     filterDataByRange(cardioData, 'Month'),
     'time'
   );
+
   const handleFormSave = () => {
     setshowForm(false);  // Hide the form
+    setSelectedCardio(null); // Reset selected cardio
     setRefresh(prev => !prev); // Toggle refresh to trigger data reload
   };
 
+  // Handler for when a cardio item is clicked
+  const handleSelectCardio = (cardioItem) => {
+    console.log("Selected cardio item:", cardioItem);
+    setSelectedCardio(cardioItem);
+    setshowForm(true);
+  };
 
   return (
     <View style={styles.container}>
       <HeaderComponent />
       {showForm ? (
-        <CardioForm   onSave={handleFormSave} 
-        onCancel={() => setshowForm(false)}  />
+        <CardioForm   
+          onSave={handleFormSave} 
+          onCancel={() => {
+            setshowForm(false);
+            setSelectedCardio(null);
+          }}
+          cardioData={selectedCardio}  // Pass the selected cardio data to the form
+        />
       ) : (
         <>
           <WorkoutCard
             image={<Cardio width={50} height={50} />}
             name="Cardio"
-           todayValue={cardioTimeToday}
-           weekValue={cardioTimeWeek}
-           monthValue={cardioTimeMonth}
-           unit={'min'}
+            todayValue={cardioTimeToday}
+            weekValue={cardioTimeWeek}
+            monthValue={cardioTimeMonth}
+            unit={'min'}
           />
-             <HorizontalDatePicker 
+          <HorizontalDatePicker 
             value={selectedDate}
             onChange={setSelectedDate}
             minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
@@ -117,12 +127,14 @@ const CardioScreen = () => {
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <WorkoutLayout title="Cardio" type="cardio" selectedDate={selectedDate} />
-
+          <WorkoutLayout 
+            title="Cardio" 
+            type="cardio" 
+            selectedDate={selectedDate} 
+            onSelectItem={handleSelectCardio}  // Add the handler for item selection
+          />
 
           <View style={styles.bottomButton}>
-            
-
             <Button
               onPress={() => setshowForm(true)}
               buttonStyle={styles.buttonStyle}

@@ -3,6 +3,8 @@ import { COLLECTIONS } from '../firebase/collections';
 import {
   collection,
   addDoc,
+  updateDoc,
+  doc
 } from '@react-native-firebase/firestore';
 import { FirestoreDB } from '../firebase/firebase_client';
 import { View, StyleSheet, ScrollView } from 'react-native';
@@ -14,7 +16,7 @@ import { useDetails } from '../context/DeatailsContext';
 import Down from '../assets/images/down.svg';
 import Summary from './Summary';
 
-const WorkoutForm = props => {
+const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
   // State for form fields
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
@@ -24,20 +26,91 @@ const WorkoutForm = props => {
     name: '',
     sets: []
   });
-  // const [sets, setSets] = useState(null);
   const [sets, setSets] = useState(1);
   const [reps, setReps] = useState(Array(sets).fill(''));
   const [weights, setWeights] = useState(Array(sets).fill(''));
   const [hours, setHours] = useState('07');
   const [minutes, setMinutes] = useState('19');
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [isItemEditMode, setIsItemEditMode] = useState(false);
+  const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
+  
   // 🔹 Get data from Context
   const { categories, subCategories, parentIds } = useDetails();
   const { userDetails } = useUserDetailsContext();
   const [filteredCategories, setFilteredCategories] = useState([]);
+  
   useEffect(() => {
     console.log('🔥 parentIds:', parentIds);
     console.log('🔥 parentIds.Workout:', parentIds?.Workout);
   }, [parentIds]);
+
+  // Check if we're in edit mode when component mounts
+  useEffect(() => {
+    if (workoutData) {
+      // We're editing an entire workout session
+      if (workoutData.id) {
+        setIsIntakeEditMode(true);
+      }
+      
+      // Set the exercisesList for display in the summary
+      if (workoutData.data && Array.isArray(workoutData.data)) {
+        // Get exercise names for display
+        const itemsWithNames = workoutData.data.map(item => {
+          const exerciseName = getExerciseName(item.subCategory);
+          
+          // Create sets array for display in Summary
+          const setsArray = [];
+          if (Array.isArray(item.reps) && Array.isArray(item.weights)) {
+            const setCount = Math.min(item.reps.length, item.weights.length);
+            
+            for (let i = 0; i < setCount; i++) {
+              setsArray.push({
+                reps: parseInt(item.reps[i] || '0', 10),
+                weight: parseFloat(item.weights[i] || '0')
+              });
+            }
+          }
+          
+          return {
+            category: item.category,
+            subCategory: item.subCategory,
+            name: exerciseName || "Unknown Exercise",
+            sets: setsArray,
+            reps: item.reps || [],
+            weights: item.weights || []
+          };
+        });
+        
+        setExercisesList(itemsWithNames);
+        
+        // Set time from createdAt timestamp
+        if (workoutData.createdAt) {
+          const timestamp = new Date(workoutData.createdAt.seconds * 1000);
+          setHours(String(timestamp.getHours()).padStart(2, '0'));
+          setMinutes(String(timestamp.getMinutes()).padStart(2, '0'));
+        }
+      }
+    } else {
+      // Reset if no data
+      setIsIntakeEditMode(false);
+      setIsItemEditMode(false);
+    }
+    
+    // Cleanup function when component unmounts
+    return () => {
+      setIsItemEditMode(false);
+      setIsIntakeEditMode(false);
+    };
+  }, [workoutData]);
+  
+  // Helper function to get exercise name from subCategory ID
+  function getExerciseName(subCategoryId) {
+    if (!subCategoryId || !subCategories) return null;
+    
+    const subCategory = subCategories.find(sc => sc.id === subCategoryId);
+    return subCategory ? subCategory.name : null;
+  }
 
   useEffect(() => {
     if (categories?.length > 0 && parentIds?.Workout) {
@@ -91,6 +164,31 @@ const WorkoutForm = props => {
     });
   }, [sets]);
 
+  // Handle clicking on an exercise item in the summary
+  const handleSelectExercise = (item, index) => {
+    console.log("Selected exercise item:", item);
+    setSelectedItemIndex(index);
+    setIsItemEditMode(true);
+    
+    // Populate form with the selected item's data
+    if (item) {
+      setCategory(item.category);
+      setExercise(item.subCategory);
+      
+      // Set sets count based on reps/weights length
+      const setsCount = Math.max(
+        Array.isArray(item.reps) ? item.reps.length : 0,
+        Array.isArray(item.weights) ? item.weights.length : 0
+      );
+      
+      if (setsCount > 0) {
+        setSets(setsCount);
+        setReps(item.reps || Array(setsCount).fill(''));
+        setWeights(item.weights || Array(setsCount).fill(''));
+      }
+    }
+  };
+
   // Dropdown Data
   const setsData = Array.from({ length: 5 }, (_, i) => ({ label: (i + 1).toString(), value: (i + 1).toString() }));
   const hoursData = Array.from({ length: 24 }, (_, i) => ({ label: i.toString().padStart(2, '0'), value: i.toString().padStart(2, '0') }));
@@ -115,8 +213,59 @@ const WorkoutForm = props => {
     })
   ];
 
-  // Modify your ADD button's onClick handler
+  // Update an existing exercise
+  const handleUpdateExercise = () => {
+    if (!category || !exercise) {
+      console.log('Please select both category and exercise');
+      return;
+    }
+  
+    // Get the exercise name for display purposes
+    const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
 
+    // Format the sets data as an array of objects with reps and weight properties
+    const setsData = [];
+    for (let i = 0; i < sets; i++) {
+      setsData.push({
+        reps: parseInt(reps[i] || '0', 10),
+        weight: parseFloat(weights[i] || '0')
+      });
+    }
+
+    // Create updated workout object
+    const updatedWorkout = {
+      category,
+      subCategory: exercise,
+      name: exerciseName,
+      sets: setsData,
+      reps: [...reps],
+      weights: [...weights]
+    };
+    
+    console.log("Updating exercise at index:", selectedItemIndex, "with:", updatedWorkout);
+    
+    // Update the specific item in the array
+    if (selectedItemIndex !== null && selectedItemIndex >= 0) {
+      // Create a new array with the updated item
+      const newItems = [...exercisesList];
+      newItems[selectedItemIndex] = updatedWorkout;
+      
+      // Set the state with the new array
+      setExercisesList(newItems);
+      
+      console.log("Updated exercisesList:", newItems);
+    }
+    
+    // Reset form fields after update
+    setExercise(null);
+    setSets(1);
+    setReps(Array(1).fill(''));
+    setWeights(Array(1).fill(''));
+    setIsItemEditMode(false);
+    setSelectedItemIndex(null);
+  };
+
+  // Modify your ADD button's onClick handler
   const handleAddExercise = () => {
     if (category && exercise) {
       // Get the exercise name for display purposes
@@ -154,6 +303,11 @@ const WorkoutForm = props => {
     }
   };
 
+  // Delete exercise item
+  const handleDeleteExercise = (index) => {
+    setExercisesList(prevItems => prevItems.filter((_, idx) => idx !== index));
+  };
+
   const handleSaveWorkout = async () => {
     try {
       // Create date object with selected time
@@ -167,29 +321,42 @@ const WorkoutForm = props => {
         0
       );
 
-      // Format workout data for Firebase
-      // We need to transform our data structure back to what Firestore expects
-      const workoutData = {
-        data: exercisesList.map(exercise => ({
-          category: exercise.category,
-          subCategory: exercise.subCategory,
-          sets: exercise.sets.length,
-          reps: exercise.reps,
-          weights: exercise.weights,
-          notes: exercise.notes || ''
-        })),
-        createdAt: workoutTime,
+      // Format workout data for Firebase - avoid undefined values
+      const payload = {
+        data: exercisesList.map(exercise => {
+          // Create a clean object without undefined values
+          const cleanItem = {};
+          
+          if (exercise.category) cleanItem.category = exercise.category;
+          if (exercise.subCategory) cleanItem.subCategory = exercise.subCategory;
+          if (exercise.sets && typeof exercise.sets.length === 'number') cleanItem.sets = exercise.sets.length;
+          if (exercise.reps) cleanItem.reps = exercise.reps;
+          if (exercise.weights) cleanItem.weights = exercise.weights;
+          if (exercise.notes) cleanItem.notes = exercise.notes;
+          
+          return cleanItem;
+        }),
+        createdAt: isIntakeEditMode && workoutData?.createdAt ? workoutData.createdAt : workoutTime,
         parent: parentIds.Workout,
         username: userDetails?.username,
         template: null
       };
 
-      // Reference to the collection
-      const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
-
-      // Add to Firestore
-      const docRef = await addDoc(dataCollection, workoutData);
-      console.log("Workout saved with ID: ", docRef.id);
+      let docId;
+      
+      if (isIntakeEditMode && workoutData?.id) {
+        // Update existing document if editing an intake
+        const docRef = doc(FirestoreDB, COLLECTIONS.DATA, workoutData.id);
+        await updateDoc(docRef, payload);
+        docId = workoutData.id;
+        console.log("Workout intake updated with ID: ", docId);
+      } else {
+        // Create new document
+        const dataCollection = collection(FirestoreDB, COLLECTIONS.DATA);
+        const docRef = await addDoc(dataCollection, payload);
+        docId = docRef.id;
+        console.log("New workout saved with ID: ", docId);
+      }
 
       // Clear form and show success
       setExercisesList([]);
@@ -198,13 +365,15 @@ const WorkoutForm = props => {
       setSets(1);
       setReps(Array(1).fill(''));
       setWeights(Array(1).fill(''));
-
+      setIsItemEditMode(false);
+      setIsIntakeEditMode(false);
+      
       // Success message
       console.log('Workout saved successfully');
 
       // Navigate back or to workout list
-      if (props.onSave) {
-        props.onSave(docRef.id);
+      if (onSave) {
+        onSave(docId);
       }
 
     } catch (error) {
@@ -213,6 +382,7 @@ const WorkoutForm = props => {
       console.log('Failed to save workout');
     }
   };
+  
   // Update Specific Rep
   const updateRep = (index, value) => {
     const updatedReps = [...reps];
@@ -226,10 +396,6 @@ const WorkoutForm = props => {
     updatedWeights[index] = value;
     setWeights(updatedWeights);
   };
-
-
-
-
 
   // Custom dropdown render
   const renderDropdownItem = item => {
@@ -264,8 +430,6 @@ const WorkoutForm = props => {
       return newWeights;
     });
   };
-
-
 
   return (
     <View style={styles.container}>
@@ -413,18 +577,30 @@ const WorkoutForm = props => {
           titleStyle={styles.buttonTextStyle}
         />
         <Button
-          onPress={handleAddExercise}
-          buttonStyle={styles.buttonStyle}
-          title="ADD"
+          onPress={isItemEditMode ? handleUpdateExercise : handleAddExercise}
+          buttonStyle={[
+            styles.buttonStyle,
+            isItemEditMode && { backgroundColor: '#FFD700' } // Yellow for update mode
+          ]}
+          title={isItemEditMode ? "UPDATE" : "ADD"}
           titleStyle={styles.buttonTextStyle}
         />
       </View>
-      <Summary Summary title="Workout Summary" exercises={exercisesList} />
+      
+      {/* Summary Component */}
+      <Summary 
+        title="Workout Summary" 
+        exercises={exercisesList} 
+        onDeleteExercise={handleDeleteExercise}
+        onSelectExercise={handleSelectExercise}
+      />
+      
+      {/* Bottom Button */}
       <View style={styles.bottomButton}>
         <Button
           onPress={handleSaveWorkout}
           buttonStyle={styles.buttonStyle}
-          title="Save Workout"
+          title={isIntakeEditMode ? "UPDATE WORKOUT" : "SAVE WORKOUT"}
           titleStyle={styles.buttonTextStyle}
         />
       </View>

@@ -1,48 +1,58 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet,Dimensions } from 'react-native';
-import { Button } from '@rneui/themed';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
+import {Button} from '@rneui/themed';
+import LanguageSwitch from './LanguageSwitch';
+import {useTranslation} from 'react-i18next';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 const buttonWidth = (screenWidth - 48) / 2;
-const LanguageThemeLogout = ({ style }) => {
+
+import LightButton from '../assets/images/light-button.svg';
+import MoonButton from '../assets/images/moon-svgrepo-com.svg';
+import {useTheme} from '../hooks/useTheme';
+import {toggleTheme} from '../theme/theme';
+import {useDispatch} from 'react-redux';
+const LanguageThemeLogout = ({style}) => {
+  const {isDarkMode, theme} = useTheme();
+  const dispatch = useDispatch();
+  const {t} = useTranslation();
   const [language, setLanguage] = useState('English'); // Default language
 
   const toggleLanguage = () => {
     setLanguage(language === 'English' ? 'Deutsch' : 'English');
   };
+  const changeTheme = () => {
+    dispatch(toggleTheme());
+  };
 
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.languageSelector}>
-        <Button 
-           title={
-            <Text style={styles.logoutText}>English</Text>
-          }
-          buttonStyle={language === 'English' ? styles.activeLanguage : styles.languageButton}
-          titleStyle={styles.languageText}
-          onPress={() => setLanguage('English')}
-        />
-        <Button 
-            title={
-                <Text style={styles.logoutText}>Deutsch</Text>
-              }
-          buttonStyle={language === 'Deutsch' ? styles.activeLanguage : styles.languageButton}
-          titleStyle={styles.languageText}
-          onPress={() => setLanguage('Deutsch')}
+      <LanguageSwitch />
+      <View style={styles.row}>
+        <TouchableOpacity onPress={changeTheme}>
+          {isDarkMode ? (
+            <LightButton />
+          ) : (
+            <TouchableOpacity
+              onPress={changeTheme}
+              style={{}}>
+              <MoonButton width={30} height={20} />
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+
+        <Button
+          containerStyle={styles.containerStyle}
+          title={<Text style={styles.logoutText}>{t('logout')}</Text>}
+          buttonStyle={styles.logoutButton}
         />
       </View>
-
-      <Button
-        icon={{ name: 'settings', type: 'feather', size: 15, color: '#000' }}
-        buttonStyle={styles.themeButton}
-      />
-
-      <Button
-         title={
-            <Text style={styles.logoutText}>Logout</Text>
-          }
-        buttonStyle={styles.logoutButton}
-      />
     </View>
   );
 };
@@ -55,7 +65,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 22,
     backgroundColor: 'transparent',
-    width:'100%'
+    width: '100%',
   },
   languageSelector: {
     flexDirection: 'row',
@@ -89,23 +99,31 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
-  
   },
   logoutButton: {
-    width: 65,
-    height: 30,
     backgroundColor: '#00e5ff',
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingLeft: 7,
+    paddingRight: 7,
+  },
+  containerStyle: {
+    height: 22,
   },
   logoutText: {
     fontFamily: 'Inter',
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '800',
     color: 'Black',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 20,
   },
 });
 
 export default LanguageThemeLogout;
-

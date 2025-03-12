@@ -12,9 +12,12 @@ const Summary = ({
   onDeleteCardio,
   onDeleteRecovery,
   onDeleteSupplement,
-  onSelectSupplement
+  onSelectSupplement,
+  onSelectCardio,
+  onSelectExercise,
+  onSelectRecovery
 }) => {
-  console.log("here is data from parent supplement screen",supplement)
+  console.log("here is data from parent supplement screen", supplement);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -25,7 +28,16 @@ const Summary = ({
           {exercises.map((exercise, idx) => (
             <View key={`exercise-${idx}`} style={styles.listContainer}>
               <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseName}>{exercise.name}</Text>
+                <TouchableOpacity
+                  onPress={() => onSelectExercise && onSelectExercise(exercise, idx)}
+                >
+                  <Text style={[
+                    styles.exerciseName, 
+                    onSelectExercise && styles.clickableName
+                  ]}>
+                    {exercise.name}
+                  </Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => onDeleteExercise && onDeleteExercise(idx)}>
                   <Delete height={21} width={21} />
                 </TouchableOpacity>
@@ -49,25 +61,37 @@ const Summary = ({
           {recovery.map((item, idx) => (
             <View key={`recovery-${idx}`} style={styles.listContainer}>
               <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseName}>{item.name}</Text>
+                <TouchableOpacity
+                  onPress={() => onSelectRecovery && onSelectRecovery(item, idx)}
+                >
+                  <Text style={[
+                    styles.exerciseName,
+                    onSelectRecovery && styles.clickableName
+                  ]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => onDeleteRecovery && onDeleteRecovery(idx)}>
                   <Delete height={21} width={21} />
                 </TouchableOpacity>
               </View>
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Time:</Text>
-                  <Text style={styles.detailText}>{item.time || '00:00'}</Text>
+                  {/* <Text style={styles.detailLabel}>Time:</Text> */}
+                  <Text style={styles.detailText}>{item.time+ ' min'}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Intensity:</Text>
-                  <Text style={styles.detailText}>{item.intensity || 'N/A'}</Text>
+                <Text style={styles.detailText}>{item.rounds + ' rounds'}</Text>
+
                 </View>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Rounds:</Text>
-                  <Text style={styles.detailText}>{item.rounds || 'N/A'}</Text>
+                  <Text style={styles.detailText}>{item.intensity + ' Intesity'}</Text>
+
                 </View>
               </View>
+              {idx < recovery.length - 1 && (
+          <View style={styles.divider} />
+        )}
             </View>
           ))}
         </>
@@ -79,26 +103,96 @@ const Summary = ({
           {cardio.map((item, idx) => (
             <View key={`cardio-${idx}`} style={styles.listContainer}>
               <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseName}>{item.name}</Text>
+                <TouchableOpacity
+                  onPress={() => onSelectCardio && onSelectCardio(item, idx)}
+                >
+                  <Text style={[
+                    styles.exerciseName, 
+                    onSelectCardio && styles.clickableName
+                  ]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => onDeleteCardio && onDeleteCardio(idx)}>
                   <Delete height={21} width={21} />
                 </TouchableOpacity>
               </View>
               <View style={styles.detailsRow}>
-                <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Duration:</Text>
-                  <Text style={styles.detailText}>{item.duration || '00:00'}</Text>
-                </View>
-                {item.distance && (
+               
+                {item.speed && (
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Distance:</Text>
-                    <Text style={styles.detailText}>{item.distance}km</Text>
+                    <Text style={styles.detailText}>{item.speed} min</Text>
                   </View>
                 )}
-                {item.calories && (
+                  {item.time && (
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Calories:</Text>
-                    <Text style={styles.detailText}>{item.calories}</Text>
+                
+                    <Text style={styles.detailText}>{item.time} km/h</Text>
+                  </View>
+                )}
+                {item.incline && (
+                  <View style={styles.detailItem}>
+               
+                    <Text style={styles.detailText}>{item.incline}% incline</Text>
+                  </View>
+                )}
+               
+              </View>
+              {idx < cardio.length - 1 && (
+          <View style={styles.divider} />
+        )}
+          
+
+            </View>
+          ))}
+        </>
+      )}
+
+      {/* Supplement Items */}
+      {supplement.length > 0 && (
+        <>
+          {supplement.map((item, idx) => (
+            <View key={`supplement-${idx}`} style={styles.listContainer}>
+              <View style={styles.exerciseHeader}>
+                <TouchableOpacity
+                  onPress={() => onSelectSupplement && onSelectSupplement(item, idx)}
+                >
+                  <Text style={[
+                    styles.exerciseName,
+                    onSelectSupplement && styles.clickableName
+                  ]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onDeleteSupplement && onDeleteSupplement(idx)}>
+                  <Delete height={21} width={21} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.detailsRow}>
+                {item.amount && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Amount:</Text>
+                    <Text style={styles.detailText}>{item.amount}</Text>
+                  </View>
+                )}
+                {item.liquid && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Liquid:</Text>
+                    <Text style={styles.detailText}>{item.liquid}</Text>
+                  </View>
+                )}
+                {item.company && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Company:</Text>
+                    <Text style={styles.detailText}>{item.company}</Text>
+                  </View>
+                )}
+                {item.timing && (
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Timing:</Text>
+                    <Text style={styles.detailText}>
+                      {item.timing.replace(/_/g, ' ')}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -106,63 +200,6 @@ const Summary = ({
           ))}
         </>
       )}
-
-      {/* Supplement Items */}
- {/* Supplement Items */}
- {supplement.length > 0 && (
-  <>
-    {supplement.map((item, idx) => (
-      <TouchableOpacity 
-        key={`supplement-${idx}`} 
-        style={styles.listContainer}
-        onPress={() => onSelectSupplement && onSelectSupplement(item, idx)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.exerciseHeader}>
-          <Text style={styles.exerciseName}>{item.name}</Text>
-          {/* We need to stop propagation on the delete button */}
-          <TouchableOpacity 
-            onPress={(e) => {
-              // Prevent the parent onPress from firing
-              e.stopPropagation();
-              onDeleteSupplement && onDeleteSupplement(idx);
-            }}
-          >
-            <Delete height={21} width={21} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.detailsRow}>
-          {item.amount && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Amount:</Text>
-              <Text style={styles.detailText}>{item.amount}</Text>
-            </View>
-          )}
-          {item.liquid && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Liquid:</Text>
-              <Text style={styles.detailText}>{item.liquid}</Text>
-            </View>
-          )}
-          {item.company && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Company:</Text>
-              <Text style={styles.detailText}>{item.company}</Text>
-            </View>
-          )}
-          {item.timing && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Timing:</Text>
-              <Text style={styles.detailText}>
-                {item.timing.replace(/_/g, ' ')}
-              </Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    ))}
-  </>
-)}
 
       {/* Show empty state if no items of any type */}
       {exercises.length === 0 && cardio.length === 0 && recovery.length === 0 && supplement.length === 0 && (
@@ -208,12 +245,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     height: 20,
   },
-  exerciseName: {
+    exerciseName: {
     fontFamily: 'Inter',
     fontSize: 14,
     fontWeight: '700',
-    color: '#000000',
     lineHeight: 20,
+    textTransform:'capitalize',
+  },
+  clickableName: {
+
+
   },
   setsContainer: {
     flexDirection: 'row',
@@ -244,7 +285,7 @@ const styles = StyleSheet.create({
   },
   detailsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     flexWrap: 'wrap',
     paddingHorizontal: 17,
     marginTop: 4,
@@ -267,6 +308,21 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#000000',
     lineHeight: 18,
+  },
+  supplementName:{
+    fontFamily:'Inter',
+    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 18,
+    letterSpacing: 0,
+   
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0', // Light gray color, adjust as needed
+    // marginVertical: 8,          // Adjust vertical spacing as needed
+    width: '100%',
+    marginTop:12
   },
 });
 

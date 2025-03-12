@@ -10,20 +10,25 @@ import HeaderComponent from '../components/HeaderComponent';
 import { uploadProfilePicture } from '../firebase/firebase_client';
 import { EmailChangeComponent, PasswordForm, ProfileForm, ProfilePicChange } from '../components/ProfileForm';
 import LanguageThemeLogout from '../components/LangaugeThemeButton';
+import LanguageSwitch from '../components/LanguageSwitch';
+import { useTheme } from '../hooks/useTheme';
+
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 const buttonWidth = (screenWidth - 48) / 2;
 
 const ProfileScreen = () => {
+  const { isDarkMode } = useTheme();
   const { t } = useTranslation();
   const { userDetails, updateUserDetails } = useUserDetailsContext();
   const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const[profileImage,setProfileImage] = useState('')
+  const [profileImage, setProfileImage] = useState('');
   const [currTab, setCurrTab] = useState('');
+  
 
   useEffect(() => {
     console.log('🔍 Current userDetails from context:', userDetails);
@@ -31,7 +36,7 @@ const ProfileScreen = () => {
     if (userDetails) {
       setFirstName(userDetails.firstName || '');
       setLastName(userDetails.lastName || '');
-      setProfileImage(userDetails.profilePicture || '')
+      setProfileImage(userDetails.profilePicture || '');
     }
   }, [userDetails]);
 
@@ -77,10 +82,10 @@ const ProfileScreen = () => {
   };
   
   const options = [
-    { title: 'CHANGE NAME', key: 'changeName' },
-    { title: 'CHANGE PASSWORD', key: 'changePassword' },
-    { title: 'CHANGE PROFILE PICTURE', key: 'changeProfilePicture' },
-    { title: 'EMAIL CHANGE', key: 'emailchange' },
+    { title: t('changeName'), key: 'changeName' },
+    { title: t('changePassword'), key: 'changePassword' },
+    { title: t('changeProfilePicture'), key: 'changeProfilePicture' },
+    { title: t('changeEmail'), key: 'emailchange' },
   ];
 
   const renderOptionButton = ({ item }) => (
@@ -103,7 +108,7 @@ const ProfileScreen = () => {
     />
   );
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#D3D3D3' }]}>
       <HeaderComponent />
 
       <FlatList
@@ -113,6 +118,7 @@ const ProfileScreen = () => {
         columnWrapperStyle={styles.row}
         renderItem={renderOptionButton}
       />
+     
 
       {currTab !== '' && (
         <View style={styles.centeredFormContainer}>
@@ -133,7 +139,7 @@ const ProfileScreen = () => {
           )}
         </View>
       )}
-
+  
       {/* Language & Theme Component positioned at 80% of screen height */}
       <LanguageThemeLogout style={styles.languageThemeContainer} />
 
@@ -185,7 +191,7 @@ const styles = StyleSheet.create({
   },
   languageThemeContainer: {
     position: 'absolute',
-    bottom: screenHeight * 0.15, // 80% from top, 20% from bottom
+    bottom: 30, // 80% from top, 20% from bottom
     alignSelf: 'center',
     // width:buttonWidth,
     backgroundColor:'transparent'

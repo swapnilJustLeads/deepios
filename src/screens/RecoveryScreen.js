@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import React, { useState, useRef ,useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import WorkoutCard from '../components/WorkoutCard';
 import Recovery from '../assets/images/recovery.svg';
@@ -22,12 +22,14 @@ import {
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
+  const [selectedRecovery, setSelectedRecovery] = useState(null);
   const { recoveryData, setRefresh } = useUserRecoveryContext();
   const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
   const recoveryFormRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
+
   const getDates = () => {
     let dates = [];
     for (let i = -3; i <= 3; i++) {
@@ -35,26 +37,28 @@ const RecoveryScreen = () => {
     }
     return dates;
   };
+
   useEffect(() => {
-    console.log("🔥 cardioData on load:", recoveryData); // ✅ Check if cardio data exists
+    console.log("🔥 Recovery data on load:", recoveryData);
     const today = moment().format('YYYY-MM-DD');
     onDateSelect(today);
-  }, [recoveryData]); // Runs whenever `cardioData` updates
-  
+  }, [recoveryData]);
+
   const onDateSelect = (selectedDate) => {
     console.log("📅 Selected Date:", selectedDate);
     setSelectedDate(selectedDate);
-    const filteredCardioData = recoveryData.filter((item) => {
+    const filteredRecoveryData = recoveryData.filter((item) => {
       if (item.createdAt) {
         const itemDate = moment.unix(item.createdAt.seconds).format("YYYY-MM-DD");
         return itemDate === selectedDate;
       }
       return false;
     });
-  
-    console.log("📊 Filtered Cardio Data:", filteredCardioData);
-    setFilteredWorkoutData(filteredCardioData);
+
+    console.log("📊 Filtered Recovery Data:", filteredRecoveryData);
+    setFilteredWorkoutData(filteredRecoveryData);
   };
+
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
     return data.filter((item) => {
@@ -66,7 +70,6 @@ const RecoveryScreen = () => {
     });
   };
 
-
   const recoveryTimeToday = calculateTotalRecoveryTime(
     filterDataByRange(recoveryData, 'Today')
   );
@@ -76,19 +79,33 @@ const RecoveryScreen = () => {
   const recoveryTimeMonth = calculateTotalRecoveryTime(
     filterDataByRange(recoveryData, 'Month')
   );
+
   const handleFormSave = () => {
     setshowForm(false);  // Hide the form
+    setSelectedRecovery(null); // Reset selected recovery
     setRefresh(prev => !prev); // Toggle refresh to trigger data reload
   };
+
+  // Handler for when a recovery item is clicked
+  const handleSelectRecovery = (recoveryItem) => {
+    console.log("Selected recovery item:", recoveryItem);
+    setSelectedRecovery(recoveryItem);
+    setshowForm(true);
+  };
+
   return (
     <View style={styles.container}>
       <HeaderComponent />
       {showForm ? (
         <>
           <RecoveryForm
-            ref={recoveryFormRef}
             onSave={handleFormSave}
-            onCancel={() => setshowForm(false)} />
+            onCancel={() => {
+              setshowForm(false);
+              setSelectedRecovery(null);
+            }}
+            recoveryData={selectedRecovery}
+          />
         </>
       ) : (
         <>
@@ -100,7 +117,7 @@ const RecoveryScreen = () => {
             monthValue={recoveryTimeMonth}
             unit={'min'}
           />
-             <HorizontalDatePicker 
+          <HorizontalDatePicker
             value={selectedDate}
             onChange={setSelectedDate}
             minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
@@ -108,6 +125,12 @@ const RecoveryScreen = () => {
             onCalendarOpen={() => console.log('Calendar opened')}
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
+          />
+          <WorkoutLayout
+            title="Recovery"
+            type="recovery"
+            selectedDate={selectedDate}
+            onSelectItem={handleSelectRecovery} // Add the handler for item selection
           />
           <View style={{ position: 'absolute', bottom: 9, alignSelf: 'center' }}>
             <Button
@@ -118,9 +141,6 @@ const RecoveryScreen = () => {
               buttonStyle={[styles.buttonStyle]}
             />
           </View>
-          <WorkoutLayout title="Recovery" type="recovery" selectedDate={selectedDate} />
-
-
         </>
       )}
     </View>
