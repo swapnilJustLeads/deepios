@@ -223,19 +223,19 @@ const WorkoutLayout = (props) => {
       {sortedSessionData.length > 0 ? (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {sortedSessionData.map((session, index) => (
-            <TouchableOpacity 
-              key={session.id || index} 
-              style={styles.sessionContainer}
-              onPress={() => {}}
-              activeOpacity={0.7}
-            >
+            // <TouchableOpacity 
+            //   key={session.id || index} 
+            //   style={styles.sessionContainer}
+            //   onPress={() => {}}
+            //   activeOpacity={0.7}
+            // >
               <MainContainer_Header_ExerciseItem
                 onClick={()=>handleItemClick(session)}
                 title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 exercises={session.exercises}
                 time={session.time}
               />
-            </TouchableOpacity>
+            // </TouchableOpacity>
           ))}
         </ScrollView>
       ) : (
