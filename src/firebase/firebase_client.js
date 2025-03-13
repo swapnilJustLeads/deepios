@@ -248,44 +248,44 @@ export const updateUserEmail = async (newEmail, currentPassword) => {
   }
 };
 
-// export const getJournals = async (username) => {
-//   try {
-//     const querySnapshot = await getFirestore()
-//       .collection(COLLECTIONS.JOURNAL)
-//       .where("userId", "==", username)
-//       .get();
+export const getJournals = async (username) => {
+  try {
+    const querySnapshot = await getFirestore()
+      .collection(COLLECTIONS.JOURNAL)
+      .where("userId", "==", username)
+      .get();
     
-//     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-//   } catch (error) {
-//     console.error("Error fetching user journals:", error);
-//     throw error;
-//   }
-// };
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error fetching user journals:", error);
+    throw error;
+  }
+};
 
-// export const addJournal = async (journal) => {
-//   try {
-//     const docRef = await getFirestore()
-//       .collection(COLLECTIONS.JOURNAL)
-//       .add(journal);
+export const addJournal = async (journal) => {
+  try {
+    const docRef = await getFirestore()
+      .collection(COLLECTIONS.JOURNAL)
+      .add(journal);
     
-//     return { id: docRef.id, ...journal };
-//   } catch (error) {
-//     console.error("Error adding journal:", error);
-//     throw error;
-//   }
-// };
+    return { id: docRef.id, ...journal };
+  } catch (error) {
+    console.error("Error adding journal:", error);
+    throw error;
+  }
+};
 
-// export const deleteJournal = async (id) => {
-//   try {
-//     await getFirestore()
-//       .collection(COLLECTIONS.JOURNAL)
-//       .doc(id)
-//       .delete();
-//   } catch (error) {
-//     console.error("Error deleting journal:", error);
-//     throw error;
-//   }
-// };
+export const deleteJournal = async (id) => {
+  try {
+    await getFirestore()
+      .collection(COLLECTIONS.JOURNAL)
+      .doc(id)
+      .delete();
+  } catch (error) {
+    console.error("Error deleting journal:", error);
+    throw error;
+  }
+};
 
 export const getParents = async () => {
   try {

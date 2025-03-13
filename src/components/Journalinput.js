@@ -8,12 +8,17 @@ import {
 import React, {useState} from 'react';
 import {Button, Input, Card, Icon} from '@rneui/themed';
 import Delete from '../assets/images/delete.svg';
+import { Timestamp } from "firebase/firestore";
+import { useUserJournalsContext } from '../context/UserJournalsContext';
+
 const Journalinput = (props) => {
   const [journalText, setjournalText] = useState('');
   const [showjournal, setshowjournal] = useState(false);
   const [title, settitle] = useState('');
   const [subtitle, setsubtitle] = useState('');
   const [content, setcontent] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const {   journal } = useUserJournalsContext();
 
   const setJournalText = text => {
     setjournalText(text);
@@ -21,11 +26,16 @@ const Journalinput = (props) => {
   const saveJournal = () => {
     setshowjournal(true);
   };
-  const onPress = () => {
-    console.log('Press');
+  const onPress = async() => {
+    
+  //  const journal =  await addJournal(journalText, Timestamp.fromDate(selectedDate));
+  //  console.log("jouneal press", journalText);
+   console.log("jouneal press");
+  
   };
   return (
     <View style={{flex: 1}}>
+      <Text> {JSON.stringify(journal)} </Text>
       {showjournal ? (
         <>
           <>
@@ -66,12 +76,12 @@ const Journalinput = (props) => {
             </View>
             <Button
               containerStyle={styles.buttonConatiner}
-              onPress={props.saveJournal}
+              onPress={onPress}
               buttonStyle={[styles.buttonStyle]}
               title="Save Journal"
               titleStyle={styles.buttonTextStyle}
             />
-            <View>
+            <View>  
               <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
                 <Card containerStyle={styles.card}>
                   <View style={styles.headerContainer}>

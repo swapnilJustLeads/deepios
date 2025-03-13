@@ -4,12 +4,15 @@ import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseIt
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
 import moment from 'moment';
+import { useUserJournalsContext } from '../context/UserJournalsContext';
 
 const WorkoutLayout = (props) => {
   const { workoutData } = useUserWorkoutContext();
   const { recoveryData } = useUserRecoveryContext();
   const { cardioData } = useUserCardioContext();
   const { parentIds, subCategories } = useDetails();
+  console.log(useUserJournalsContext(),"useUserJournalsContextuseUserJournalsContext")
+  // const { journals } =  useUserJournalsContext()
 
   // Get the type from props (default to 'workout')
   const type = props.type?.toLowerCase() || 'workout';
@@ -220,6 +223,7 @@ const WorkoutLayout = (props) => {
 
   return (
     <View style={styles.container}>
+      <Text>test  </Text>
       {sortedSessionData.length > 0 ? (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {sortedSessionData.map((session, index) => (

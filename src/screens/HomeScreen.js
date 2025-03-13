@@ -51,8 +51,9 @@ export default function HomeScreen({navigation}) {
     navigation.navigate("Supplement")
   }
 
-  const closeJournal = () => {
-    setShowJournal(false)
+  const closeJournal = async() => {
+    // setShowJournal(false)
+    
   }
   const filterDataByRange = (data, range) => {
     const { startDate, endDate } = getStartAndEndDate(range);
@@ -102,7 +103,7 @@ export default function HomeScreen({navigation}) {
       {showJournal ? (
         <>
           <HorizontalDatePicker />
-          <Journalinput saveJournal={closeJournal} />
+          <Journalinput saveJournal={closeJournal}  />
         </>
       ) : (
         <>

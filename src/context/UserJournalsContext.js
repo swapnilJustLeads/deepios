@@ -10,7 +10,7 @@ import { useGlobalContext } from "./GlobalContext";
 import { useTranslation } from 'react-i18next';
 
 const UserJournalsContext = createContext();
-
+console.log(getJournals,"getJournalsgetJournalsgetJournalsgetJournals")
 export const useUserJournalsContext = () => useContext(UserJournalsContext);
 
 export const UserJournalsProvider = ({ children }) => {
@@ -21,6 +21,7 @@ export const UserJournalsProvider = ({ children }) => {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState(null);
   const { globalLoading, setGlobalLoading } = useGlobalContext();
+  console.log('GetJounal test started',useUserJournalsContext)
 
   useEffect(() => {
     if (userDetails) {
@@ -81,7 +82,6 @@ export const UserJournalsProvider = ({ children }) => {
       Toast.show({ type: "error", text1: t('toastMessages.failedToDeleteJournal') });
     }
   };
-
   return (
     <UserJournalsContext.Provider
       value={{
