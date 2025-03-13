@@ -18,7 +18,7 @@ const SupplementLayout = props => {
     refresh: refreshSupplement,
     setRefresh: setRefreshSupplement,
   } = useUserSupplementContext();
-  const {subCategories} = useDetails();
+  const {subCategories, parentIds} = useDetails();
   const [editVisible, seteditVisible] = useState(false);
   const [editId, seteditId] = useState(0);
 
@@ -146,8 +146,9 @@ const SupplementLayout = props => {
         <EditModal
           id={item.id}
           name={item.name}
+          parent={parentIds.Supplement}
           visible={editVisible}
-          onSave={editName}
+          onSave={() => seteditVisible(false)}
         />
       </TouchableOpacity>
     );

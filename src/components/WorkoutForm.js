@@ -5,6 +5,7 @@ import {
   addDoc,
   updateDoc,
   doc,
+  deleteDoc,
 } from '@react-native-firebase/firestore';
 import Toast from 'react-native-toast-message';
 import {FirestoreDB} from '../firebase/firebase_client';
@@ -17,6 +18,7 @@ import {useDetails} from '../context/DeatailsContext';
 import SaveTemplateModal from './SaveTemplateModal';
 import {useTemplatesContext} from '../context/TemplatesContext';
 import Summary from './Summary';
+import {useUserWorkoutContext} from '../context/UserContexts';
 
 const WorkoutForm = ({onSave, onCancel, workoutData}) => {
   // State for form fields
@@ -31,6 +33,7 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
     name: '',
     sets: [],
   });
+  const {setRefresh, refresh} = useUserWorkoutContext();
   const [sets, setSets] = useState(1);
   const [reps, setReps] = useState(Array(sets).fill(''));
   const [weights, setWeights] = useState(Array(sets).fill(''));
@@ -421,6 +424,16 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
     setExercisesList(prevItems => prevItems.filter((_, idx) => idx !== index));
   };
 
+  const handleDeleteWorkout = async () => {
+    try {
+      const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
+      await deleteDoc(cardioDoc);
+      setRefresh(!refresh);
+    } catch (error) {
+      console.error('Error deleting training: ', error);
+    }
+  };
+
   const handleSaveWorkout = async () => {
     try {
       // Create date object with selected time
@@ -744,6 +757,14 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
 
       {/* Bottom Button */}
       <View style={styles.bottomButton}>
+        {isIntakeEditMode && (
+          <Button
+            onPress={handleDeleteWorkout} // Changed from handleOpenModal to handleSaveWorkout
+            buttonStyle={styles.buttonStyle}
+            title={'DELETE WORKOUT'}
+            titleStyle={styles.buttonTextStyle}
+          />
+        )}
         <Button
           onPress={handleSaveWorkout} // Changed from handleOpenModal to handleSaveWorkout
           buttonStyle={styles.buttonStyle}
