@@ -226,10 +226,11 @@ const WorkoutLayout = (props) => {
             <TouchableOpacity 
               key={session.id || index} 
               style={styles.sessionContainer}
-              onPress={() => handleItemClick(session)}
+              onPress={() => {}}
               activeOpacity={0.7}
             >
               <MainContainer_Header_ExerciseItem
+                onClick={()=>handleItemClick(session)}
                 title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 exercises={session.exercises}
                 time={session.time}
