@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
@@ -7,15 +7,11 @@ import moment from 'moment';
 import { deleteDoc, doc } from '@react-native-firebase/firestore';
 import { COLLECTIONS } from '../firebase/collections';
 import { FirestoreDB } from '../firebase/firebase_client';
-import CalendarUI from './CalendarUI';
+import CopyDateModal from './CopyDateModal'; // Import the new component
 
 const WorkoutLayout = (props) => {
-  const [CopyModal, setCopyModal] = useState(false);
-  const [calendarVisible, setCalendarVisible] = useState(false);
-  const [selectedDates, setSelectedDates] = useState({});
-  const [selected, setselected] = useState(false);
-  const [selectedCopyDate, setSelectedCopyDate] = useState(null);
-  const [calendarPosition, setCalendarPosition] = useState({ x: 0, y: 0 });
+  const [copyModalVisible, setCopyModalVisible] = useState(false);
+  const [selectedSessionToCopy, setSelectedSessionToCopy] = useState(null);
 
   const { workoutData } = useUserWorkoutContext();
   const { recoveryData } = useUserRecoveryContext();
@@ -24,8 +20,6 @@ const WorkoutLayout = (props) => {
 
   // Get the type from props (default to 'workout')
   const type = props.type?.toLowerCase() || 'workout';
-
-  
 
   // Get the appropriate data based on type
   const getData = () => {
@@ -47,14 +41,9 @@ const WorkoutLayout = (props) => {
       const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
       await deleteDoc(cardioDoc);
       console.log('delete')
-      // toast.dismiss(t);
-      // toast.success("Training deleted successfully!");
-      // handleRefresh();
-      // handleOnCopy();
+      // You can add toast notifications or refresh logic here
     } catch (error) {
-      // toast.dismiss(t);
       console.error("Error deleting training: ", error);
-      // toast.error("Failed to delete training.");
     }
   };
 
@@ -227,68 +216,6 @@ const WorkoutLayout = (props) => {
     }).filter(Boolean); // Remove any null entries
   };
 
-  const _chooseDate = (event) => {
-    // Get the button position to place the calendar below it
-    event.target.measure((x, y, width, height, pageX, pageY) => {
-      setCalendarPosition({ x: pageX, y: pageY + height });
-      setCalendarVisible(!calendarVisible);
-    });
-  };
-
-  const handleDayPress = (day) => {
-    // Toggle selection when a date is pressed
-    const selectedDate = day.dateString;
-    const updatedSelectedDates = { ...selectedDates };
-    
-    if (updatedSelectedDates[selectedDate]) {
-      // If already selected, unselect it
-      delete updatedSelectedDates[selectedDate];
-    } else {
-      // Otherwise select it with a blue background
-      updatedSelectedDates[selectedDate] = {
-        selected: true,
-        selectedColor: '#00E5FF',
-      };
-    }
-    
-    setSelectedDates(updatedSelectedDates);
-  };
-
-  const handleCalendarSelection = (date) => {
-    // Format the date to YYYY-MM-DD
-    const formattedDate = moment(date).format('YYYY-MM-DD');
-    setSelectedCopyDate(formattedDate);
-    
-    // Create a new selectedDates object with just this date
-    const newSelectedDates = {
-      [formattedDate]: {
-        selected: true,
-        selectedColor: '#00E5FF',
-      }
-    };
-    
-    setSelectedDates(newSelectedDates);
-  };
-
-  const handleConfirmDates = () => {
-    setCalendarVisible(false);
-    // You can use selectedDates object here to do whatever you need with the selected dates
-    console.log('Selected dates:', Object.keys(selectedDates));
-    
-    // Additional logic for copying to the selected date can go here
-  };
-
-  const handleCopyConfirm = () => {
-    if (selectedCopyDate) {
-      console.log(`Copying to date: ${selectedCopyDate}`);
-      // Implement your copy logic here
-    }
-    
-    // Close the modals
-    setCalendarVisible(false);
-    setCopyModal(false);
-  };
-
   const sessionData = transformData();
 
   // Sort session data by time (latest first)
@@ -310,15 +237,28 @@ const WorkoutLayout = (props) => {
   };
 
   const handleEdit = (session) => {
-    // Edit functionality
+    // Edit functionality implementation would go here
+    console.log("Edit session:", session);
   };
 
-  const handleCopy = (session) => {
-    // Reset selected dates when opening copy modal
-    setSelectedDates({});
-    setSelectedCopyDate(null);
-    setCalendarVisible(false); // Make sure calendar is hidden initially
-    setCopyModal(true);
+  const handleCopy = (sessionId) => {
+    // Find the session to copy
+    const sessionToCopy = sortedSessionData.find(session => session.id === sessionId);
+    
+    if (sessionToCopy) {
+      setSelectedSessionToCopy(sessionToCopy);
+      setCopyModalVisible(true);
+    }
+  };
+
+  const handleCopyConfirm = (date) => {
+    if (selectedSessionToCopy && date) {
+      console.log(`Copying session ${selectedSessionToCopy.id} to date: ${moment(date).format('YYYY-MM-DD')}`);
+      // Implement your copy logic here
+      
+      // Reset state
+      setSelectedSessionToCopy(null);
+    }
   };
 
   return (
@@ -344,92 +284,12 @@ const WorkoutLayout = (props) => {
         </View>
       )}
 
-      {/* Copy Modal with integrated calendar */}
-      <Modal
-  visible={CopyModal}
-  transparent
-  animationType="fade"
-  onRequestClose={() => {
-    setCalendarVisible(false);
-    setCopyModal(false);
-  }}
->
-  <View style={styles.overlay}>
-    <View style={styles.modalContainer}>
-      {/* Title */}
-      <Text style={styles.title}>Date</Text>
-
-      {/* Choose Date Button */}
-      <TouchableOpacity 
-        onPress={_chooseDate}
-        activeOpacity={0.7}
-        style={styles.chooseDateButton}>
-        <Text style={styles.message}>Choose Date</Text>
-      </TouchableOpacity>
-      
-      {/* Selected Date Display - show only if a date is selected */}
-      {selectedCopyDate && (
-        <Text style={styles.selectedDateText}>
-          {moment(selectedCopyDate).format('MMM D, YYYY')}
-        </Text>
-      )}
-
-      {/* Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.cancelButton} 
-          onPress={() => {
-            setCalendarVisible(false);
-            setCopyModal(false);
-          }}
-        >
-          <Text style={styles.cancelText}>CANCEL</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[
-            styles.copyButton,
-            // Disable if no date selected
-            !selectedCopyDate && styles.disabledButton
-          ]}
-          onPress={handleCopyConfirm}
-          disabled={!selectedCopyDate}
-        >
-          <Text style={styles.copyText}>COPY</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
-{calendarVisible && (
-  <View 
-    style={[
-      styles.calendarOverlay,
-      { 
-        position: 'absolute',
-        top: calendarPosition.y,
-        left: calendarPosition.x
-      }
-    ]}
-  >
-    <View style={styles.calendarCard}>
-      <CalendarUI 
-        onSelectDate={(date) => {
-          handleCalendarSelection(date);
-          setCalendarVisible(false);
-        }}
-        initialDate={selectedCopyDate ? new Date(selectedCopyDate) : new Date()}
+      {/* Use the new CopyDateModal component */}
+      <CopyDateModal
+        visible={copyModalVisible}
+        onClose={() => setCopyModalVisible(false)}
+        onCopy={handleCopyConfirm}
       />
-      
-      <TouchableOpacity 
-        style={styles.closeCalendarButton}
-        onPress={() => setCalendarVisible(false)}
-      >
-        <Text style={styles.closeButtonText}>Close</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
     </View>
   );
 };
@@ -445,12 +305,7 @@ const styles = StyleSheet.create({
     marginBottom: 55
   },
   scrollContent: {
-    paddingBottom: 20, // Reduced padding to avoid extra space
-    alignItems: 'center',
-  },
-  sessionContainer: {
-    width: '100%',
-    marginBottom: 15,
+    paddingBottom: 20,
     alignItems: 'center',
   },
   noDataContainer: {
@@ -461,128 +316,7 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: '#555',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: 300, // Increased width to fit calendar
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  message: {
-    fontSize: 16,
-    color: '#00E5FF',
-    marginBottom: 5,
-    textDecorationLine: 'underline',
-  },
-  chooseDateButton: {
-    marginBottom: 10,
-  },
-  selectedDateText: {
-    fontSize: 16,
-    color: '#333',
-    marginVertical: 10,
-    fontWeight: '500',
-  },
-  calendarWrapper: {
-    width: '100%',
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#D3D3D3',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    color: '#000',
-    marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 10,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#000',
-    marginRight: 5,
-  },
-  cancelText: {
-    color: '#000',
-    fontWeight: '600',
-  },
-  copyButton: {
-    flex: 1,
-    backgroundColor: '#00E5FF',
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginLeft: 5,
-  },
-  disabledButton: {
-    backgroundColor: '#cccccc',
-  },
-  copyText: {
-    color: '#FFF',
-    fontWeight: '600',
-  },
-  calendarOverlay: {
-    // Position will be set dynamically
-    zIndex: 1000, // Make sure it appears on top
-  },
-  calendarCard: {
-    width: 280,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  
-  },
-  closeCalendarButton: {
-    alignSelf: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  closeButtonText: {
-    color: '#333',
-    fontWeight: '500',
-  },
+  }
 });
 
 export default WorkoutLayout;

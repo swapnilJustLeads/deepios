@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-const CalendarUI = ({ onSelectDate, initialDate }) => {
+const CalendarUI = ({ onSelectDate, initialDate, multiSelect = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(initialDate || new Date(2025, 2, 13));
+  // Change from single date to array of dates for multi-select
+  const [selectedDates, setSelectedDates] = useState(initialDate ? [initialDate] : [new Date(2025, 2, 13)]);
   
   // Get current month and year
   const currentMonth = currentDate.getMonth();
@@ -38,12 +39,12 @@ const CalendarUI = ({ onSelectDate, initialDate }) => {
     setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
   };
   
-  // Check if a date is the selected date
+  // Check if a date is included in the selectedDates array
   const isSelectedDate = (day) => {
-    return (
-      selectedDate.getDate() === day &&
-      selectedDate.getMonth() === currentMonth &&
-      selectedDate.getFullYear() === currentYear
+    return selectedDates.some(date => 
+      date.getDate() === day &&
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
     );
   };
   
@@ -52,14 +53,45 @@ const CalendarUI = ({ onSelectDate, initialDate }) => {
     return `${currentDate.toLocaleString('default', { month: 'long' })}, ${currentYear}`;
   };
 
-  // Handle day press
+  // Handle day press - toggle date selection for multi-select
   const handleDayPress = (day) => {
     const newDate = new Date(currentYear, currentMonth, day);
-    setSelectedDate(newDate);
+    
+    // Check if date is already selected
+    const isAlreadySelected = selectedDates.some(date => 
+      date.getDate() === day &&
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    );
+    
+    let newSelectedDates;
+    if (isAlreadySelected) {
+      // Remove date if already selected
+      newSelectedDates = selectedDates.filter(date => 
+        !(date.getDate() === day &&
+          date.getMonth() === currentMonth &&
+          date.getFullYear() === currentYear)
+      );
+    } else {
+      // Add date if not already selected
+      if (multiSelect) {
+        // Add to existing selections if multiSelect is true
+        newSelectedDates = [...selectedDates, newDate];
+      } else {
+        // Replace selection if multiSelect is false
+        newSelectedDates = [newDate];
+      }
+    }
+    
+    setSelectedDates(newSelectedDates);
     
     // Notify parent about date selection
     if (onSelectDate) {
-      onSelectDate(newDate);
+      if (multiSelect) {
+        onSelectDate(newSelectedDates);
+      } else {
+        onSelectDate(newDate);
+      }
     }
   };
   
@@ -120,6 +152,15 @@ const CalendarUI = ({ onSelectDate, initialDate }) => {
         </TouchableOpacity>
       </View>
       
+      {/* Selected Dates Count */}
+      {multiSelect && selectedDates.length > 0 && (
+        <View style={styles.selectedCountContainer}>
+          <Text style={styles.selectedCountText}>
+            {selectedDates.length} date{selectedDates.length !== 1 ? 's' : ''} selected
+          </Text>
+        </View>
+      )}
+      
       {/* Weekday Headers */}
       <View style={styles.weekdayRow}>
         {weekdays.map(day => (
@@ -154,12 +195,24 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: 20,
-    color: '#4a89f3',
+    color: '#000',
     paddingHorizontal: 10,
   },
   monthTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  selectedCountContainer: {
+    marginBottom: 5,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    backgroundColor: '#e6f7ff',
+    borderRadius: 10,
+  },
+  selectedCountText: {
+    fontSize: 12,
+    color: '#000',
+    fontWeight: '500',
   },
   weekdayRow: {
     flexDirection: 'row',
@@ -173,7 +226,7 @@ const styles = StyleSheet.create({
   },
   weekdayText: {
     fontSize: 14,
-    color: '#4a89f3',
+    // color: '#4a89f3',
     fontWeight: '500',
   },
   calendarGrid: {
@@ -200,7 +253,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedDay: {
-    backgroundColor: '#7dd3fa',
+    backgroundColor: '#000',
   },
   selectedDayText: {
     color: '#fff',
