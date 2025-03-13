@@ -5,14 +5,14 @@ import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
 import Delete from '../assets/images/delete.svg';
 
-const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
+const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time,onClick }) => {
   console.log('Exercise data:', exercises);
   const displayTime = time || '07:57 AM';
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <Text onPress={onClick} style={styles.title}>{title}</Text>
         <Text style={styles.time}>{displayTime}</Text>
         <View style={styles.headerButtons}>
           <Edit style={styles.headerIcon} />
@@ -27,8 +27,8 @@ const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
             styles.exerciseItem,
             index === exercises.length - 1 && styles.lastExerciseItem
           ]}>
-            <Text style={styles.exerciseName}>{exercise.name}</Text>
-            <View style={styles.setsContainer}>
+            <Text onPress={onClick} style={styles.exerciseName}>{exercise.name}</Text>
+            <View onPress={onClick} style={styles.setsContainer}>
               {exercise.sets && exercise.sets.map((set, setIndex) => {
                 // For cardio data that has speed and incline
                 if (set.speed !== undefined && set.incline !== undefined) {
