@@ -16,6 +16,7 @@ import {
 import {useDetails} from '../context/DeatailsContext';
 
 const EditModal = ({visible, onClose, onSave, id, parent, name = ''}) => {
+  console.log(id, parent, name, " ")
   const [inputValue, setInputValue] = useState(name);
   const {parentIds} = useDetails();
   const {handleWorkoutUpdateName} = useUserWorkoutContext();
@@ -24,6 +25,7 @@ const EditModal = ({visible, onClose, onSave, id, parent, name = ''}) => {
   const {handleSupplementUpdateName} = useUserSupplementContext();
 
   const handleSaveName = async () => {
+    console.log('Saving, updating', parent);
     try {
       switch (parent) {
         case parentIds.Workout:
@@ -41,6 +43,7 @@ const EditModal = ({visible, onClose, onSave, id, parent, name = ''}) => {
           break;
       }
       onSave();
+      
     } catch {
       console.log('Error updating name');
     }

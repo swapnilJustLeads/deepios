@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
+  FlatList,
 } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import {
@@ -24,12 +25,12 @@ import EditModal from './EditModal';
 const WorkoutLayout = props => {
   const [CopyModal, setCopyModal] = useState(false);
   const [selected, setselected] = useState(false);
-  const {workoutData} = useUserWorkoutContext();
+  const {workoutData, refresh, setRefresh} = useUserWorkoutContext();
   const {recoveryData} = useUserRecoveryContext();
   const {cardioData} = useUserCardioContext();
   const {parentIds, subCategories} = useDetails();
   const [editVisible, seteditVisible] = useState(false);
-
+console.log(workoutData,"workoutDataworkoutDataworkoutData")
   // Get the type from props (default to 'workout')
   const type = props.type?.toLowerCase() || 'workout';
 
@@ -52,15 +53,11 @@ const WorkoutLayout = props => {
     try {
       const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
       await deleteDoc(cardioDoc);
-      console.log('delete');
-      // toast.dismiss(t);
-      // toast.success("Training deleted successfully!");
-      // handleRefresh();
-      // handleOnCopy();
+      setRefresh(!refresh)
     } catch (error) {
-      // toast.dismiss(t);
+
       console.error('Error deleting training: ', error);
-      // toast.error("Failed to delete training.");
+   
     }
   };
 
@@ -252,6 +249,7 @@ const WorkoutLayout = props => {
           exercises: exercises,
           id: item.id || `${type}-${timestamp?.valueOf() || Date.now()}`,
           originalData: item, // Store the original item for use when clicked
+          name:item.name || 'Workout'
         };
       })
       .filter(Boolean); // Remove any null entries
@@ -293,13 +291,8 @@ const WorkoutLayout = props => {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}>
-          {sortedSessionData.map((session, index) => (
-            // <TouchableOpacity
-            //   key={session.id || index}
-            //   style={styles.sessionContainer}
-            //   onPress={() => {}}
-            //   activeOpacity={0.7}
-            // >
+          {sortedSessionData.map((session,) => (
+        
             <>
               <MainContainer_Header_ExerciseItem
                 onClick={() => handleItemClick(session)}
@@ -315,7 +308,11 @@ const WorkoutLayout = props => {
                 name={session.name}
                 parent={parentIds.Workout}
                 visible={editVisible}
-                onSave={() => seteditVisible(false)}
+                onSave={() =>{
+                  setRefresh(!refresh)
+                seteditVisible(false)
+
+                }}
               />
             </>
             // </TouchableOpacity>

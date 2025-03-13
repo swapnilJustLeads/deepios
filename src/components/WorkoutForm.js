@@ -426,9 +426,11 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
 
   const handleDeleteWorkout = async () => {
     try {
-      const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
+      const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, workoutData.id);
       await deleteDoc(cardioDoc);
       setRefresh(!refresh);
+      onCancel()
+
     } catch (error) {
       console.error('Error deleting training: ', error);
     }
