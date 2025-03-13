@@ -49,6 +49,7 @@ const WorkoutForm = ({ onSave, onCancel, workoutData }) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [isItemEditMode, setIsItemEditMode] = useState(false);
   const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
+  const [isDisableSaveTemplet, setisDisableSaveTemplet] = useState(true)
   
   // 🔹 Get data from Context
   const { categories, subCategories, parentIds } = useDetails();
@@ -385,9 +386,11 @@ useEffect(() => {
       setSets(1);
       setReps(Array(1).fill(''));
       setWeights(Array(1).fill(''));
+      setisDisableSaveTemplet(false)
     } else {
       Toast.show({type: 'error', text1: 'Please fill all the details'});
     }
+
   };
 
   // Delete exercise item
@@ -679,6 +682,7 @@ const handleSaveTemplate = async (templateName) => {
   isBullet={true}
 />
         <Button
+        disabled={isDisableSaveTemplet}
           onPress={handleOpenModal}
           buttonStyle={[
             styles.buttonStyle,

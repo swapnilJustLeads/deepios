@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 10,
     fontWeight: '700',
-    textAlign: 'center',
+    // textAlign: 'center',
   },
   selectedText: {
     color: '#000',

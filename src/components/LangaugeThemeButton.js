@@ -18,18 +18,26 @@ import MoonButton from '../assets/images/moon-svgrepo-com.svg';
 import {useTheme} from '../hooks/useTheme';
 import {toggleTheme} from '../theme/theme';
 import {useDispatch} from 'react-redux';
+import { useAuth } from '../firebase/hooks';
+import { useNavigation } from '@react-navigation/native';
 const LanguageThemeLogout = ({style}) => {
+   const navigation =  useNavigation()
+  const {logout } = useAuth()
   const {isDarkMode, theme} = useTheme();
   const dispatch = useDispatch();
   const {t} = useTranslation();
   const [language, setLanguage] = useState('English'); // Default language
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'English' ? 'Deutsch' : 'English');
-  };
+
   const changeTheme = () => {
     dispatch(toggleTheme());
   };
+
+  const signOut = () => {
+    logout();
+    navigation.navigate('LoginScreen')
+    
+  }
 
   return (
     <View style={[styles.container, style]}>
@@ -48,6 +56,7 @@ const LanguageThemeLogout = ({style}) => {
         </TouchableOpacity>
 
         <Button
+        onPress={signOut}
           containerStyle={styles.containerStyle}
           title={<Text style={styles.logoutText}>{t('logout')}</Text>}
           buttonStyle={styles.logoutButton}

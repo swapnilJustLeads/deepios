@@ -4,8 +4,9 @@ import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseIt
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
 import moment from 'moment';
+import MainContainer_Header_Recovery from './MainContainer_Header_Recovery';
 
-const WorkoutLayout = (props) => {
+const RecoveryLayout = (props) => {
   const { workoutData } = useUserWorkoutContext();
   const { recoveryData } = useUserRecoveryContext();
   const { cardioData } = useUserCardioContext();
@@ -229,7 +230,7 @@ const WorkoutLayout = (props) => {
               onPress={() => handleItemClick(session)}
               activeOpacity={0.7}
             >
-              <MainContainer_Header_ExerciseItem
+              <MainContainer_Header_Recovery
                 title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 exercises={session.exercises}
                 time={session.time}
@@ -276,4 +277,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default WorkoutLayout;
+export default RecoveryLayout;

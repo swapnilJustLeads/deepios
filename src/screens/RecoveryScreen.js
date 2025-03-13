@@ -19,6 +19,8 @@ import {
   getStartAndEndDate,
   calculateTotalCardioTime,
 } from '../utils/calculate';
+import CardioLayout from '../components/CardioLayout';
+import RecoveryLayout from '../components/RecoveryLayout';
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
@@ -126,7 +128,7 @@ const RecoveryScreen = () => {
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <WorkoutLayout
+          <RecoveryLayout
             title="Recovery"
             type="recovery"
             selectedDate={selectedDate}

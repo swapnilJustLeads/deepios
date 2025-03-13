@@ -21,19 +21,37 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
   const [duration, setDuration] = useState('');
-  const [hours, setHours] = useState('09');
-  const [minutes, setMinutes] = useState('35');
-  const [intensity, setIntensity] = useState('km/h');
+  const getCurrentTime = () => {
+    const now = new Date();
+    return {
+      hours: now.getHours().toString().padStart(2, '0'),
+      minutes: now.getMinutes().toString().padStart(2, '0'),
+    };
+  };
+  const currentTime = getCurrentTime();
+  const [hours, setHours] = useState(currentTime.hours);
+  const [minutes, setMinutes] = useState(currentTime.minutes);
+  const [intensity, setIntensity] = useState('');
   const [cardioItems, setCardioItems] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const { categories, subCategories, parentIds } = useDetails();
   const { userDetails } = useUserDetailsContext();
-  const [rounds, setRounds] = useState('%');
+  const [rounds, setRounds] = useState('');
   const [location, setLocation] = useState('');
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [isItemEditMode, setIsItemEditMode] = useState(false);
   const [isIntakeEditMode, setIsIntakeEditMode] = useState(false);
+
+  // Debug logging for cardioItems to track intensity/speed values
+  useEffect(() => {
+    if (cardioItems.length > 0) {
+      console.log('Current cardioItems:', cardioItems);
+      // Check if speed property exists and has values
+      const hasSpeed = cardioItems.some(item => item.speed && item.speed.length > 0);
+      console.log('Has speed values:', hasSpeed);
+    }
+  }, [cardioItems]);
 
   useEffect(() => {
     console.log('🔥 parentIds:', parentIds);
@@ -54,6 +72,9 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
         const itemsWithNames = cardioData.data.map(item => {
           const exerciseName = getExerciseName(item.subCategory);
           
+          // Debug log for each loaded item
+          console.log('Loading item with speed:', item.speed);
+          
           return {
             ...item,
             name: exerciseName || "Unknown Exercise"
@@ -61,6 +82,7 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
         });
         
         setCardioItems(itemsWithNames);
+        console.log('Loaded cardioItems:', itemsWithNames);
         
         // Set time from createdAt timestamp
         if (cardioData.createdAt) {
@@ -157,6 +179,7 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
   // Handle clicking on a cardio item in the summary
   const handleSelectCardio = (item, index) => {
     console.log("Selected cardio item:", item);
+    console.log("Item speed value:", item.speed); // Debug log for speed value
     setSelectedItemIndex(index);
     setIsItemEditMode(true);
     
@@ -171,8 +194,10 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
         if (durationMinutes) setMinutes(durationMinutes);
       }
       
-      setIntensity(item.speed || 'km/h');
-      setRounds(item.incline || '%');
+      // Debug before setting intensity
+      console.log("Setting intensity to:", item.speed || '');
+      setIntensity(item.speed || '');
+      setRounds(item.incline || '');
       setLocation(item.location || '');
       setDuration(item.time || '');
     }
@@ -187,6 +212,9 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
   
     // Get names for display
     const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+    
+    // Debug log for intensity value before updating
+    console.log("Current intensity value before update:", intensity);
     
     // Create updated cardio item
     const updatedCardioItem = {
@@ -216,8 +244,8 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
     
     // Reset form fields after update
     setExercise(null);
-    setIntensity('km/h');
-    setRounds('%');
+    setIntensity('');
+    setRounds('');
     setLocation('');
     setDuration('');
     setIsItemEditMode(false);
@@ -229,9 +257,11 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
       console.log('Please select both category and exercise');
       return;
     }
-  
     // Get names for display
     const exerciseName = filteredExercises.find(item => item.value === exercise)?.label || 'Unknown Exercise';
+    
+    // Debug log for intensity value before adding
+    console.log("Current intensity value before adding:", intensity);
     
     // Create cardio item
     const newCardioItem = {
@@ -250,8 +280,8 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
     
     // Reset form fields
     setExercise(null);
-    setIntensity('km/h');
-    setRounds('%');
+    setIntensity('');
+    setRounds('');
     setLocation('');
     setDuration('');
     
@@ -273,21 +303,29 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
       
       // Format data for Firebase
       const payload = {
-        data: cardioItems.map(item => ({
-          category: item.category,
-          subCategory: item.subCategory,
-          duration: item.duration,
-          speed: item.speed,
-          incline: item.incline,
-          location: item.location,
-          time: item.time
-        })),
+        data: cardioItems.map(item => {
+          // Debug log for each item being saved
+          console.log("Saving item with speed:", item.speed);
+          
+          return {
+            category: item.category,
+            subCategory: item.subCategory,
+            duration: item.duration,
+            speed: item.speed, // Ensure speed is included
+            incline: item.incline,
+            location: item.location,
+            time: item.time
+          };
+        }),
         // Keep the original timestamp if editing an intake
         createdAt: isIntakeEditMode && cardioData?.createdAt ? cardioData.createdAt : cardioTime,
         parent: parentIds.Cardio,
         username: userDetails?.username,
         template: null
       };
+      
+      // Debug log for final payload
+      console.log("Final payload being saved:", JSON.stringify(payload));
       
       let docId;
       
@@ -309,8 +347,9 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
       setCardioItems([]);
       setCategory(null);
       setExercise(null);
-      setIntensity('km/h');
-      setRounds('%');
+      setIntensity('');
+      setRounds('');
+      setLocation('');
       setIsItemEditMode(false);
       setIsIntakeEditMode(false);
       setSelectedItemIndex(null);
@@ -418,6 +457,8 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
                 style={styles.intensityInput}
                 value={intensity}
                 onChangeText={setIntensity}
+                placeholder="km/h"
+                keyboardType="numeric"
               />
             </View>
           </View>
@@ -429,6 +470,8 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
                 style={styles.roundsInput}
                 value={rounds}
                 onChangeText={setRounds}
+                placeholder="%"
+                keyboardType="numeric"
               />
             </View>
           </View>
@@ -472,11 +515,11 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
 
       {/* Summary Component */}
       <Summary 
-  title="Cardio Summary" 
-  cardio={cardioItems}
-  onDeleteCardio={handleDeleteCardio} 
-  onSelectCardio={handleSelectCardio}  // Add this line
-/>
+        title="Cardio Summary" 
+        cardio={cardioItems}
+        onDeleteCardio={handleDeleteCardio} 
+        onSelectCardio={handleSelectCardio}
+      />
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtonRow}>
@@ -536,7 +579,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: 'white',
-    marginBottom: 8,
+    marginBottom: 3,
     fontFamily: 'Inter',
   },
   dropdown: {

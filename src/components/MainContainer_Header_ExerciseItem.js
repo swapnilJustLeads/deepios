@@ -1,12 +1,12 @@
+// Update the MainContainer_Header_ExerciseItem component to display weight and incline separately
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
 import Delete from '../assets/images/delete.svg';
 
-
 const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
-  // Use the provided title directly without modification
+  console.log('Exercise data:', exercises);
   const displayTime = time || '07:57 AM';
 
   return (
@@ -29,12 +29,65 @@ const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
           ]}>
             <Text style={styles.exerciseName}>{exercise.name}</Text>
             <View style={styles.setsContainer}>
-              {exercise.sets.map((set, setIndex) => (
-                <View key={setIndex} style={styles.setRow}>
-                  <Text style={styles.setNumber}>{set.number} |</Text>
-                  <Text style={styles.setWeight}>{set.weight}</Text>
-                </View>
-              ))}
+              {exercise.sets && exercise.sets.map((set, setIndex) => {
+                // For cardio data that has speed and incline
+                if (set.speed !== undefined && set.incline !== undefined) {
+                  return (
+                    <View key={setIndex} style={styles.setRow}>
+                      <Text style={styles.setNumber}>{set.number || (setIndex + 1)} |</Text>
+                      <View style={styles.detailsContainer}>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.detailLabel}>Speed: </Text>
+                          <Text>{set.speed}</Text>
+                        </Text>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.detailLabel}>Incline: </Text>
+                          <Text>{set.incline}</Text>
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+                // For workout data with weight and incline in one string
+                else if (typeof set.weight === 'string' && set.weight.includes('Incline')) {
+                  // Split the weight string to extract the separate values
+                  const parts = set.weight.split(',');
+                  const weightValue = parts[0].trim();
+                  let inclineValue = '';
+                  
+                  if (parts.length > 1) {
+                    const inclineMatch = parts[1].match(/(\d+)/);
+                    inclineValue = inclineMatch ? inclineMatch[0] : '';
+                  }
+                  
+                  return (
+                    <View key={setIndex} style={styles.setRow}>
+                      <Text style={styles.setNumber}>{set.number || (setIndex + 1)} |</Text>
+                      <View style={styles.detailsContainer}>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.detailLabel}>Weight: </Text>
+                          <Text>{weightValue}</Text>
+                        </Text>
+                        {inclineValue && (
+                          <Text style={styles.detailText}>
+                            <Text style={styles.detailLabel}>Incline: </Text>
+                            <Text>{inclineValue}%</Text>
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                }
+                // For standard workout data with just weight
+                else {
+                  return (
+                    <View key={setIndex} style={styles.setRow}>
+                      <Text style={styles.setNumber}>{set.number || (setIndex + 1)} |</Text>
+                      <Text style={styles.setWeight}>{set.weight}</Text>
+                    </View>
+                  );
+                }
+              })}
             </View>
           </View>
         ))}
@@ -44,6 +97,7 @@ const MainContainer_Header_ExerciseItem = ({ exercises = [], title, time }) => {
 };
 
 const styles = StyleSheet.create({
+  // Keep all existing styles
   container: {
     width: '90%',
     borderRadius: 24,
@@ -51,7 +105,6 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     backgroundColor: '#fff',
     overflow: 'hidden',
-    // Remove fixed height to allow it to grow
     alignSelf: 'center',
   },
   header: {
@@ -88,10 +141,10 @@ const styles = StyleSheet.create({
   exerciseItem: {
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#DDDDDD', // Lighter border color for dividers
+    borderBottomColor: '#DDDDDD',
   },
   lastExerciseItem: {
-    borderBottomWidth: 0, // Remove border for last item
+    borderBottomWidth: 0,
   },
   exerciseName: {
     fontFamily: 'Inter',
@@ -106,9 +159,10 @@ const styles = StyleSheet.create({
   },
   setRow: {
     flexDirection: 'row',
-    justifyContent:'flex-start',   
-    minWidth: 93,
+    justifyContent: 'flex-start',
+    minWidth: 120,
     paddingRight: 9,
+    marginBottom: 4,
   },
   setNumber: {
     fontFamily: 'Inter',
@@ -116,13 +170,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 17,
     marginRight: 4,
-    textAlign:'right',
-    width: 18
+    textAlign: 'right',
+    width: 18,
   },
   setWeight: {
     fontFamily: 'Inter',
     fontSize: 12,
     lineHeight: 18,
+  },
+  
+  // Add new styles for the separated display
+  detailsContainer: {
+    flexDirection: 'column',
+  },
+  detailText: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  detailLabel: {
+    fontWeight: '600',
   },
 });
 

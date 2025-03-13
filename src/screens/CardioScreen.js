@@ -15,6 +15,7 @@ import {
   calculateTotalCardioTime,
 } from '../utils/calculate';
 import WorkoutLayout from '../components/WorkoutLayout';
+import CardioLayout from '../components/CardioLayout';
 
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
@@ -127,7 +128,7 @@ const CardioScreen = () => {
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <WorkoutLayout 
+          <CardioLayout 
             title="Cardio" 
             type="cardio" 
             selectedDate={selectedDate} 
