@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
 import { useTranslation } from 'react-i18next';
@@ -6,8 +6,6 @@ import WorkoutCard from '../components/WorkoutCard';
 import Bardumble from '../assets/images/bardumble.svg';
 import moment from 'moment';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
-import DefaultButton from '../components/DefaultButton';
-import WorkoutListComponent from '../components/WorkoutListComponent';
 import WorkoutForm from '../components/WorkoutForm';
 import WorkoutLayout from '../components/WorkoutLayout';
 import {
