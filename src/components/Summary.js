@@ -66,31 +66,38 @@ const Summary = ({
                         onDeleteExercise && onDeleteExercise(idx)
                       }></TouchableOpacity>
                   </View>
-                  <View style={styles.setsContainer}>
-                    {exercise.sets &&
-                      Array.isArray(exercise.sets) &&
-                      exercise.sets
-                        .filter(
-                          set =>
-                            set?.reps !== undefined ||
-                            set?.weight !== undefined,
-                        )
-                        .map((set, index) => (
-                          <View key={index} style={styles.setItem}>
-                            <Text style={styles.setNumber}>{index + 1} |</Text>
-                            <Text style={styles.setText}>
-                              {set.reps !== undefined ? set.reps : ''}
-                              {set.reps !== undefined &&
-                              set.weight !== undefined
-                                ? ' × '
-                                : ''}
-                              {set.weight !== undefined
-                                ? `${set.weight}kg`
-                                : ''}
-                            </Text>
-                          </View>
-                        ))}
-                  </View>
+                  <TouchableOpacity
+                    onPress={() =>
+                      onSelectExercise && onSelectExercise(exercise, idx)
+                    }>
+                    <View style={styles.setsContainer}>
+                      {exercise.sets &&
+                        Array.isArray(exercise.sets) &&
+                        exercise.sets
+                          .filter(
+                            set =>
+                              set?.reps !== undefined ||
+                              set?.weight !== undefined,
+                          )
+                          .map((set, index) => (
+                            <View key={index} style={styles.setItem}>
+                              <Text style={styles.setNumber}>
+                                {index + 1} |
+                              </Text>
+                              <Text style={styles.setText}>
+                                {set.reps !== undefined ? set.reps : ''}
+                                {set.reps !== undefined &&
+                                set.weight !== undefined
+                                  ? ' × '
+                                  : ''}
+                                {set.weight !== undefined
+                                  ? `${set.weight}kg`
+                                  : ''}
+                              </Text>
+                            </View>
+                          ))}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 // Default UI for regular exercises
@@ -113,31 +120,38 @@ const Summary = ({
                       <Delete height={21} width={21} />
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.setsContainer}>
-                    {exercise.sets &&
-                      Array.isArray(exercise.sets) &&
-                      exercise.sets
-                        .filter(
-                          set =>
-                            set?.reps !== undefined ||
-                            set?.weight !== undefined,
-                        ) // Show if at least one is defined
-                        .map((set, index) => (
-                          <View key={index} style={styles.setItem}>
-                            <Text style={styles.setNumber}>{index + 1} |</Text>
-                            <Text style={styles.setText}>
-                              {set.reps !== undefined ? set.reps : ''}
-                              {set.reps !== undefined &&
-                              set.weight !== undefined
-                                ? ' × '
-                                : ''}
-                              {set.weight !== undefined
-                                ? `${set.weight}kg`
-                                : ''}
-                            </Text>
-                          </View>
-                        ))}
-                  </View>
+                  <TouchableOpacity
+                    onPress={() =>
+                      onSelectExercise && onSelectExercise(exercise, idx)
+                    }>
+                    <View style={styles.setsContainer}>
+                      {exercise.sets &&
+                        Array.isArray(exercise.sets) &&
+                        exercise.sets
+                          .filter(
+                            set =>
+                              set?.reps !== undefined ||
+                              set?.weight !== undefined,
+                          ) // Show if at least one is defined
+                          .map((set, index) => (
+                            <View key={index} style={styles.setItem}>
+                              <Text style={styles.setNumber}>
+                                {index + 1} |
+                              </Text>
+                              <Text style={styles.setText}>
+                                {set.reps !== undefined ? set.reps : ''}
+                                {set.reps !== undefined &&
+                                set.weight !== undefined
+                                  ? ' × '
+                                  : ''}
+                                {set.weight !== undefined
+                                  ? `${set.weight}kg`
+                                  : ''}
+                              </Text>
+                            </View>
+                          ))}
+                    </View>
+                  </TouchableOpacity>
                   {idx < exercises.length - 1 && (
                     <View style={styles.divider} />
                   )}
@@ -215,14 +229,12 @@ const Summary = ({
                 </TouchableOpacity>
               </View>
               <View style={styles.detailsRow}>
-              
-
                 {item.time > 0 && (
                   <View style={styles.detailItem}>
                     <Text style={styles.detailText}>{item.time} min</Text>
                   </View>
                 )}
-                  {item.speed > 0 && (
+                {item.speed > 0 && (
                   <View style={styles.detailItem}>
                     <Text style={styles.detailText}>{item.speed} km/h</Text>
                   </View>

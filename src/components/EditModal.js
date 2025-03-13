@@ -1,22 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useUserSupplementContext } from '../context/UserContexts';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import {
+  useUserCardioContext,
+  useUserRecoveryContext,
+  useUserSupplementContext,
+  useUserWorkoutContext,
+} from '../context/UserContexts';
+import {useDetails} from '../context/DeatailsContext';
 
-const EditModal = ({ visible, onClose, onSave }) => {
-  const [inputValue, setInputValue] = useState('');
-  const {
-    handleSupplementUpdateName,
-    refresh: refreshSupplement,
-    setRefresh: setRefreshSupplement,
-  } = useUserSupplementContext();
+const EditModal = ({visible, onClose, onSave, id, parent, name = ''}) => {
+  const [inputValue, setInputValue] = useState(name);
+  const {parentIds} = useDetails();
+  const {handleWorkoutUpdateName} = useUserWorkoutContext();
+  const {handleCardioUpdateName} = useUserCardioContext();
+  const {handleRecoveryUpdateName} = useUserRecoveryContext();
+  const {handleSupplementUpdateName} = useUserSupplementContext();
+
+  const handleSaveName = async () => {
+    try {
+      switch (parent) {
+        case parentIds.Workout:
+          await handleWorkoutUpdateName(id, inputValue);
+          break;
+        case parentIds.Cardio:
+          await handleCardioUpdateName(id, inputValue);
+          break;
+        case parentIds.Recovery:
+          await handleRecoveryUpdateName(id, inputValue);
+          break;
+        case parentIds.Supplement:
+          await handleSupplementUpdateName(id, inputValue);
+        default:
+          break;
+      }
+      onSave();
+    } catch {
+      console.log('Error updating name');
+    }
+  };
 
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
-    >
+      onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           {/* Input Field */}
@@ -34,7 +69,10 @@ const EditModal = ({ visible, onClose, onSave }) => {
               <Text style={styles.cancelText}>CANCEL</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.saveButton} onPress={() => onSave(inputValue)}>
+            <TouchableOpacity
+              disabled={!inputValue}
+              style={styles.saveButton}
+              onPress={() => handleSaveName()}>
               <Text style={styles.saveText}>SAVE</Text>
             </TouchableOpacity>
           </View>
@@ -60,7 +98,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 10,

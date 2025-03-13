@@ -12,9 +12,12 @@ import Delete from '../assets/images/delete.svg';
 import EditModal from './EditModal';
 
 const SupplementLayout = props => {
-  const {supplementData, handleSupplementUpdateName,
+  const {
+    supplementData,
+    handleSupplementUpdateName,
     refresh: refreshSupplement,
-    setRefresh: setRefreshSupplement,} = useUserSupplementContext();
+    setRefresh: setRefreshSupplement,
+  } = useUserSupplementContext();
   const {subCategories} = useDetails();
   const [editVisible, seteditVisible] = useState(false);
   const [editId, seteditId] = useState(0);
@@ -54,56 +57,55 @@ const SupplementLayout = props => {
           name: supplement.timing,
           // item:supplement.amount
         });
-       
       });
     });
 
     return transformedData;
   };
-  
+
   // Function to convert Unix timestamp to formatted time
   function formatTimeFromTimestamp(timestamp) {
     // Create a new Date object from the timestamp (in milliseconds)
     const date = new Date(timestamp * 1000);
-    
+
     // Format the hours and minutes
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    
+
     // Determine AM or PM
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    
+
     // Convert 24-hour format to 12-hour format
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
-    
+
     // Format as "hh:mm AM/PM"
     return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
   }
-// Update the editName function to uncomment the handleSupplementUpdateName call
-const editName = (name) => {
-  console.log(editId, name);
-  handleSupplementUpdateName(editId, name); // Uncommented this line
-  seteditVisible(false);
-  setRefreshSupplement(!refreshSupplement);
-}
+  // Update the editName function to uncomment the handleSupplementUpdateName call
+  const editName = name => {
+    console.log(editId, name);
+    handleSupplementUpdateName(editId, name); // Uncommented this line
+    seteditVisible(false);
+    setRefreshSupplement(!refreshSupplement);
+  };
 
   // Function to handle item click
-  const handleItemClick = (item) => {
+  const handleItemClick = item => {
     // Extract time from timestamp
     const date = new Date(item.createdAt.seconds * 1000);
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    
+
     // Prepare the item data for form
     const supplementItemData = {
       id: item.id,
       data: item.data,
       hours: hours,
       minutes: minutes,
-      timing: item.data && item.data.length > 0 ? item.data[0].timing : null
+      timing: item.data && item.data.length > 0 ? item.data[0].timing : null,
     };
-    
+
     // Call the onSelectSupplement function passed from the parent component
     if (props.onSelectSupplement) {
       props.onSelectSupplement(supplementItemData);
@@ -119,21 +121,21 @@ const editName = (name) => {
 
   const renderItem = ({item}) => {
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.containerrenderItem}
-        onPress={() => handleItemClick(item)}
-      >
+        onPress={() => handleItemClick(item)}>
         <View style={styles.header}>
           <Text style={styles.title}> {item.name || 'SUPPLEMENT'} </Text>
-          <Text style={styles.time}>{formatTimeFromTimestamp(item.createdAt.seconds)}</Text>
+          <Text style={styles.time}>
+            {formatTimeFromTimestamp(item.createdAt.seconds)}
+          </Text>
           <View style={styles.icons}>
-            <TouchableOpacity onPress={()=> 
-              {
+            <TouchableOpacity
+              onPress={() => {
                 seteditVisible(true);
                 seteditId(item.id);
                 console.log(item);
-              }
-            }>
+              }}>
               <Edit style={styles.headerIcon} />
             </TouchableOpacity>
             <Copy style={styles.headerIcon} />
@@ -141,7 +143,12 @@ const editName = (name) => {
           </View>
         </View>
         <SupplementCard data={item} />
-        <EditModal visible={editVisible} onSave={editName} />
+        <EditModal
+          id={item.id}
+          name={item.name}
+          visible={editVisible}
+          onSave={editName}
+        />
       </TouchableOpacity>
     );
   };
@@ -196,8 +203,8 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     textTransform: 'uppercase',
     lineHeight: 27,
-    paddingLeft:16,
-    paddingTop:9
+    paddingLeft: 16,
+    paddingTop: 9,
   },
   time: {
     fontFamily: 'Inter',
@@ -207,8 +214,8 @@ const styles = StyleSheet.create({
   },
   icons: {
     flexDirection: 'row',
-    marginRight:16,
-    gap:7
+    marginRight: 16,
+    gap: 7,
   },
   icon: {
     width: 20,
