@@ -1,6 +1,12 @@
 // Update the MainContainer_Header_ExerciseItem component to display weight and incline separately
-import React from 'react';
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
 import Delete from '../assets/images/delete.svg';
@@ -10,9 +16,14 @@ const MainContainer_Header_ExerciseItem = ({
   title,
   time,
   onClick,
+  Ondelete,
+  onEdit,
+  onCopy,
 }) => {
   console.log('Exercise data:', exercises);
   const displayTime = time || '07:57 AM';
+
+  const [selected, setSelected] = useState('');
 
   return (
     <View style={styles.container}>
@@ -22,9 +33,17 @@ const MainContainer_Header_ExerciseItem = ({
         </Text>
         <Text style={styles.time}>{displayTime}</Text>
         <View style={styles.headerButtons}>
-          <Edit style={styles.headerIcon} />
-          <Copy style={styles.headerIcon} />
-          <Delete style={styles.headerIcon} />
+          <TouchableOpacity>
+            <TouchableOpacity onPress={onEdit}>
+              <Edit style={styles.headerIcon} />
+            </TouchableOpacity>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onCopy}>
+            <Copy style={styles.headerIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={Ondelete}>
+            <Delete style={styles.headerIcon} />
+          </TouchableOpacity>
         </View>
       </View>
 

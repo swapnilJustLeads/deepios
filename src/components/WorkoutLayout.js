@@ -1,11 +1,17 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import { useUserWorkoutContext, useUserRecoveryContext, useUserCardioContext } from '../context/UserContexts';
 import { useDetails } from '../context/DeatailsContext';
 import moment from 'moment';
+import { deleteDoc, doc } from '@react-native-firebase/firestore';
+import { COLLECTIONS } from '../firebase/collections';
+import { FirestoreDB } from '../firebase/firebase_client';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
 
 const WorkoutLayout = (props) => {
+const [CopyModal, setCopyModal] = useState(false)
+const [selected, setselected] = useState(false)
   const { workoutData } = useUserWorkoutContext();
   const { recoveryData } = useUserRecoveryContext();
   const { cardioData } = useUserCardioContext();
@@ -28,6 +34,24 @@ const WorkoutLayout = (props) => {
   };
 
   const dataSource = getData();
+
+    const handleDeleteTraining = async (id) => {
+    
+
+      try {
+        const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
+        await deleteDoc(cardioDoc);
+        console.log('delete')
+        // toast.dismiss(t);
+        // toast.success("Training deleted successfully!");
+        // handleRefresh();
+        // handleOnCopy();
+      } catch (error) {
+        // toast.dismiss(t);
+        console.error("Error deleting training: ", error);
+        // toast.error("Failed to delete training.");
+      }
+    };
 
   // Filter data for the selected date
   const selectedDate = props.selectedDate || moment().format('YYYY-MM-DD');
@@ -198,6 +222,10 @@ const WorkoutLayout = (props) => {
     }).filter(Boolean); // Remove any null entries
   };
 
+  const _chooseDate = ( ) => {
+    
+  }
+
   const sessionData = transformData();
 
   // Sort session data by time (latest first)
@@ -218,6 +246,15 @@ const WorkoutLayout = (props) => {
     }
   };
 
+  const handleEdit = (session) => {
+
+  }
+
+  const handleCopy = (session) => {
+    setCopyModal(true)
+
+  }
+
   return (
     <View style={styles.container}>
       {sortedSessionData.length > 0 ? (
@@ -234,6 +271,9 @@ const WorkoutLayout = (props) => {
                 title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 exercises={session.exercises}
                 time={session.time}
+                Ondelete={()=> handleDeleteTraining(session.id)}
+                onEdit={()=>handleEdit(session.id)}
+                onCopy={()=> handleCopy(session.id)}
               />
             // </TouchableOpacity>
           ))}
@@ -243,6 +283,37 @@ const WorkoutLayout = (props) => {
           <Text style={styles.noDataText}>No {type} activities found for {moment(selectedDate).format('MMM D, YYYY')}</Text>
         </View>
       )}
+
+       <Modal
+            visible={(CopyModal)}
+            transparent
+            animationType="fade"
+            onRequestClose={()=> setCopyModal(false)}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.modalContainer}>
+                {/* Title */}
+                <Text style={styles.title}>Date</Text>
+      
+                {/* Message */}
+                <TouchableOpacity onPress={_chooseDate} >
+                        <Text style={styles.message}>Choose Date</Text>
+                </TouchableOpacity>
+          
+      
+                {/* Buttons */}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.cancelButton} onPress={()=> setCopyModal(false)}>
+                    <Text style={styles.cancelText}>CANCEL</Text>
+                  </TouchableOpacity>
+      
+                  <TouchableOpacity style={styles.copyButton} >
+                    <Text style={styles.copyText}>COPY</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
     </View>
   );
 };
@@ -274,7 +345,59 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: '#555',
-  }
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: 280,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: '#000',
+    marginBottom: 15,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#000',
+    marginRight: 5,
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#00E5FF',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginLeft: 5,
+  },
 });
 
 export default WorkoutLayout;
