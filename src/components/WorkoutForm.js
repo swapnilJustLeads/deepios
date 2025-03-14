@@ -758,7 +758,9 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
       />
 
       {/* Bottom Button */}
-      <View style={styles.bottomButton}>
+      <View style={[styles.bottomButton,{
+        justifyContent:isIntakeEditMode ? 'space-between':'center'
+      }]}>
         {isIntakeEditMode && (
           <Button
             onPress={handleDeleteWorkout} // Changed from handleOpenModal to handleSaveWorkout
@@ -769,7 +771,7 @@ const WorkoutForm = ({onSave, onCancel, workoutData}) => {
         )}
         <Button
           onPress={handleSaveWorkout} // Changed from handleOpenModal to handleSaveWorkout
-          buttonStyle={styles.buttonStyle}
+          buttonStyle={[styles.buttonStyle,]}
           title={isIntakeEditMode ? 'UPDATE WORKOUT' : 'SAVE WORKOUT'}
           titleStyle={styles.buttonTextStyle}
         />
@@ -893,7 +895,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   buttonStyle: {
-    width: 103,
+    // width: 103,
     backgroundColor: '#00E5FF',
     borderRadius: 8,
     justifyContent: 'center',
@@ -910,7 +912,9 @@ const styles = StyleSheet.create({
   bottomButton: {
     position: 'absolute',
     bottom: 21,
-    alignSelf: 'center',
+    flexDirection:'row',
+    justifyContent:'space-between',
+    width:'100%'
   },
 
   dropdownButton: {

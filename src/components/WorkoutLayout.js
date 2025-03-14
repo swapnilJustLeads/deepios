@@ -3,10 +3,9 @@ import {
   View,
   StyleSheet,
   Text,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Modal,
-  FlatList,
 } from 'react-native';
 import MainContainer_Header_ExerciseItem from './MainContainer_Header_ExerciseItem';
 import {
@@ -31,9 +30,10 @@ const WorkoutLayout = props => {
   const {cardioData} = useUserCardioContext();
   const {parentIds, subCategories} = useDetails();
   const [editVisible, seteditVisible] = useState(false);
-    const [copyModalVisible, setCopyModalVisible] = useState(false);
-    const [selectedSessionToCopy, setSelectedSessionToCopy] = useState(null);
-console.log(workoutData,"workoutDataworkoutDataworkoutData")
+  const [copyModalVisible, setCopyModalVisible] = useState(false);
+  const [selectedSessionToCopy, setSelectedSessionToCopy] = useState(null);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  console.log(workoutData, 'workoutDataworkoutDataworkoutData');
   // Get the type from props (default to 'workout')
   const type = props.type?.toLowerCase() || 'workout';
 
@@ -50,15 +50,23 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
     }
   };
 
-    const handleCopyConfirm = (date) => {
-      if (selectedSessionToCopy && date) {
-        console.log(`Copying session ${selectedSessionToCopy.id} to date: ${moment(date).format('YYYY-MM-DD')}`);
-        // Implement your copy logic here
-        
-        // Reset state
-        setSelectedSessionToCopy(null);
-      }
-    };
+  const handleCopyConfirm = date => {
+    console.log(selectedSessionToCopy , "selectedSessionToCopy", date)
+    // if (selectedSessionToCopy && date) {
+    //   console.log(date,"datedatedate",selectedSessionToCopy)
+
+
+    //   // console.log(
+    //   //   `Copying session ${selectedSessionToCopy.id} to date: ${moment(
+    //   //     date,
+    //   //   ).format('YYYY-MM-DD')}`,
+    //   // );
+    //   // Implement your copy logic here
+
+    //   // Reset state
+    //   setSelectedSessionToCopy(null);
+    // }
+  };
 
   const dataSource = getData();
 
@@ -66,11 +74,9 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
     try {
       const cardioDoc = doc(FirestoreDB, COLLECTIONS.DATA, id);
       await deleteDoc(cardioDoc);
-      setRefresh(!refresh)
+      setRefresh(!refresh);
     } catch (error) {
-
       console.error('Error deleting training: ', error);
-   
     }
   };
 
@@ -262,7 +268,7 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
           exercises: exercises,
           id: item.id || `${type}-${timestamp?.valueOf() || Date.now()}`,
           originalData: item, // Store the original item for use when clicked
-          name:item.name || 'Workout'
+          name: item.name || 'Workout',
         };
       })
       .filter(Boolean); // Remove any null entries
@@ -290,61 +296,74 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = (sessionId) => {
+    setCurrentSessionId(sessionId);
     seteditVisible(true);
   };
 
   const handleCopy = sessionId => {
-    const sessionToCopy = sortedSessionData.find(session => session.id === sessionId);
-    
+    const sessionToCopy = sortedSessionData.find(
+      session => session.id === sessionId,
+    );
+
     if (sessionToCopy) {
       setSelectedSessionToCopy(sessionToCopy);
       setCopyModalVisible(true);
     }
   };
 
+  const renderItem = ({item: session}) => {
+    return (
+      <>
+        <MainContainer_Header_ExerciseItem
+          onClick={() => handleItemClick(session)}
+          title={session.name || type}
+          exercises={session.exercises}
+          time={session.time}
+          Ondelete={() => handleDeleteTraining(session.id)}
+          onEdit={() => handleEdit(session.id)}
+          onCopy={() => handleCopy(session.id)}
+          type={type}
+          session={session}
+        />
+        {currentSessionId === session.id && (
+          <EditModal
+            type={type}
+            id={session.id}
+            name={session.name}
+            parent={parentIds.Workout}
+            visible={editVisible}
+            onSave={() => {
+              setRefresh(!refresh);
+              seteditVisible(false);
+            }}
+          />
+        )}
+      </>
+    );
+  };
+
+  const ListEmptyComponent = () => (
+    <View style={styles.noDataContainer}>
+      <Text style={styles.noDataText}>
+        No {type} activities found for{' '}
+        {moment(selectedDate).format('MMM D, YYYY')}
+      </Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      {sortedSessionData.length > 0 ? (
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}>
-          {sortedSessionData.map((session,) => (
-        
-            <>
-              <MainContainer_Header_ExerciseItem
-                onClick={() => handleItemClick(session)}
-                title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
-                exercises={session.exercises}
-                time={session.time}
-                Ondelete={() => handleDeleteTraining(session.id)}
-                onEdit={handleEdit}
-                onCopy={() => handleCopy(session.id)}
-              />
-              <EditModal
-                id={session.id}
-                name={session.name}
-                parent={parentIds.Workout}
-                visible={editVisible}
-                onSave={() =>{
-                  setRefresh(!refresh)
-                seteditVisible(false)
-
-                }}
-              />
-            </>
-            // </TouchableOpacity>
-          ))}
-        </ScrollView>
-      ) : (
-        <View style={styles.noDataContainer}>
-          <Text style={styles.noDataText}>
-            No {type} activities found for{' '}
-            {moment(selectedDate).format('MMM D, YYYY')}
-          </Text>
-        </View>
-      )}
- <CopyDateModal
+      <FlatList
+      
+        data={sortedSessionData}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        // contentContainerStyle={styles.scrollContent}
+        ListEmptyComponent={ListEmptyComponent}
+        style={styles.scrollView}
+      />
+      <CopyDateModal
         visible={copyModalVisible}
         onClose={() => setCopyModalVisible(false)}
         onCopy={handleCopyConfirm}
@@ -372,7 +391,7 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
                 <Text style={styles.cancelText}>CANCEL</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.copyButton}>
+              <TouchableOpacity style={styles.copyButton}  >
                 <Text style={styles.copyText}>COPY</Text>
               </TouchableOpacity>
             </View>
@@ -383,11 +402,12 @@ console.log(workoutData,"workoutDataworkoutDataworkoutData")
   );
 };
 
-// Updated styles for the WorkoutLayout component
+// Updated styles for the WorkoutLayout component - kept the same as original
 const styles = StyleSheet.create({
-  container: {
+    container: {
     width: '100%',
     flex: 1,
+    
   },
   scrollView: {
     width: '100%',
@@ -395,7 +415,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20, // Reduced padding to avoid extra space
-    alignItems: 'center',
+    
+    // alignItems: 'center',
   },
   sessionContainer: {
     width: '100%',
@@ -462,6 +483,30 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     marginLeft: 5,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  message: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  cancelText: {
+    fontWeight: 'bold',
+  },
+  copyButton: {
+    flex: 1,
+    backgroundColor: '#00E5FF',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginLeft: 5,
+  },
+  copyText: {
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
 

@@ -21,6 +21,7 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
   const [category, setCategory] = useState(null);
   const [exercise, setExercise] = useState(null);
   const [duration, setDuration] = useState('');
+  const [isSaveCardioDisabled, setisSaveCardioDisabled] = useState(true)
   const getCurrentTime = () => {
     const now = new Date();
     return {
@@ -284,7 +285,7 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
     setRounds('');
     setLocation('');
     setDuration('');
-    
+    setisSaveCardioDisabled(false)
     console.log('Cardio item added:', newCardioItem);
   };
 
@@ -522,8 +523,10 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
       />
 
       {/* Bottom Buttons */}
-      <View style={styles.bottomButtonRow}>
-        <Button
+      <View style={[styles.bottomButtonRow,{
+        justifyContent:'center'
+      }]}>
+        {/* <Button
           onPress={onCancel}
           buttonStyle={[
             styles.buttonStyle,
@@ -533,14 +536,16 @@ const CardioForm = ({onSave, onCancel, cardioData}) => {
           ]}
           title="Cancel"
           titleStyle={styles.buttonTextStyle}
-        />
+        /> */}
         <Button
+        disabled={isSaveCardioDisabled}
           onPress={handleSaveCardio}
           buttonStyle={[styles.buttonStyle]}
-          title={isIntakeEditMode ? "UPDATE CARDIO" : "SAVE"}
+          title={isIntakeEditMode ? "UPDATE CARDIO" : "SAVE Cardio"}
           titleStyle={styles.buttonTextStyle}
         />
       </View>
+  
     </View>
   );
 };

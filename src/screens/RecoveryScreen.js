@@ -21,6 +21,10 @@ import {
 } from '../utils/calculate';
 import CardioLayout from '../components/CardioLayout';
 import RecoveryLayout from '../components/RecoveryLayout';
+import {
+  useFocusEffect,
+  createStaticNavigation,
+} from '@react-navigation/native';
 
 const RecoveryScreen = () => {
   const [showForm, setshowForm] = useState(false);
@@ -39,7 +43,17 @@ const RecoveryScreen = () => {
     }
     return dates;
   };
-
+  useFocusEffect(
+    React.useCallback(() => {
+      
+      // Do something when the screen is focused
+      return () => {
+        setshowForm(false)
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      };
+    }, [])
+  )
   useEffect(() => {
     console.log("🔥 Recovery data on load:", recoveryData);
     const today = moment().format('YYYY-MM-DD');
@@ -128,13 +142,20 @@ const RecoveryScreen = () => {
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <RecoveryLayout
+          <WorkoutLayout
+           title="Recovery"
+           type="recovery"
+           selectedDate={selectedDate}
+           onSelectItem={handleSelectRecovery} // Add the handler for item selection
+          
+          />
+          {/* <RecoveryLayout
             title="Recovery"
             type="recovery"
             selectedDate={selectedDate}
             onSelectItem={handleSelectRecovery} // Add the handler for item selection
-          />
-          <View style={{ position: 'absolute', bottom: 9, alignSelf: 'center' }}>
+          /> */}
+           <View style={styles.bottomButton}>
             <Button
               onPress={() => setshowForm(true)}
               title="New Recovery"
@@ -197,8 +218,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   buttonConatiner: {
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
     marginRight: 15,
     marginTop: 9,
+  },
+  bottomButton: {
+    position: 'absolute',
+    bottom: 21,
+    width: '100%',
+    alignSelf: 'center',
   },
 });

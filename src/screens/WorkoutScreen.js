@@ -1,31 +1,29 @@
-import {StyleSheet, View, } from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import HeaderComponent from '../components/HeaderComponent';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 import WorkoutCard from '../components/WorkoutCard';
 import Bardumble from '../assets/images/bardumble.svg';
 import moment from 'moment';
 import HorizontalDatePicker from '../components/HorizontalDatePicker';
 import WorkoutForm from '../components/WorkoutForm';
 import WorkoutLayout from '../components/WorkoutLayout';
-import {
-  useUserWorkoutContext,
-} from '../context/UserContexts';
+import {useUserWorkoutContext} from '../context/UserContexts';
 import {
   calculateTotalWorkoutWeight,
   getStartAndEndDate,
 } from '../utils/calculate';
-import { useDetails } from '../context/DeatailsContext';
+import {useDetails} from '../context/DeatailsContext';
 import {Button} from '@rneui/themed';
-import { addUser } from '../firebase/firebase_client';
-import { useTheme } from '../hooks/useTheme';
-
+import {addUser} from '../firebase/firebase_client';
+import {useTheme} from '../hooks/useTheme';
+import {useFocusEffect, createStaticNavigation} from '@react-navigation/native';
 
 const WorkoutScreen = ({
   id,
-  title = "",
+  title = '',
   data = [],
-  time = "",
+  time = '',
   onBoxClick = () => {},
   onRowClick = () => {},
   handleRemoveItem = () => {},
@@ -37,14 +35,24 @@ const WorkoutScreen = ({
 }) => {
   const [showForm, setshowForm] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const { t } = useTranslation();
+  const {t} = useTranslation();
   const {isDarkMode} = useTheme();
-  const { refresh, setRefresh, workoutData } = useUserWorkoutContext();
-  const { parentIds, subCategories } = useDetails();
+  const {refresh, setRefresh, workoutData} = useUserWorkoutContext();
+  const {parentIds, subCategories} = useDetails();
   const [selectedDate, setSelectedDate] = useState(
     moment().format('YYYY-MM-DD'),
   );
-  
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Do something when the screen is focused
+      return () => {
+        setshowForm(false);
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      };
+    }, []),
+  );
   const getDates = () => {
     let dates = [];
     for (let i = -3; i <= 3; i++) {
@@ -52,21 +60,21 @@ const WorkoutScreen = ({
     }
     return dates;
   };
-  
+
   useEffect(() => {
     // Filter workouts for today's date on initial load
     const today = moment().format('YYYY-MM-DD');
     onDateSelect(today);
   }, [workoutData]); // 🔥 Run this effect whenever `workoutData` changes
-  
-  const onDateSelect = (selectedDate) => {
-    console.log("📅 Selected Date:", selectedDate);
+
+  const onDateSelect = selectedDate => {
+    console.log('📅 Selected Date:', selectedDate);
     setSelectedDate(selectedDate); // ✅ Update selected date state properly
   };
-  
+
   const filterDataByRange = (data, range) => {
-    const { startDate, endDate } = getStartAndEndDate(range);
-    return data.filter((item) => {
+    const {startDate, endDate} = getStartAndEndDate(range);
+    return data.filter(item => {
       if (item.createdAt) {
         const itemDate = new Date(item.createdAt.seconds * 1000);
         return itemDate >= startDate && itemDate <= endDate;
@@ -74,15 +82,15 @@ const WorkoutScreen = ({
       return false;
     });
   };
-  
+
   const workoutWeightToday = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Today')
+    filterDataByRange(workoutData, 'Today'),
   );
   const workoutWeightWeek = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Week')
+    filterDataByRange(workoutData, 'Week'),
   );
   const workoutWeightMonth = calculateTotalWorkoutWeight(
-    filterDataByRange(workoutData, 'Month')
+    filterDataByRange(workoutData, 'Month'),
   );
 
   // Handle form save (used for both new and edited workouts)
@@ -91,18 +99,20 @@ const WorkoutScreen = ({
     setSelectedWorkout(null);
     setRefresh(prev => !prev); // Toggle refresh to trigger data reload
   };
-  
+
   // Handler for when a workout item is clicked
-  const handleSelectWorkout = (workoutItem) => {
-    console.log("Selected workout item:", workoutItem);
+  const handleSelectWorkout = workoutItem => {
+    console.log('Selected workout item:', workoutItem);
     setSelectedWorkout(workoutItem);
     setshowForm(true);
   };
 
-
-  
   return (
-    <View style={[styles.container, {backgroundColor: isDarkMode ? 'black' : '#AFAFAF'}]}>
+    <View
+      style={[
+        styles.container,
+        {backgroundColor: isDarkMode ? 'black' : '#AFAFAF'},
+      ]}>
       <HeaderComponent />
       {showForm ? (
         <WorkoutForm
@@ -123,7 +133,7 @@ const WorkoutScreen = ({
             monthValue={workoutWeightMonth}
             unit={'kg'}
           />
-          <HorizontalDatePicker 
+          <HorizontalDatePicker
             value={selectedDate}
             onChange={setSelectedDate}
             minDate={moment().subtract(30, 'days').format('YYYY-MM-DD')}
@@ -132,16 +142,13 @@ const WorkoutScreen = ({
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <WorkoutLayout 
-            title="Workout" 
-            selectedDate={selectedDate} 
+          <WorkoutLayout
+            title="Workout"
+            selectedDate={selectedDate}
             onSelectItem={handleSelectWorkout}
+            type="workout"
           />
-          <View style={{
-            position: 'absolute', 
-            bottom: 9, 
-            alignSelf: 'center'
-          }}>
+          <View style={styles.bottomButton}>
             <Button
               containerStyle={[styles.buttonConatiner]}
               onPress={() => setshowForm(true)}
@@ -152,7 +159,6 @@ const WorkoutScreen = ({
           </View>
         </>
       )}
-      
     </View>
   );
 };
@@ -200,8 +206,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonConatiner: {
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
     marginRight: 15,
     marginTop: 9,
+  },
+  bottomButton: {
+    position: 'absolute',
+    bottom: 21,
+    width: '100%',
+    alignSelf: 'center',
   },
 });

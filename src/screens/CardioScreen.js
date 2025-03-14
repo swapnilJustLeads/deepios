@@ -16,28 +16,31 @@ import {
 } from '../utils/calculate';
 import WorkoutLayout from '../components/WorkoutLayout';
 import CardioLayout from '../components/CardioLayout';
+import {
+  useFocusEffect,
+  createStaticNavigation,
+} from '@react-navigation/native';
 
 const CardioScreen = () => {
   const [showForm, setshowForm] = useState(false);
   const [selectedCardio, setSelectedCardio] = useState(null);
-  const { cardioData, setRefresh } = useUserCardioContext();
+  const { cardioData, setRefresh, refresh } = useUserCardioContext();
   const [filteredWorkoutData, setFilteredWorkoutData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
+    
     moment().format('YYYY-MM-DD'),
   );
-
-  const getDates = () => {
-    let dates = [];
-    for (let i = -3; i <= 3; i++) {
-      dates.push(moment().add(i, 'days').format('YYYY-MM-DD'));
-    }
-    return dates;
-  };
-
-  const closeSave = () => {
-    setshowForm(false);
-    setSelectedCardio(null);
-  } 
+  useFocusEffect(
+    React.useCallback(() => {
+      
+      // Do something when the screen is focused
+      return () => {
+        setshowForm(false)
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      };
+    }, [])
+  )
 
   useEffect(() => {
     console.log("🔥 cardioData on load:", cardioData); // ✅ Check if cardio data exists
@@ -128,11 +131,17 @@ const CardioScreen = () => {
             onCalendarClose={() => console.log('Calendar closed')}
             onDateSelect={onDateSelect}
           />
-          <CardioLayout 
+          {/* <CardioLayout 
             title="Cardio" 
             type="cardio" 
             selectedDate={selectedDate} 
             onSelectItem={handleSelectCardio}  // Add the handler for item selection
+          /> */}
+          <WorkoutLayout 
+            title="Cardio" 
+            selectedDate={selectedDate} 
+            onSelectItem={handleSelectCardio}
+            type="cardio"
           />
 
           <View style={styles.bottomButton}>
@@ -145,6 +154,7 @@ const CardioScreen = () => {
           </View>
         </>
       )}
+
     </View>
   );
 };

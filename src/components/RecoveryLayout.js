@@ -224,18 +224,20 @@ const RecoveryLayout = (props) => {
       {sortedSessionData.length > 0 ? (
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {sortedSessionData.map((session, index) => (
-            <TouchableOpacity 
-              key={session.id || index} 
-              style={styles.sessionContainer}
-              onPress={() => handleItemClick(session)}
-              activeOpacity={0.7}
-            >
-              <MainContainer_Header_Recovery
+        
+              <MainContainer_Header_ExerciseItem
                 title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}
                 exercises={session.exercises}
                 time={session.time}
+                onClick={() => handleItemClick(session)}
+          
+              
+                
+                Ondelete={() => handleDeleteTraining(session.id)}
+                onEdit={handleEdit}
+                onCopy={() => handleCopy(session.id)}
               />
-            </TouchableOpacity>
+    
           ))}
         </ScrollView>
       ) : (

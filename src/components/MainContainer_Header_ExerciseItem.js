@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import Copy from '../assets/images/copy.svg';
 import Edit from '../assets/images/edit.svg';
@@ -19,6 +20,8 @@ const MainContainer_Header_ExerciseItem = ({
   Ondelete,
   onEdit,
   onCopy,
+  type,
+  session,
 }) => {
   console.log('Exercise data:', exercises);
   const displayTime = time || '07:57 AM';
@@ -47,91 +50,168 @@ const MainContainer_Header_ExerciseItem = ({
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.exerciseList}>
-        {exercises.map((exercise, index) => (
-          <View
-            key={index}
-            style={[
-              styles.exerciseItem,
-              index === exercises.length - 1 && styles.lastExerciseItem,
-            ]}>
-            <Text onPress={onClick} style={styles.exerciseName}>
-              {exercise.name}
-            </Text>
-            <View onPress={onClick} style={styles.setsContainer}>
-              {exercise.sets &&
-                exercise.sets.map((set, setIndex) => {
-                  // For cardio data that has speed and incline
-                  if (set.speed !== undefined && set.incline !== undefined) {
-                    return (
-                      <View key={setIndex} style={styles.setRow}>
-                        <Text style={styles.setNumber}>
-                          {set.number || setIndex + 1} |
-                        </Text>
-                        <View style={styles.detailsContainer}>
-                          <Text style={styles.detailText}>
-                            <Text style={styles.detailLabel}>Speed: </Text>
-                            <Text>{set.speed}</Text>
-                          </Text>
-                          <Text style={styles.detailText}>
-                            <Text style={styles.detailLabel}>Incline: </Text>
-                            <Text>{set.incline}</Text>
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  }
-                  // For workout data with weight and incline in one string
-                  else if (
-                    typeof set.weight === 'string' &&
-                    set.weight.includes('Incline')
-                  ) {
-                    // Split the weight string to extract the separate values
-                    const parts = set.weight.split(',');
-                    const weightValue = parts[0].trim();
-                    let inclineValue = '';
+      {type === 'cardio' ? (
+        <FlatList
+          data={session.originalData.data}
+          renderItem={({item, index}) => (
+            <View style={styles.exerciseItem} >
+              <Text onPress={onClick} style={[styles.exerciseName,{
+                marginLeft:21
+              }]}>
+                {session.exercises[0].name}
+              </Text>
+            <View key={index} style={styles.setRow}>
+              <Text style={styles.setNumber}>
+                {item?.time !== null && item?.time !== undefined
+                  ? `${item.time} min`
+                  : ''}
+              </Text>
+              <Text style={styles.detailText}>
+                {item?.speed !== null && item?.speed !== undefined
+                  ? `${item.speed} km/h`
+                  : ''}
+              </Text>
+              <Text style={styles.detailText}>
+                {item.incline === '' &&
+                item?.incline !== null &&
+                item?.incline !== undefined
+                  ? ''
+                  : `${item.incline}% Incline`}
+              </Text>
+            </View>
+            </View>
+          )}
+        />
+      ) : null}
 
-                    if (parts.length > 1) {
-                      const inclineMatch = parts[1].match(/(\d+)/);
-                      inclineValue = inclineMatch ? inclineMatch[0] : '';
-                    }
+      {type === 'recovery' ? (
+        // <Text>{JSON.stringify(session.originalData.data)} </Text>
 
-                    return (
-                      <View key={setIndex} style={styles.setRow}>
-                        <Text style={styles.setNumber}>
-                          {set.number || setIndex + 1} |
-                        </Text>
-                        <View style={styles.detailsContainer}>
-                          <Text style={styles.detailText}>
-                            <Text style={styles.detailLabel}>Weight: </Text>
-                            <Text>{weightValue}</Text>
+        <FlatList
+        
+          data={session.originalData.data}
+          renderItem={({item, index}) => (
+            <View style={styles.exerciseItem} >
+              <Text onPress={onClick} style={[styles.exerciseName,{
+                marginLeft:21
+              }]}>
+                {session.exercises[0].name}
+              </Text>
+              <View key={index} style={styles.setRow}>
+                {item.time > 0 ? (
+                  <Text style={styles.setNumber}>{item?.time} min</Text>
+                ) : (
+                  <Text></Text>
+                )}
+
+                {item.rounds > 0 ? (
+                  <Text style={styles.detailText}>
+                    <Text>{item.rounds} Rounds</Text>
+                  </Text>
+                ) : (
+                  <Text></Text>
+                )}
+                {item.intensity > 0 ? (
+                  <Text style={styles.detailText}>
+                    <Text>{item.intensity} Intensity</Text>
+                  </Text>
+                ) : (
+                  <Text></Text>
+                )}
+              </View>
+            </View>
+          )}
+        />
+      ) : null}
+      {type === 'workout' ? (
+        <ScrollView contentContainerStyle={styles.exerciseList}>
+          {exercises.map((exercise, index) => (
+            <View
+              key={index}
+              style={[
+                styles.exerciseItem,
+                index === exercises.length - 1 && styles.lastExerciseItem,
+              ]}>
+              <Text onPress={onClick} style={styles.exerciseName}>
+                {exercise.name}
+              </Text>
+              <View onPress={onClick} style={styles.setsContainer}>
+                {exercise.sets &&
+                  exercise.sets.map((set, setIndex) => {
+                    // For cardio data that has speed and incline
+                    if (set.speed !== undefined && set.incline !== undefined) {
+                      return (
+                        <View key={setIndex} style={styles.setRow}>
+                          <Text style={styles.setNumber}>
+                            {set.number || setIndex + 1} |
                           </Text>
-                          {inclineValue && (
+                          <View style={styles.detailsContainer}>
+                            <Text style={styles.detailText}>
+                              <Text style={styles.detailLabel}>Speed: </Text>
+                              <Text>{set.speed}</Text>
+                            </Text>
                             <Text style={styles.detailText}>
                               <Text style={styles.detailLabel}>Incline: </Text>
-                              <Text>{inclineValue}%</Text>
+                              <Text>{set.incline}</Text>
                             </Text>
-                          )}
+                          </View>
                         </View>
-                      </View>
-                    );
-                  }
-                  // For standard workout data with just weight
-                  else {
-                    return (
-                      <View key={setIndex} style={styles.setRow}>
-                        <Text style={styles.setNumber}>
-                          {set.number || setIndex + 1} |
-                        </Text>
-                        <Text style={styles.setWeight}>{set.weight}</Text>
-                      </View>
-                    );
-                  }
-                })}
+                      );
+                    }
+                    // For workout data with weight and incline in one string
+                    else if (
+                      typeof set.weight === 'string' &&
+                      set.weight.includes('Incline')
+                    ) {
+                      // Split the weight string to extract the separate values
+                      const parts = set.weight.split(',');
+                      const weightValue = parts[0].trim();
+                      let inclineValue = '';
+
+                      if (parts.length > 1) {
+                        const inclineMatch = parts[1].match(/(\d+)/);
+                        inclineValue = inclineMatch ? inclineMatch[0] : '';
+                      }
+
+                      return (
+                        <View key={setIndex} style={styles.setRow}>
+                          <Text style={styles.setNumber}>
+                            {set.number || setIndex + 1} |
+                          </Text>
+                          <View style={styles.detailsContainer}>
+                            <Text style={styles.detailText}>
+                              <Text style={styles.detailLabel}>Weight: </Text>
+                              <Text>{weightValue}</Text>
+                            </Text>
+                            {inclineValue && (
+                              <Text style={styles.detailText}>
+                                <Text style={styles.detailLabel}>
+                                  Incline:{' '}
+                                </Text>
+                                <Text>{inclineValue}%</Text>
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    }
+                    // For standard workout data with just weight
+                    else {
+                      return (
+                        <View key={setIndex} style={styles.setRow}>
+                          <Text style={styles.setNumber}>
+                            {set.number || setIndex + 1} |
+                          </Text>
+                          <Text style={styles.setWeight}>{set.weight}</Text>
+                        </View>
+                      );
+                    }
+                  })}
+              </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      ) : null}
     </View>
   );
 };
@@ -199,8 +279,9 @@ const styles = StyleSheet.create({
   },
   setRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    minWidth: 120,
+    justifyContent: 'space-between',
+    marginLeft: 21,
+    marginRight: 21,
     paddingRight: 9,
     marginBottom: 4,
   },
@@ -211,7 +292,6 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginRight: 4,
     textAlign: 'right',
-    width: 18,
   },
   setWeight: {
     fontFamily: 'Inter',

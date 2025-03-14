@@ -10,12 +10,9 @@ import HeaderComponent from '../components/HeaderComponent';
 import { uploadProfilePicture } from '../firebase/firebase_client';
 import { EmailChangeComponent, PasswordForm, ProfileForm, ProfilePicChange } from '../components/ProfileForm';
 import LanguageThemeLogout from '../components/LangaugeThemeButton';
-import LanguageSwitch from '../components/LanguageSwitch';
 import { useTheme } from '../hooks/useTheme';
 
-
 const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
 const buttonWidth = (screenWidth - 48) / 2;
 
 const ProfileScreen = () => {
