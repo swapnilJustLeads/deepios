@@ -3,16 +3,15 @@ import {View, Text, StyleSheet} from 'react-native';
 import {Button} from '@rneui/themed';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import Dashboardlogo from '../assets/dashboardlogo.svg';
-import Rightlogo from '../assets/rightlogo.svg';
-import LeftLogo from '../assets/LeftLogo.svg';
+import Dashboardlogo from '../assets/images/dashboardlogo.svg';
+import Rightlogo from '../assets/images/rightlogo.svg';
+import LeftLogo from '../assets/images/LeftLogo.svg';
 import WorkoutCard from '../components/WorkoutCard';
-import Bardumble from '../assets/bardumble.svg';
-import Cardio from '../assets/cardio.svg';
-import Recovery from '../assets/recovery.svg';
+import Bardumble from '../assets/images/bardumble.svg';
+import Cardio from '../assets/images/cardio.svg';
+import Recovery from '../assets/images/recovery.svg';
 import HeaderComponent from '../components/HeaderComponent';
 
-// dashboardlogo.svg
 export default function DetailsScreen({navigation}) {
   const isDarkMode = useSelector(state => state.theme.darkMode);
   const {t} = useTranslation();

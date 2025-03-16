@@ -1,125 +1,174 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Card } from '@rneui/themed';
-import Bardumble from '../assets/bardumble.svg';
+import React, {useState} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {Card} from '@rneui/themed';
 
-
-
-const WorkoutCard = (props) => {
+const WorkoutCard = props => {
   const [selectedTab, setSelectedTab] = useState('Today');
-
+  
+  // Get the appropriate value based on selected tab
+  const getValueForSelectedTab = () => {
+    if (props.todayValue !== undefined && 
+        props.weekValue !== undefined && 
+        props.monthValue !== undefined) {
+      
+      switch(selectedTab) {
+        case 'Today':
+          return props.todayValue;
+        case 'Week':
+          return props.weekValue;
+        case 'Month':
+          return props.monthValue;
+        default:
+          return props.unitNumber || 0;
+      }
+    }
+    return props.unitNumber || 0;
+  };
+  
   return (
     <Card containerStyle={styles.card}>
       <View style={styles.header}>
         <Text style={styles.workoutText}>{props?.name}</Text>
-        <View style={[styles.tabs,{
-            width:210
-        }]}>
-        {['Today', 'Week', 'Month'].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[
-              styles.tab,
-              selectedTab === tab && styles.selectedTab
-            ]}
-            onPress={() => setSelectedTab(tab)}
-          >
-            <Text
+        <View style={styles.tabs}>
+          {['Today', 'Week', 'Month'].map((tab, index) => (
+            <TouchableOpacity
+              key={tab}
               style={[
-                styles.tabText,
-                selectedTab === tab && styles.selectedTabText
+                styles.tab,
+                selectedTab === tab && styles.selectedTab,
+                index === 0 && selectedTab === tab && styles.leftRounded, // "Today"
+                index === 2 && selectedTab === tab && styles.rightRounded, // "Month"
+                index === 1 && selectedTab === tab && styles.middleTab, // "Week"
               ]}
-            >
-              {tab.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              onPress={() => setSelectedTab(tab)}>
+              <Text
+                style={[
+                  styles.tabText,
+                  selectedTab === tab && styles.selectedTabText,
+                ]}>
+                {tab.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-      </View>
-      <View style={{flexDirection:'row', justifyContent:'space-between'}} >
-        {props.image}
-    
+      
+      <View style={{height:9}} />
+      
+      {/* Data Section */}
+      <View style={styles.dataWrapper}>
+        <View style={styles.imageContainer}>{props.image}</View>
 
-      
-<View style={styles.dataContainer}>
-  <Text style={styles.dataText}>3605</Text>
-  <Text style={styles.unitText}>kg</Text>
-</View>
+        <View style={styles.dataContainer}>
+          <Text style={styles.dataText}>{getValueForSelectedTab()}</Text>
+          <Text style={styles.unitText}>{props.unit}</Text>
+        </View>
       </View>
-      
     </Card>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    padding: 20,
+    marginTop: 20,
+    borderRadius: 24,
     backgroundColor: '#fff',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
+    borderColor: 'black',
+    paddingBottom: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15
+    marginBottom: -5,
+    marginTop: -5,
   },
   workoutText: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: 'bold',
-    fontFamily: 'Stomic-Regular',
-    textTransform: 'uppercase'
+    fontFamily: 'Stomic',
+    textTransform: 'uppercase',
+    marginTop: 0,
+    marginLeft: 6,
   },
-  iconPlaceholder: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#000',
-    borderRadius: 5
-  },
+
+  // Tab Styles
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#ddd',
-    borderRadius: 12,
-    // padding: 5,
-    marginBottom: 15
+    backgroundColor: '#AFAFAF',
+    borderRadius: 6,
+    width: 160,
+    height: 24,
+    marginTop: 0,
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 15
+    justifyContent: 'center',
   },
   selectedTab: {
-    backgroundColor: '#72d8ff'
+    backgroundColor: '#00E5FF'
+  },
+  leftRounded: {
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0
+  },
+  middleTab: {
+    borderRadius: 0
+  },
+  rightRounded: {
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 6,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 9,
     fontWeight: 'bold',
-    color: '#000'
+    color: '#000',
+    alignSelf: 'center',
   },
   selectedTabText: {
-    color: '#000'
+    color: '#000',
+  },
+
+  // Data Section
+  dataWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  imageContainer: {
+    marginTop: 12,
+    marginLeft: 5,
   },
   dataContainer: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   dataText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#000'
+    fontSize: 39,
+    fontWeight: '700',
+    color: '#000',
+    fontFamily: 'Inter',
+    marginTop: 10
   },
   unitText: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#000',
-    marginLeft: 5
-  }
+    fontFamily: 'Inter',
+    fontWeight: '300',
+    alignSelf: 'center',
+    marginRight: 5,
+    marginTop: 9
+  },
 });
 
 export default WorkoutCard;

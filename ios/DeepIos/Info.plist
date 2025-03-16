@@ -31,8 +31,19 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to capture a new profile picture.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string>We need location access to improve app functionality.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save your selected profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to update your profile picture.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Stomic-Regular.ttf</string>
+		<string>Inter.ttf</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -47,9 +58,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Stomic-Regular.ttf</string>
-	</array>
 </dict>
 </plist>
